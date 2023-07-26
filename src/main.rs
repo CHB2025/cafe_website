@@ -1,3 +1,5 @@
+use std::env;
+
 use axum::{
     body::{boxed, Body, BoxBody},
     http::{Request, Response, StatusCode, Uri},
@@ -5,11 +7,17 @@ use axum::{
     routing::get,
     Router,
 };
+use diesel::{pg::PgConnection, prelude::*};
 use tower::ServiceExt;
 use tower_http::services::ServeDir;
 
+pub mod models;
+pub mod schema;
+
 #[tokio::main]
 async fn main() {
+    let db = establish_db_connection();
+
     let app = Router::new()
         .route("/", get(home))
         .route("/test", get(|| async { Html("<p>Hello test</p>") }))
@@ -18,6 +26,12 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+fn establish_db_connection() -> PgConnection {
+    dotenv::dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    PgConnection::establish(&database_url).expect("Error connecting to the database")
 }
 
 async fn home() -> Result<Response<BoxBody>, (StatusCode, String)> {
