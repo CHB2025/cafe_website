@@ -1,34 +1,38 @@
 use std::env;
 
-use anyhow::Result;
-use diesel::{
-    r2d2::{ConnectionManager, Pool, PooledConnection},
-    PgConnection,
-};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 #[derive(Clone, Debug)]
 pub struct AppState {
-    db_pool: Pool<ConnectionManager<PgConnection>>,
+    db_pool: Pool<Postgres>,
 }
 
 impl AppState {
-    pub fn init() -> Self {
+    pub async fn init() -> Self {
         Self {
-            db_pool: db_connection_pool(),
+            db_pool: db_connection_pool().await,
         }
     }
 
-    pub fn db_connection(&self) -> Result<PooledConnection<ConnectionManager<PgConnection>>> {
-        Ok(self.db_pool.get()?)
+    pub fn pool(&self) -> &Pool<Postgres> {
+        &self.db_pool
     }
 }
 
-fn db_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
-    dotenv::dotenv().ok();
+async fn db_connection_pool() -> Pool<Postgres> {
+    dotenvy::dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::builder()
-        .test_on_check_out(true)
-        .build(manager)
-        .expect("Could not build connection pool")
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
+        .await
+        .expect("Failed to connect to the database");
+
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Failed to run migrations");
+
+    pool
 }

@@ -1,12 +1,9 @@
 use axum::{extract::State, http::StatusCode, response::Html, Form};
-use diesel::dsl::exists;
-use diesel::{insert_into, prelude::*, select};
 use scrypt::password_hash::rand_core::OsRng;
 use scrypt::password_hash::{PasswordHasher, SaltString};
 use scrypt::Scrypt;
 use tokio::task::spawn_blocking;
 
-use crate::schema::users::dsl::*;
 use crate::utils;
 use crate::{app_state::AppState, models::CreateUser};
 
@@ -22,11 +19,12 @@ pub async fn signup(
         Ok(Scrypt.hash_password(pswd.as_bytes(), &salt)?.to_string())
     });
 
-    let mut conn = app_state.db_connection().map_err(utils::ise)?;
-    let already_exists = select(exists(users.filter(email.eq(&user.email))))
-        .get_result::<bool>(&mut conn)
+    let conn = app_state.pool();
+    let already_exists = sqlx::query!("SELECT * FROM users WHERE email = $1", user.email)
+        .fetch_optional(conn)
+        .await
         .map_err(utils::ise)?;
-    if already_exists {
+    if already_exists.is_some() {
         pwd_fut.abort();
         return Err((
             StatusCode::CONFLICT,
@@ -36,10 +34,16 @@ pub async fn signup(
 
     user.password = pwd_fut.await.map_err(utils::ise)?.map_err(utils::ise)?;
 
-    insert_into(users)
-        .values(&user)
-        .execute(&mut conn)
-        .map_err(utils::ise)?;
+    let new_user = sqlx::query!(
+        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id",
+        user.name,
+        user.email,
+        user.password
+    )
+    .fetch_one(conn)
+    .await
+    .map_err(utils::ise)?;
+    println!("Created new user: {:?}", new_user);
 
     // TODO: create session for the new user
 

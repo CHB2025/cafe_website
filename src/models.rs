@@ -1,10 +1,7 @@
-use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use time::{Date, Time};
 
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::users)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct User {
     pub id: i32,
     pub email: String,
@@ -12,27 +9,21 @@ pub struct User {
     pub name: String,
 }
 
-#[derive(Queryable, Selectable, Insertable, Deserialize, Serialize)]
-#[diesel(table_name = crate::schema::users)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CreateUser {
     pub email: String,
     pub password: String,
     pub name: String,
 }
 
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::day)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Day {
     pub id: i32,
     pub date: Date,
     pub entertainment: Option<String>,
 }
 
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::worker)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Worker {
     pub id: i32,
     pub email: String,
@@ -41,11 +32,7 @@ pub struct Worker {
     pub name_last: String,
 }
 
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::shift)]
-#[diesel(belongs_to(Worker))]
-#[diesel(belongs_to(Day))]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Shift {
     pub id: i32,
     pub day_id: i32,

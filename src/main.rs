@@ -15,7 +15,6 @@ use tower_http::services::ServeDir;
 mod app_state;
 pub mod models;
 mod routes;
-pub mod schema;
 pub(crate) mod utils;
 
 #[tokio::main]
@@ -26,8 +25,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
-        .route("/signup", post(routes::create_account::signup))
-        .with_state(AppState::init())
+        .route("/signup", post(routes::signup::signup))
+        .with_state(AppState::init().await)
         .fallback(file_handler)
         .layer(middleware::from_fn_with_state(ind_html, html_wrapper));
 
