@@ -25,7 +25,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
-        .route("/signup", post(routes::signup::signup))
+        .route("/signup", get(file_handler).post(routes::signup::signup))
+        .route("/login", get(file_handler).post(routes::login::login))
         .with_state(AppState::init().await)
         .fallback(file_handler)
         .layer(middleware::from_fn_with_state(ind_html, html_wrapper));

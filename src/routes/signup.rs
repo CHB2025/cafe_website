@@ -20,7 +20,7 @@ pub async fn signup(
     });
 
     let conn = app_state.pool();
-    let already_exists = sqlx::query!("SELECT * FROM users WHERE email = $1", user.email)
+    let already_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", user.email)
         .fetch_optional(conn)
         .await
         .map_err(utils::ise)?;
