@@ -1,4 +1,12 @@
-use axum::{extract::State, http::StatusCode, response::Html, Form};
+use std::rc::Rc;
+
+use axum::{
+    extract::State,
+    http::{Response, StatusCode},
+    response::{Html, IntoResponse, Redirect},
+    Form,
+};
+use axum_sessions::extractors::{ReadableSession, WritableSession};
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
     Scrypt,
@@ -22,6 +30,7 @@ fn login_err<E>(_: E) -> (StatusCode, Html<&'static str>) {
 }
 
 pub async fn login(
+    mut session: WritableSession,
     State(app_state): State<AppState>,
     Form(login): Form<LoginRequest>,
 ) -> Result<Html<&'static str>, (StatusCode, Html<&'static str>)> {
@@ -34,14 +43,32 @@ pub async fn login(
         .map_err(login_err)?;
 
     // Check password
+    let pw_hash = user.password.clone();
     spawn_blocking(move || {
-        let hash = PasswordHash::new(&user.password).map_err(utils::ise)?;
+        let hash = PasswordHash::new(&pw_hash).map_err(utils::ise)?;
         Scrypt
             .verify_password(login.password.as_bytes(), &hash)
             .map_err(login_err)
     })
     .await
     .map_err(utils::ise)??;
-    // TODO: create user session
-    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\">Success</span>"))
+
+    session.insert("user", user).expect("serializable");
+    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
+}
+
+pub async fn logout(mut session: WritableSession) -> impl IntoResponse {
+    session.destroy();
+    Redirect::to("/login")
+}
+
+pub async fn login_button(session: ReadableSession) -> Html<String> {
+    let (href, text) = match session.get::<User>("user") {
+        Some(_) => ("/logout", "Log Out"),
+        None => ("/login", "Log In"),
+    };
+    Html(format!(
+        "<a class=\"nav-item button\" href=\"{}\" hx-boost=\"true\" hx-target=\"#content\" hx-push-url=\"true\">{}</a>",
+        href, text
+    ))
 }

@@ -1,13 +1,16 @@
 use axum::{extract::State, http::StatusCode, response::Html, Form};
+use axum_sessions::extractors::WritableSession;
 use scrypt::password_hash::rand_core::OsRng;
 use scrypt::password_hash::{PasswordHasher, SaltString};
 use scrypt::Scrypt;
 use tokio::task::spawn_blocking;
 
+use crate::models::User;
 use crate::utils;
 use crate::{app_state::AppState, models::CreateUser};
 
 pub async fn signup(
+    mut session: WritableSession,
     State(app_state): State<AppState>,
     Form(mut user): Form<CreateUser>,
 ) -> Result<Html<&'static str>, (StatusCode, Html<&'static str>)> {
@@ -34,8 +37,9 @@ pub async fn signup(
 
     user.password = pwd_fut.await.map_err(utils::ise)?.map_err(utils::ise)?;
 
-    let new_user = sqlx::query!(
-        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id",
+    let new_user = sqlx::query_as!(
+        User,
+        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
         user.name,
         user.email,
         user.password
@@ -43,9 +47,8 @@ pub async fn signup(
     .fetch_one(conn)
     .await
     .map_err(utils::ise)?;
-    println!("Created new user: {:?}", new_user);
 
-    // TODO: create session for the new user
+    session.insert("user", new_user).expect("serializable");
 
-    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\">Success</span>"))
+    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
 }

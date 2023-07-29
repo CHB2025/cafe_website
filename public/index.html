@@ -10,8 +10,8 @@
       <a class="nav-item title" href="/" hx-boost="true"><h1>Cornerstone Cafe</h1></a>
     </div>
     <div class="nav-container nav-center"></div>
-    <div class="nav-container nav-right">
-      <a class="nav-item button" href="/login" hx-boost="true">Log In</a>
+    <div class="nav-container nav-right" hx-get="/login_button" hx-target="this" hx-trigger="load" hx-disinherit="true" hx-push-url="false">
+      <a class="nav-item button" href="/login" hx-boost="true" hx-target="#content" hx-push-url="true">Log In</a>
     </div>
   </div>
   <div id="content">

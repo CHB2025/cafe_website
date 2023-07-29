@@ -8,8 +8,10 @@ use axum::{
     routing::get,
     Router,
 };
+use axum_sessions::{async_session, SessionLayer};
+use rand::Rng;
 use tokio::{fs, io::AsyncReadExt};
-use tower::ServiceExt;
+use tower::{ServiceBuilder, ServiceExt};
 use tower_http::services::ServeDir;
 
 mod app_state;
@@ -19,6 +21,11 @@ pub(crate) mod utils;
 
 #[tokio::main]
 async fn main() {
+    let store = async_session::MemoryStore::new(); // Should create adapter for postgres store?
+    let mut secret = [0u8; 128];
+    rand::thread_rng().fill(&mut secret[..]);
+    let session_layer = SessionLayer::new(store, &secret);
+
     let mut index = fs::File::open("public/index.html").await.unwrap();
     let mut ind_html = String::new();
     index.read_to_string(&mut ind_html).await.unwrap();
@@ -27,9 +34,15 @@ async fn main() {
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
         .route("/signup", get(file_handler).post(routes::signup::signup))
         .route("/login", get(file_handler).post(routes::login::login))
+        .route("/logout", get(routes::login::logout))
+        .route("/login_button", get(routes::login::login_button))
         .with_state(AppState::init().await)
         .fallback(file_handler)
-        .layer(middleware::from_fn_with_state(ind_html, html_wrapper));
+        .layer(
+            ServiceBuilder::new()
+                .layer(session_layer)
+                .layer(middleware::from_fn_with_state(ind_html, html_wrapper)),
+        );
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
