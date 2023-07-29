@@ -8,11 +8,12 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::{async_session, SessionLayer};
+use axum_sessions::{async_session, extractors::ReadableSession, SessionHandle, SessionLayer};
+use models::User;
 use rand::Rng;
 use tokio::{fs, io::AsyncReadExt};
 use tower::{ServiceBuilder, ServiceExt};
-use tower_http::services::ServeDir;
+use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod app_state;
 pub mod models;
@@ -30,6 +31,10 @@ async fn main() {
     let mut ind_html = String::new();
     index.read_to_string(&mut ind_html).await.unwrap();
 
+    let auth_routes = Router::new()
+        .route("/test", get(|| async { Html("Protected route") }))
+        .layer(middleware::from_fn(auth_layer));
+
     let app = Router::new()
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
         .route("/signup", get(file_handler).post(routes::signup::signup))
@@ -37,17 +42,51 @@ async fn main() {
         .route("/logout", get(routes::login::logout))
         .route("/login_button", get(routes::login::login_button))
         .with_state(AppState::init().await)
+        .merge(auth_routes)
         .fallback(file_handler)
         .layer(
             ServiceBuilder::new()
                 .layer(session_layer)
-                .layer(middleware::from_fn_with_state(ind_html, html_wrapper)),
+                .layer(middleware::from_fn(auth_changes_layer))
+                .layer(middleware::from_fn_with_state(ind_html, html_wrapper))
+                .layer(TraceLayer::new_for_http()),
         );
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+async fn auth_changes_layer<B>(request: Request<B>, next: Next<B>) -> impl IntoResponse {
+    let session_handle = request //use session handle so it doesn't lock it
+        .extensions()
+        .get::<SessionHandle>()
+        .cloned()
+        .expect("Session handle should exist");
+    let mut res = next.run(request).await;
+    if session_handle.read().await.data_changed() {
+        res.headers_mut().append(
+            "HX-Trigger",
+            "auth-change".parse().expect("Valid header value"),
+        );
+    }
+    res
+}
+
+async fn auth_layer<B>(
+    session: ReadableSession,
+    request: Request<B>,
+    next: Next<B>,
+) -> impl IntoResponse {
+    if session.is_destroyed() || session.is_expired() || session.get::<User>("user").is_none() {
+        return Err((
+            StatusCode::FORBIDDEN,
+            Html("<span hx-get=\"/login\" hx-trigger=\"load\" hx-target=\"#content\" hx-push-url=\"true\"></span>"),
+        ));
+    }
+    drop(session);
+    Ok(next.run(request).await)
 }
 
 async fn html_wrapper<B>(

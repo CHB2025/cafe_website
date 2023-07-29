@@ -1,8 +1,6 @@
-use std::rc::Rc;
-
 use axum::{
     extract::State,
-    http::{Response, StatusCode},
+    http::StatusCode,
     response::{Html, IntoResponse, Redirect},
     Form,
 };
@@ -54,7 +52,7 @@ pub async fn login(
     .map_err(utils::ise)??;
 
     session.insert("user", user).expect("serializable");
-    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
+    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:1s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
 }
 
 pub async fn logout(mut session: WritableSession) -> impl IntoResponse {
@@ -68,7 +66,7 @@ pub async fn login_button(session: ReadableSession) -> Html<String> {
         None => ("/login", "Log In"),
     };
     Html(format!(
-        "<a class=\"nav-item button\" href=\"{}\" hx-boost=\"true\" hx-target=\"#content\" hx-push-url=\"true\">{}</a>",
+        "<a class=\"nav-item button\" href=\"{}\" hx-boost=\"true\">{}</a>",
         href, text
     ))
 }
