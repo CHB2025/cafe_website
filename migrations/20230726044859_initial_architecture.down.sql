@@ -1,4 +1,4 @@
-DROP TABLE user;
+DROP TABLE users;
 DROP TABLE shift;
 DROP TABLE worker;
 DROP TABLE day;
