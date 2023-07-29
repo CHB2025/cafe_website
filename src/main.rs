@@ -5,7 +5,7 @@ use axum::{
     http::{Request, Response, StatusCode, Uri},
     middleware::{self, Next},
     response::{Html, IntoResponse},
-    routing::{get, post},
+    routing::get,
     Router,
 };
 use tokio::{fs, io::AsyncReadExt};

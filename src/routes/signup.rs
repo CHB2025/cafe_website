@@ -47,5 +47,5 @@ pub async fn signup(
 
     // TODO: create session for the new user
 
-    Ok(Html("Created User!"))
+    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\">Success</span>"))
 }

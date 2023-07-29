@@ -43,5 +43,5 @@ pub async fn login(
     .await
     .map_err(utils::ise)??;
     // TODO: create user session
-    Ok(Html("Success"))
+    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\">Success</span>"))
 }
