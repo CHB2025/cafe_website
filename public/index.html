@@ -1,7 +1,21 @@
-<script src="https://unpkg.com/htmx.org@1.9.3"></script>
+<head>
+  <link rel="stylesheet" href="/styles/index.css">
+  <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+</head>
 
-<div>
-Hello World!
-</div>
+<body>
+  <div id="navigation" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+    <div class="nav-container nav-left">
+      <a class="nav-item title" href="/" hx-boost="true"><h1>Cornerstone Cafe</h1></a>
+    </div>
+    <div class="nav-container nav-center"></div>
+    <div class="nav-container nav-right">
+      <a class="nav-item button" href="/login" hx-boost="true">Log In</a>
+    </div>
+  </div>
+  <div id="content">
+  Content
+  </div>
 
-<button hx-get="./test" hx-swap="outerHTML">click me</button>
+</body>
