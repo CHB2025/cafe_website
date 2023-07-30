@@ -17,8 +17,18 @@ pub struct CreateUser {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct Event {
+    pub id: i32,
+    pub name: String,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub allow_signups: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Day {
     pub id: i32,
+    pub event_id: i32,
     pub date: Date,
     pub entertainment: Option<String>,
 }

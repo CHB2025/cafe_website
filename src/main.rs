@@ -30,9 +30,21 @@ async fn main() {
     let mut index = fs::File::open("public/index.html").await.unwrap();
     let mut ind_html = String::new();
     index.read_to_string(&mut ind_html).await.unwrap();
+    let app_state = AppState::init().await;
 
     let auth_routes = Router::new()
-        .route("/test", get(|| async { Html("Protected route") }))
+        .route(
+            "/day/create",
+            get(|| async { get_protected_file("/create_day.html".parse().unwrap()).await })
+                .post(routes::day::create_day),
+        )
+        .route(
+            "/event/create",
+            get(|| async { get_protected_file("/create_event.html".parse().unwrap()).await })
+                .post(routes::events::create_event),
+        )
+        .route("/event/option_list", get(routes::events::event_option_list))
+        .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));
 
     let app = Router::new()
@@ -41,7 +53,7 @@ async fn main() {
         .route("/login", get(file_handler).post(routes::login::login))
         .route("/logout", get(routes::login::logout))
         .route("/login_button", get(routes::login::login_button))
-        .with_state(AppState::init().await)
+        .with_state(app_state)
         .merge(auth_routes)
         .fallback(file_handler)
         .layer(
@@ -132,11 +144,21 @@ async fn file_handler(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, Html<&
 async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, Html<&'static str>)> {
     let req = Request::builder().uri(uri).body(Body::empty()).unwrap();
 
-    match ServeDir::new("./public").oneshot(req).await {
-        Ok(res) => Ok(res.map(boxed)),
-        Err(_) => Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Html("Something went wrong"),
-        )),
-    }
+    ServeDir::new("./public")
+        .oneshot(req)
+        .await
+        .map_err(utils::ise)
+        .map(|res| res.map(boxed))
+}
+
+async fn get_protected_file(
+    uri: Uri,
+) -> Result<Response<BoxBody>, (StatusCode, Html<&'static str>)> {
+    let req = Request::builder().uri(uri).body(Body::empty()).unwrap();
+
+    ServeDir::new("./protected")
+        .oneshot(req)
+        .await
+        .map_err(utils::ise)
+        .map(|res| res.map(boxed))
 }

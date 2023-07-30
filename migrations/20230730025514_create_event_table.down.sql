@@ -1,0 +1,3 @@
+ALTER TABLE day DROP COLUMN event_id;
+
+DROP TABLE event;
