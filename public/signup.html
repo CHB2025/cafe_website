@@ -1,7 +1,7 @@
-<form class="card" action="/signup" method="post" hx-boost="true" hx-params="not password_repeat" hx-target="#signup_results" hx-indicator="spinner">
+<form class="card form" action="/signup" method="post" hx-boost="true" hx-params="not password_repeat" hx-target="#signup_results" hx-indicator="#signup-submit">
   <div class="form-item">
     <label>Name:</label>
-    <input name="name" required="true"></input>
+    <input type="text" name="name" required="true"></input>
   </div>
   <div class="form-item">
     <label>Email:</label>
@@ -28,7 +28,8 @@
     <label>Password:</label>
     <input name="password_repeat" type="password" required="true"></input>
   </div>
-  <div id="signup_results"></div>
-  <button type="submit">Submit</button>
-  <img id="spinner" class="htmx-indicator" src="/spinner.svg"/>
+  <div class="form-item">
+    <button id="signup-submit" type="submit">Submit</button>
+  </div>
+  <div id="signup_results" class="form-item"></div>
 </form>

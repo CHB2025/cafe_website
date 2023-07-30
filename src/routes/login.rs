@@ -1,7 +1,7 @@
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Redirect},
+    response::{Html, IntoResponse},
     Form,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
@@ -31,9 +31,7 @@ pub async fn login(
     mut session: WritableSession,
     State(app_state): State<AppState>,
     Form(login): Form<LoginRequest>,
-) -> Result<Html<&'static str>, (StatusCode, Html<&'static str>)> {
-    // What do we do if user is already logged in?
-    // get user
+) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
     let con = app_state.pool();
     let user = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", login.email)
         .fetch_one(con)
@@ -51,13 +49,16 @@ pub async fn login(
     .await
     .map_err(utils::ise)??;
 
+    let name = user.name.clone();
     session.insert("user", user).expect("serializable");
-    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:1s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
+
+    Ok(Html(format!("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:1s\" hx-target=\"#content\" hx-push-url=\"true\">Welcome {}</span>", name)))
 }
 
 pub async fn logout(mut session: WritableSession) -> impl IntoResponse {
+    session.remove("user");
     session.destroy();
-    Redirect::to("/login")
+    Html("<span hx-get=\"/\" hx-trigger=\"load\" hx-target=\"#content\" hx-push-url=\"true\"></span>")
 }
 
 pub async fn login_button(session: ReadableSession) -> Html<String> {
