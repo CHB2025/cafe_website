@@ -35,13 +35,11 @@ async fn main() {
     let auth_routes = Router::new()
         .route(
             "/day/create",
-            get(|| async { get_protected_file("/create_day.html".parse().unwrap()).await })
-                .post(routes::day::create_day),
+            get(routes::day::create_day_form).post(routes::day::create_day),
         )
         .route(
             "/event/create",
-            get(|| async { get_protected_file("/create_event.html".parse().unwrap()).await })
-                .post(routes::events::create_event),
+            get(routes::events::create_event_form).post(routes::events::create_event),
         )
         .route("/event/option_list", get(routes::events::event_option_list))
         .with_state(app_state.clone())
@@ -49,8 +47,14 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
-        .route("/signup", get(file_handler).post(routes::signup::signup))
-        .route("/login", get(file_handler).post(routes::login::login))
+        .route(
+            "/signup",
+            get(routes::signup::signup_form).post(routes::signup::signup),
+        )
+        .route(
+            "/login",
+            get(routes::login::login_form).post(routes::login::login),
+        )
         .route("/logout", get(routes::login::logout))
         .route("/login_button", get(routes::login::login_button))
         .with_state(app_state)

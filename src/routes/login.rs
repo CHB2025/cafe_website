@@ -27,6 +27,25 @@ fn login_err<E>(_: E) -> (StatusCode, Html<&'static str>) {
     )
 }
 
+pub async fn login_form() -> Html<String> {
+    Html(r##"
+        <form class="form card" action="/login" method="post" hx-boost="true" hx-target="#login_results" hx-indicator="#login-submit">
+          <div class="form-item">
+            <label>Email:</label>
+            <input name="email" type="email" required="true"></input>
+          </div>
+          <div class="form-item">
+            <label>Password:</label>
+            <input name="password" type="password" required="true"></input>
+          </div>
+          <div class="form-item">
+            <button id="login-submit" type="submit">Submit</button>
+          </div>
+          <div id="login_results" class="form-item"></div>
+        </form>
+    "##.to_string())
+}
+
 pub async fn login(
     mut session: WritableSession,
     State(app_state): State<AppState>,
@@ -52,13 +71,16 @@ pub async fn login(
     let name = user.name.clone();
     session.insert("user", user).expect("serializable");
 
-    Ok(Html(format!("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:1s\" hx-target=\"#content\" hx-push-url=\"true\">Welcome {}</span>", name)))
+    Ok(Html(format!(
+        r##"<span class="success" hx-get="/" hx-trigger="load delay:1s" hx-target="#content" hx-push-url="true">Welcome {}</span>"##,
+        name
+    )))
 }
 
 pub async fn logout(mut session: WritableSession) -> impl IntoResponse {
     session.remove("user");
     session.destroy();
-    Html("<span hx-get=\"/\" hx-trigger=\"load\" hx-target=\"#content\" hx-push-url=\"true\"></span>")
+    Html(r##"<span hx-get="/" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##)
 }
 
 pub async fn login_button(session: ReadableSession) -> Html<String> {
@@ -67,7 +89,7 @@ pub async fn login_button(session: ReadableSession) -> Html<String> {
         None => ("/login", "Log In"),
     };
     Html(format!(
-        "<a class=\"nav-item button\" href=\"{}\" hx-boost=\"true\">{}</a>",
+        r##"<a class="nav-item button" href="{}" hx-boost="true">{}</a>"##,
         href, text
     ))
 }
