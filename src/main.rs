@@ -42,6 +42,12 @@ async fn main() {
             get(routes::events::create_event_form).post(routes::events::create_event),
         )
         .route("/event/option_list", get(routes::events::event_option_list))
+        .route("/event/list", get(routes::events::event_list))
+        .route("/event/list/row/:id", get(routes::events::event_table_row))
+        .route(
+            "/event/list/row/:id/edit",
+            get(routes::events::edit_event_table_row),
+        )
         .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));
 

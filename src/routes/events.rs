@@ -1,6 +1,9 @@
 mod create;
+mod list;
 use axum::{extract::State, http::StatusCode, response::Html};
+
 pub use create::*;
+pub use list::*;
 
 use crate::{app_state::AppState, models::Event, utils};
 

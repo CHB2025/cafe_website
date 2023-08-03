@@ -1,6 +1,30 @@
-div.list {
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  align-items: center;
+table {
+}
+
+thead {
+  border-radius: 1rem 1rem 0rem 0rem;
+  box-shadow: 0px 1px 4px lightgray;
+}
+
+
+
+th {
+  padding: 1rem 1rem;
+}
+
+th + th {
+
+}
+
+td {
+  border: 1px solid lightgray;
+  padding: 1rem 1rem;
+}
+td + td {
+}
+
+
+form.list-controls {
+  display: block;
+  flex-direction:
 }

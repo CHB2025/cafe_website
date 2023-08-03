@@ -16,7 +16,7 @@ pub struct CreateUser {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Event {
     pub id: i32,
     pub name: String,
