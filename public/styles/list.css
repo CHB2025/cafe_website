@@ -24,7 +24,14 @@ td + td {
 }
 
 
-form.list-controls {
-  display: block;
-  flex-direction:
+div.list-controls {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+div.page-number {
+  padding: 1rem 0rem;
 }

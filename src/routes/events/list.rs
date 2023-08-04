@@ -13,17 +13,25 @@ use crate::{app_state::AppState, models::Event};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OrdinalPaginatedQuery {
     pub order_by: Option<String>,
-    pub order_dir: Option<OrderDirection>,
-    pub take: Option<i64>,
-    pub skip: Option<i64>,
+    #[serde(default)]
+    pub order_dir: OrderDirection,
+    #[serde(default = "default_take")]
+    pub take: i64,
+    #[serde(default)]
+    pub skip: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub enum OrderDirection {
+    #[default]
     #[serde(rename = "asc")]
     Asc,
     #[serde(rename = "desc")]
     Desc,
+}
+
+fn default_take() -> i64 {
+    10
 }
 
 impl fmt::Display for OrderDirection {
@@ -37,19 +45,19 @@ impl fmt::Display for OrderDirection {
 }
 
 /// ### Panics
-/// if take=0
+/// if take==0
 pub async fn event_list(
     State(app_state): State<AppState>,
     Query(op_params): Query<OrdinalPaginatedQuery>,
 ) -> Result<Html<String>, StatusCode> {
     let order_by = op_params.order_by.unwrap_or("name".to_string());
-    let take = op_params.take.unwrap_or(10);
-    let skip = op_params.skip.unwrap_or(0);
+    let take = op_params.take;
+    let skip = op_params.skip;
     let pool = app_state.pool();
 
     let events = sqlx::query_scalar::<Postgres, i32>(&format!(
         "SELECT id FROM event ORDER BY $1 {} LIMIT $2 OFFSET $3",
-        op_params.order_dir.unwrap_or(OrderDirection::Asc)
+        op_params.order_dir
     ))
     .bind(order_by)
     .bind(take)
@@ -69,9 +77,8 @@ pub async fn event_list(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .unwrap_or(0);
 
-    let page_options: String = (0..(event_count / take + (event_count % take > 0) as i64))
-        .map(|page| format!(r#"<option value="{page}">{}</option>"#, page + 1))
-        .collect();
+    let current_page = skip / take + 1;
+    let page_count = event_count / take + (event_count % take > 0) as i64;
 
     let mut table_rows = String::new();
     for row in row_futs {
@@ -81,17 +88,17 @@ pub async fn event_list(
         table_rows += &r;
     }
 
+    let disabled_text = |pred: bool| {
+        if pred {
+            r#"disabled="true""#
+        } else {
+            ""
+        }
+    };
+
     Ok(Html(format!(
         r##"
-        <div class="card">
-            <form class="list-controls">
-                <div class="form-item">
-                    <label>Page</label>
-                    <select value="{}">
-                        {page_options}
-                    </select>
-                </div>
-            </form>
+        <div class="card" hx-target="this" hx-swap="outerHTML">
             <table class="list" cellspacing="0">
                 <thead>
                     <tr>
@@ -105,11 +112,19 @@ pub async fn event_list(
                 </thead>
                 <tbody>
                     {table_rows}
-                <tbody>
+                </tbody>
             </table>
+            <div class="list-controls">
+                <button {prev_disabled} hx-get="/event/list?take={take}&skip={prev_skip}">Previous</button>
+                <div class="page-number">{current_page}/{page_count}</div>
+                <button {next_disabled} hx-get="/event/list?take={take}&skip={next_skip}">Next</button>
+            </div>
         </div>
     "##,
-        skip / take
+        prev_disabled = disabled_text(current_page == 1),
+        prev_skip = 0.max(skip - take),
+        next_disabled = disabled_text(current_page == page_count),
+        next_skip = skip + take
     )))
 }
 

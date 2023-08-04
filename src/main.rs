@@ -37,17 +37,7 @@ async fn main() {
             "/day/create",
             get(routes::day::create_day_form).post(routes::day::create_day),
         )
-        .route(
-            "/event/create",
-            get(routes::events::create_event_form).post(routes::events::create_event),
-        )
-        .route("/event/option_list", get(routes::events::event_option_list))
-        .route("/event/list", get(routes::events::event_list))
-        .route("/event/list/row/:id", get(routes::events::event_table_row))
-        .route(
-            "/event/list/row/:id/edit",
-            get(routes::events::edit_event_table_row),
-        )
+        .nest("/event", routes::events::event_router())
         .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));
 
@@ -104,7 +94,10 @@ async fn auth_layer<B>(
     if session.is_destroyed() || session.is_expired() || session.get::<User>("user").is_none() {
         return Err((
             StatusCode::FORBIDDEN,
-            Html("<span hx-get=\"/login\" hx-trigger=\"load\" hx-target=\"#content\" hx-push-url=\"true\"></span>"),
+            Html(format!(
+                r##"<span hx-get="/login?from={}" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##,
+                request.uri()
+            )),
         ));
     }
     drop(session);

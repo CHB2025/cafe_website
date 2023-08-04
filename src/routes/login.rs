@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Query, RawQuery, State},
     http::StatusCode,
     response::{Html, IntoResponse},
     Form,
@@ -15,6 +15,11 @@ use tokio::task::spawn_blocking;
 use crate::{app_state::AppState, models::User, utils};
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct LoginParams {
+    from: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LoginRequest {
     email: String,
     password: String,
@@ -27,9 +32,10 @@ fn login_err<E>(_: E) -> (StatusCode, Html<&'static str>) {
     )
 }
 
-pub async fn login_form() -> Html<String> {
-    Html(r##"
-        <form class="form card" action="/login" method="post" hx-boost="true" hx-target="#login_results" hx-indicator="#login-submit">
+pub async fn login_form(RawQuery(query): RawQuery) -> Html<String> {
+    Html(format!(
+        r##"
+        <form class="form card" action="/login?{}" method="post" hx-boost="true" hx-target="#login_results" hx-indicator="#login-submit">
           <div class="form-item">
             <label>Email:</label>
             <input name="email" type="email" required="true"></input>
@@ -43,12 +49,15 @@ pub async fn login_form() -> Html<String> {
           </div>
           <div id="login_results" class="form-item"></div>
         </form>
-    "##.to_string())
+    "##,
+        query.unwrap_or("".to_string())
+    ))
 }
 
 pub async fn login(
     mut session: WritableSession,
     State(app_state): State<AppState>,
+    Query(params): Query<LoginParams>,
     Form(login): Form<LoginRequest>,
 ) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
     let con = app_state.pool();
@@ -72,8 +81,8 @@ pub async fn login(
     session.insert("user", user).expect("serializable");
 
     Ok(Html(format!(
-        r##"<span class="success" hx-get="/" hx-trigger="load delay:1s" hx-target="#content" hx-push-url="true">Welcome {}</span>"##,
-        name
+        r##"<span class="success" hx-get="{path}" hx-trigger="load delay:1s" hx-target="#content" hx-push-url="true">Welcome {name}</span>"##,
+        path = params.from.unwrap_or("/".to_string()),
     )))
 }
 
