@@ -1,7 +1,6 @@
 use app_state::AppState;
 use axum::{
     body::{boxed, Body, BoxBody, Bytes, HttpBody},
-    extract::State,
     http::{Request, Response, StatusCode, Uri},
     middleware::{self, Next},
     response::{Html, IntoResponse},
@@ -17,6 +16,7 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod app_state;
 pub mod models;
+mod navigation;
 mod routes;
 pub(crate) mod utils;
 
@@ -43,6 +43,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
+        .route("/nav", get(navigation::navigation))
         .route(
             "/signup",
             get(routes::signup::signup_form).post(routes::signup::signup),
@@ -52,7 +53,6 @@ async fn main() {
             get(routes::login::login_form).post(routes::login::login),
         )
         .route("/logout", get(routes::login::logout))
-        .route("/login_button", get(routes::login::login_button))
         .with_state(app_state)
         .merge(auth_routes)
         .fallback(file_handler)
@@ -60,7 +60,7 @@ async fn main() {
             ServiceBuilder::new()
                 .layer(session_layer)
                 .layer(middleware::from_fn(auth_changes_layer))
-                .layer(middleware::from_fn_with_state(ind_html, html_wrapper))
+                .layer(middleware::from_fn(html_wrapper))
                 .layer(TraceLayer::new_for_http()),
         );
 
@@ -105,7 +105,7 @@ async fn auth_layer<B>(
 }
 
 async fn html_wrapper<B>(
-    State(wrapper): State<String>,
+    session: ReadableSession,
     request: Request<B>,
     next: Next<B>,
 ) -> impl IntoResponse {
@@ -116,6 +116,7 @@ async fn html_wrapper<B>(
         .headers()
         .get("content-type")
         .is_some_and(|ct| ct.as_bytes().starts_with(b"text/html"));
+    let Html(wrapper) = navigation::index(session).await;
 
     response.map_data(move |b| {
         if !from_htmx && !is_index && is_html {
@@ -148,18 +149,6 @@ async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, Ht
     let req = Request::builder().uri(uri).body(Body::empty()).unwrap();
 
     ServeDir::new("./public")
-        .oneshot(req)
-        .await
-        .map_err(utils::ise)
-        .map(|res| res.map(boxed))
-}
-
-async fn get_protected_file(
-    uri: Uri,
-) -> Result<Response<BoxBody>, (StatusCode, Html<&'static str>)> {
-    let req = Request::builder().uri(uri).body(Body::empty()).unwrap();
-
-    ServeDir::new("./protected")
         .oneshot(req)
         .await
         .map_err(utils::ise)

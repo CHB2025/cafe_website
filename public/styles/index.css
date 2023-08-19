@@ -60,7 +60,7 @@ div.nav-right {
 .nav-item.button:hover {
   background-color: #f0f0f0;
 }
-.button + div.button {
+.button + .button {
   border-left: none;
 }
 
