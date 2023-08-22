@@ -1,3 +1,7 @@
+form {
+  display: contents;
+}
+
 .form {
   width: 30rem;
   display: flex;  

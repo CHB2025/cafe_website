@@ -1,6 +1,13 @@
 mod create;
 mod list;
-use axum::{extract::State, http::StatusCode, response::Html, routing::get, Router};
+mod list_row;
+use axum::{
+    extract::State,
+    http::StatusCode,
+    response::Html,
+    routing::{get, patch},
+    Router,
+};
 
 use create::*;
 use list::*;
@@ -25,6 +32,7 @@ pub async fn event_option_list(
 pub fn event_router() -> Router<AppState> {
     Router::new()
         .route("/create", get(create_event_form).post(create_event))
+        .route("/update/:id", patch(patch_event))
         .route("/option_list", get(event_option_list))
         .route("/list", get(event_list))
         .route("/list/row/:id", get(event_table_row))

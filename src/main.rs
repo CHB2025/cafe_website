@@ -10,11 +10,13 @@ use axum::{
 use axum_sessions::{async_session, extractors::ReadableSession, SessionHandle, SessionLayer};
 use models::User;
 use rand::Rng;
-use tokio::{fs, io::AsyncReadExt};
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod app_state;
+mod events;
+mod index;
+mod list;
 pub mod models;
 mod navigation;
 mod routes;
@@ -27,9 +29,6 @@ async fn main() {
     rand::thread_rng().fill(&mut secret[..]);
     let session_layer = SessionLayer::new(store, &secret);
 
-    let mut index = fs::File::open("public/index.html").await.unwrap();
-    let mut ind_html = String::new();
-    index.read_to_string(&mut ind_html).await.unwrap();
     let app_state = AppState::init().await;
 
     let auth_routes = Router::new()
@@ -37,7 +36,7 @@ async fn main() {
             "/day/create",
             get(routes::day::create_day_form).post(routes::day::create_day),
         )
-        .nest("/event", routes::events::event_router())
+        .nest("/event", events::event_router())
         .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));
 
@@ -104,19 +103,16 @@ async fn auth_layer<B>(
     Ok(next.run(request).await)
 }
 
-async fn html_wrapper<B>(
-    session: ReadableSession,
-    request: Request<B>,
-    next: Next<B>,
-) -> impl IntoResponse {
+async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoResponse {
     let from_htmx = request.headers().contains_key("HX-Request");
     let is_index = request.uri() == "/index.html" || request.uri() == "/index";
     let response = next.run(request).await;
+
     let is_html = response
         .headers()
         .get("content-type")
         .is_some_and(|ct| ct.as_bytes().starts_with(b"text/html"));
-    let Html(wrapper) = navigation::index(session).await;
+    let Html(wrapper) = navigation::index().await;
 
     response.map_data(move |b| {
         if !from_htmx && !is_index && is_html {

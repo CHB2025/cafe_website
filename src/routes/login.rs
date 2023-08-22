@@ -1,10 +1,11 @@
+use askama::Template;
 use axum::{
     extract::{Query, RawQuery, State},
     http::StatusCode,
     response::{Html, IntoResponse},
     Form,
 };
-use axum_sessions::extractors::{ReadableSession, WritableSession};
+use axum_sessions::extractors::WritableSession;
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
     Scrypt,
@@ -32,26 +33,16 @@ fn login_err<E>(_: E) -> (StatusCode, Html<&'static str>) {
     )
 }
 
-pub async fn login_form(RawQuery(query): RawQuery) -> Html<String> {
-    Html(format!(
-        r##"
-        <form class="form card" action="/login?{}" method="post" hx-boost="true" hx-target="#login_results" hx-indicator="#login-submit">
-          <div class="form-item">
-            <label>Email:</label>
-            <input name="email" type="email" required="true"></input>
-          </div>
-          <div class="form-item">
-            <label>Password:</label>
-            <input name="password" type="password" required="true"></input>
-          </div>
-          <div class="form-item">
-            <button id="login-submit" type="submit">Submit</button>
-          </div>
-          <div id="login_results" class="form-item"></div>
-        </form>
-    "##,
-        query.unwrap_or("".to_string())
-    ))
+#[derive(Template)]
+#[template(path = "login.html")]
+struct LoginTemplate {
+    query: String,
+}
+
+pub async fn login_form(RawQuery(query): RawQuery) -> impl IntoResponse {
+    LoginTemplate {
+        query: query.unwrap_or("".to_string()),
+    }
 }
 
 pub async fn login(
@@ -90,15 +81,4 @@ pub async fn logout(mut session: WritableSession) -> impl IntoResponse {
     session.remove("user");
     session.destroy();
     Html(r##"<span hx-get="/" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##)
-}
-
-pub async fn login_button(session: ReadableSession) -> Html<String> {
-    let (href, text) = match session.get::<User>("user") {
-        Some(_) => ("/logout", "Log Out"),
-        None => ("/login", "Log In"),
-    };
-    Html(format!(
-        r##"<a class="nav-item button" href="{}" hx-boost="true">{}</a>"##,
-        href, text
-    ))
 }

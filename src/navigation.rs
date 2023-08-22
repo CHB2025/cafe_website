@@ -1,50 +1,33 @@
+use askama::Template;
 use axum::response::Html;
 use axum_sessions::extractors::ReadableSession;
 
 use crate::models::User;
 
-pub async fn navigation(session: ReadableSession) -> Html<String> {
-    let (left, right) = if !session.is_destroyed()
-        && !session.is_expired()
-        && session.get::<User>("user").is_some()
-    {
-        (
-            r##"
-                <a class="nav-item button" href="/event/list" hx-boost="true">Events</a>
-            "##,
-            r##"
-                <a class="nav-item button" href="/logout" hx-boost="true">Log Out</a>
-            "##,
-        )
-    } else {
-        (
-            "",
-            r##"
-                <a class="nav-item button" href="/login" hx-boost="true">Log In</a>
-            "##,
-        )
-    };
-
-    Html(format!(
-        r##"
-            <div id="navigation" hx-target="#content" hx-push-url="true">
-                <span hx-get="/nav" hx-target="#navigation" hx-swap="outerHTML" hx-trigger="auth-change from:body"></span>
-                <div class="nav-container nav-left">
-                    <a class="nav-item title" href="/" hx-boost="true"><h1>Cornerstone Cafe</h1></a> 
-                    {left}
-                </div>
-                <div class="nav-container nav-center"></div>
-                <div class="nav-container nav-right">
-                    {right}
-                </div>
-            </div>
-        "##
-    ))
+#[derive(Template)]
+#[template(path = "navigation.html")]
+pub struct Nav {
+    left: Vec<(String, String)>,
+    right: Vec<(String, String)>,
 }
 
-pub async fn index(session: ReadableSession) -> Html<String> {
-    let Html(nav) = navigation(session).await;
-    Html(format!(
+pub async fn navigation(session: ReadableSession) -> Nav {
+    let (left, right) = if session.is_destroyed()
+        || session.is_expired()
+        || session.get::<User>("user").is_none()
+    {
+        (vec![], vec![("Log In".to_string(), "/login".to_string())])
+    } else {
+        (
+            vec![("Events".to_string(), "/event/list".to_string())],
+            vec![("Log In".to_string(), "/login".to_string())],
+        )
+    };
+    Nav { left, right }
+}
+
+pub async fn index() -> Html<String> {
+    Html(
         r##"
             <head>
                 <link rel="stylesheet" href="/styles/index.css">
@@ -54,12 +37,13 @@ pub async fn index(session: ReadableSession) -> Html<String> {
                 <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
             </head>
             <body>
-                {nav}
+                <div id="navigation" hx-get="/nav" hx-swap="outerHTML" hx-trigger="load"></div>
                 <div id="content">
                     Content
                 </div>
 
             </body>
         "##
-    ))
+        .to_string(),
+    )
 }

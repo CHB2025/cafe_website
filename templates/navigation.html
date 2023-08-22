@@ -1,0 +1,15 @@
+<div id="navigation" hx-target="#content" hx-push-url="true" hx-boost="true">
+  <span hx-get="/nav" hx-target="#navigation" hx-swap="outerHTML" hx-trigger="auth-change from:body"></span>
+  <div class="nav-container nav-left">
+    <a class="nav-item title" href="/" hx-boost="true"><h1>Cornerstone Cafe</h1></a>
+    {% for (title, href) in left %}
+      <a class="nav-item button" href="{{ href }}">{{ title }}</a>
+    {% endfor %}
+  </div>
+  <div class="nav-container nav-center"></div>
+  <div class="nav-container nav-right">
+    {% for (title, href) in right %}
+      <a class="nav-item button" href="{{ href }}">{{ title }}</a>
+    {% endfor %}
+  </div>
+</div>
