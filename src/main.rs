@@ -15,12 +15,13 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod accounts;
 mod app_state;
+mod day;
 mod events;
 mod index;
 mod list;
 pub mod models;
 mod navigation;
-mod routes;
+mod schedule;
 pub(crate) mod utils;
 
 #[tokio::main]
@@ -35,7 +36,7 @@ async fn main() {
     let auth_routes = Router::new()
         .route(
             "/day/create",
-            get(routes::day::create_day_form).post(routes::day::create_day),
+            get(day::create_day_form).post(day::create_day),
         )
         .nest("/event", events::protected_router())
         .with_state(app_state.clone())
@@ -49,7 +50,7 @@ async fn main() {
         .route("/logout", get(accounts::logout))
         .with_state(app_state)
         .merge(auth_routes)
-        .fallback(file_handler)
+        .fallback(get_static_files)
         .layer(
             ServiceBuilder::new()
                 .layer(session_layer)
@@ -123,17 +124,6 @@ async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoRespons
             b
         }
     })
-}
-
-async fn file_handler(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, Html<&'static str>)> {
-    let res = get_static_files(uri.clone()).await?;
-
-    if res.status() == StatusCode::NOT_FOUND {
-        let uri_html = format!("{}.html", uri).parse().map_err(utils::ise)?;
-        get_static_files(uri_html).await
-    } else {
-        Ok(res)
-    }
 }
 
 async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, Html<&'static str>)> {

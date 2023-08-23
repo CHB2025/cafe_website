@@ -12,7 +12,7 @@ use crate::{app_state::AppState, models::CreateUser};
 
 #[derive(Template)]
 #[template(path = "accounts/create.html")]
-struct AccountCreateTemplate {}
+pub struct AccountCreateTemplate {}
 
 pub async fn account_creation_form() -> AccountCreateTemplate {
     AccountCreateTemplate {}

@@ -1,5 +1,5 @@
 <div id="navigation" hx-target="#content" hx-push-url="true" hx-boost="true">
-  <span hx-get="/nav" hx-target="#navigation" hx-swap="outerHTML" hx-trigger="auth-change from:body"></span>
+  <span hx-get="/nav" hx-target="#navigation" hx-swap="outerHTML" hx-trigger="auth-change from:body" hx-push-url="false"></span>
   <div class="nav-container nav-left">
     <a class="nav-item title" href="/" hx-boost="true"><h1>Cornerstone Cafe</h1></a>
     {% for (title, href) in left %}

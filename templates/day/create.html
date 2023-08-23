@@ -1,0 +1,21 @@
+<form class="form card" method="post" action="/day/create" hx-boost="true" hx-target="#create_day_results" hx-indicator="#create_day_submit" hx-disinherit="*">
+  <div class="form-item">
+    <label>Event:</label>
+    <select name="event_id" required="true" >
+      <option value=""  selected disabled hx-trigger="load" hx-get="/event/option_list" hx-params="none" hx-swap="afterend">Select an event</option>
+    </select>
+  </div>
+  {# Should use a hx-get on change for the select value to set the min/max of the Date field #}
+  <div class="form-item">
+    <label>Date:</label>
+    <input name="date" type="date" required="true"></input>
+  </div>
+  <div class="form-item">
+    <label>Entertainment:</label>
+    <input name="entertainment" type="text" required="true"></input>
+  </div>
+  <div class="form-item">
+    <button id="create_day_submit" type="submit">Submit</button>
+  </div>
+  <div id="create_day_results" class="form-item"></div>
+</form>

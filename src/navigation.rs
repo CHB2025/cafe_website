@@ -20,7 +20,7 @@ pub async fn navigation(session: ReadableSession) -> Nav {
     } else {
         (
             vec![("Events".to_string(), "/event/list".to_string())],
-            vec![("Log In".to_string(), "/login".to_string())],
+            vec![("Log Out".to_string(), "/logout".to_string())],
         )
     };
     Nav { left, right }

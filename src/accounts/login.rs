@@ -34,7 +34,7 @@ fn login_err<E>(_: E) -> (StatusCode, Html<&'static str>) {
 }
 
 #[derive(Template)]
-#[template(path = "login.html")]
+#[template(path = "accounts/login.html")]
 struct LoginTemplate {
     query: String,
 }
