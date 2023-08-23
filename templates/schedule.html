@@ -1,16 +1,14 @@
-<div class="schedule-wrapper">
-  {% if editable %}
-  <div class="schedule-controls">
-    <button class="button" hx-get="/day/{{ day_id }}/add_shift" hx-target="#content" hx-push-url="true">Add Shift</button>
-  </div>
-  {% endif %}
-  <div class="schedule">
-    {% for column in shift_columns %}
-      <div class="schedule-column">
-        {% for shift in column %}
-          {{ shift|safe }}
-        {% endfor %}
-      </div>
+{% if editable %}
+<div class="schedule-controls">
+<button class="button" hx-get="/day/{{ day_id }}/add_shift" hx-target="#content" hx-push-url="true">Add Shift</button>
+</div>
+{% endif %}
+<div class="schedule">
+{% for column in shift_columns %}
+  <div class="schedule-column">
+    {% for shift in column %}
+      {{ shift|safe }}
     {% endfor %}
   </div>
+{% endfor %}
 </div>

@@ -45,6 +45,7 @@ pub async fn schedule(
         .unwrap_or(time!(10:30 pm));
 
     // Split the shifts into columns first, then turn each column into ScheduleItems with the missing time
+    // TODO: If the shifts have the same start and end time, display them in the same ScheduleItem
     let mut columns: Vec<Vec<Shift>> = vec![];
     for shift in shifts {
         let mut col_ind = 0;
@@ -68,10 +69,10 @@ pub async fn schedule(
         let mut prev_end = start_time;
 
         for shift in column {
-            if shift.end_time > prev_end {
+            if shift.start_time > prev_end {
                 col_ref.push(ScheduleItemTemplate {
                     shift: None,
-                    time: (shift.end_time - prev_end).whole_minutes(),
+                    time: (shift.start_time - prev_end).whole_minutes(),
                 });
             }
             prev_end = shift.end_time;
@@ -81,10 +82,12 @@ pub async fn schedule(
             })
         }
 
-        col_ref.push(ScheduleItemTemplate {
-            shift: None,
-            time: (end_time - prev_end).whole_minutes(),
-        })
+        if prev_end < end_time {
+            col_ref.push(ScheduleItemTemplate {
+                shift: None,
+                time: (end_time - prev_end).whole_minutes(),
+            })
+        }
     }
 
     Ok(ScheduleTemplate {

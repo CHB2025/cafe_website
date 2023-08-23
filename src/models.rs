@@ -42,7 +42,7 @@ pub struct Worker {
     pub name_last: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Shift {
     pub id: i32,
     pub day_id: i32,

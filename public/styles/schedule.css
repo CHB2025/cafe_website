@@ -1,9 +1,21 @@
 div.schedule {
 	display: flex;
+    height:100%;
 }
 
 .schedule div.schedule-column {
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 0;
+	flex: 1 1 auto;
+    height: 100%;
+}
+
+.schedule-column + .schedule-column {
+    margin-left: 1rem;
+}
+
+.schedule .shift {
+    border-radius: 1rem;
+    background: lightgray;
+    padding: 0rem 0.6rem;
 }
