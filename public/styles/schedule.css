@@ -1,0 +1,9 @@
+div.schedule {
+	display: flex;
+}
+
+.schedule div.schedule-column {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 0;
+}

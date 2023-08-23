@@ -1,0 +1,8 @@
+{% if let Some(shift) = shift %}
+	<div class="shift" style="flex:{{ time }} 0 0">
+		<h3 class="title">{{ shift.title }}</h3>
+		<p class="time">{{ shift.start_time }}-{{ shift.end_time }}</p>
+	</div>
+{% else %}
+	<div class="filler" style="flex:{{ time }} 0 0"></div>
+{% endif %}

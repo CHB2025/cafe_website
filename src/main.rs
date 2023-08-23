@@ -21,7 +21,7 @@ mod index;
 mod list;
 pub mod models;
 mod navigation;
-mod schedule;
+mod shift;
 pub(crate) mod utils;
 
 #[tokio::main]
@@ -34,10 +34,7 @@ async fn main() {
     let app_state = AppState::init().await;
 
     let auth_routes = Router::new()
-        .route(
-            "/day/create",
-            get(day::create_day_form).post(day::create_day),
-        )
+        .nest("/day", day::protected_router())
         .nest("/event", events::protected_router())
         .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));

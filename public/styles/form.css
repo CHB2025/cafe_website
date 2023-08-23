@@ -11,7 +11,7 @@ form {
 }
 .form-item {
   width: 100%;
-  height: 2rem;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -34,12 +34,18 @@ form {
 .form-item > .spacer {
   flex: 3 0 0;
 }
-input[type=text], input[type=email], input[type=password], input[type=date], select {
+input[type=text], input[type=email], input[type=password], input[type=date], input[type=time], select {
   flex: 3 1 0;
   border-radius: 0.4rem;
   border: 1px solid lightgray;
   background-color: white;
   height: 2rem;
+}
+textarea {
+  flex: 3 1 0;
+  border-radius: 0.4rem;
+  border: 1px solid lightgray;
+  background-color: white;
 }
 button[type=submit]{
   position: relative;

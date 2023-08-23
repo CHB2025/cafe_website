@@ -1,0 +1,30 @@
+<form 
+  class="form card"
+  method="post"
+  action="/day/{{day_id}}/add_shift"
+  hx-boost="true" 
+  hx-target="#create_shift_results" 
+  hx-indicator="create_shift_submit" 
+  hx-disinherit="*"
+>
+  <div class="form-item">
+    <label>Title:</label>
+    <input name="title" type="text" required></input>
+  </div>
+  <div class="form-item">
+    <label>Start Time:</label>
+    <input name="start_time" type="time" required></input>
+  </div>
+  <div class="form-item">
+    <label>End Time:</label>
+    <input name="end_time" type="time" required></input>
+  </div>
+  <div class="form-item">
+    <label>Description:</label>
+    <textarea name="description" rows="5"></textarea>
+  </div>
+  <div class="form-item">
+    <button id="create_shift_submit" type="submit">Submit</button>
+  </div>
+  <div id="create_shift_results" class="form-item"></div>
+</form>
