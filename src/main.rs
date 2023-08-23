@@ -13,6 +13,7 @@ use rand::Rng;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
+mod accounts;
 mod app_state;
 mod events;
 mod index;
@@ -36,22 +37,16 @@ async fn main() {
             "/day/create",
             get(routes::day::create_day_form).post(routes::day::create_day),
         )
-        .nest("/event", events::event_router())
+        .nest("/event", events::protected_router())
         .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));
 
     let app = Router::new()
         .route("/", get(|| async { Html("<p>Hello World</p>") }))
         .route("/nav", get(navigation::navigation))
-        .route(
-            "/signup",
-            get(routes::signup::signup_form).post(routes::signup::signup),
-        )
-        .route(
-            "/login",
-            get(routes::login::login_form).post(routes::login::login),
-        )
-        .route("/logout", get(routes::login::logout))
+        .nest("/account", accounts::public_router())
+        .route("/login", get(accounts::login_form).post(accounts::login))
+        .route("/logout", get(accounts::logout))
         .with_state(app_state)
         .merge(auth_routes)
         .fallback(file_handler)

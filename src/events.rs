@@ -29,7 +29,7 @@ pub async fn event_option_list(
     Ok(Html(result))
 }
 
-pub fn event_router() -> Router<AppState> {
+pub fn protected_router() -> Router<AppState> {
     Router::new()
         .route("/create", get(create_event_form).post(create_event))
         .route("/update/:id", patch(patch_event))

@@ -1,3 +1,4 @@
+use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
 use axum_sessions::extractors::WritableSession;
 use scrypt::password_hash::rand_core::OsRng;
@@ -9,47 +10,15 @@ use crate::models::User;
 use crate::utils;
 use crate::{app_state::AppState, models::CreateUser};
 
-pub async fn signup_form() -> Html<String> {
-    Html(r##"
-        <form class="card form" action="/signup" method="post" hx-boost="true" hx-params="not password_repeat" hx-target="#signup_results" hx-indicator="#signup-submit">
-          <div class="form-item">
-            <label>Name:</label>
-            <input type="text" name="name" required="true"></input>
-          </div>
-          <div class="form-item">
-            <label>Email:</label>
-            <input name="email" type="email" required="true"></input>
-          </div>
-          <div class="form-item">
-            <label>Password:</label>
-            <input 
-              _="
-                on htmx:validation:validate
-                  if my.value != the value of the next <input/>
-                    call me.setCustomValidity('Passwords must match')
-                  else 
-                    call me.setCustomValidity('')
-                  end
-                end
-              " 
-              name="password" 
-              type="password" 
-              required="true">
-            </input>
-          </div>
-          <div class="form-item">
-            <label>Password:</label>
-            <input name="password_repeat" type="password" required="true"></input>
-          </div>
-          <div class="form-item">
-            <button id="signup-submit" type="submit">Submit</button>
-          </div>
-          <div id="signup_results" class="form-item"></div>
-        </form>
-    "##.to_string())
+#[derive(Template)]
+#[template(path = "accounts/create.html")]
+struct AccountCreateTemplate {}
+
+pub async fn account_creation_form() -> AccountCreateTemplate {
+    AccountCreateTemplate {}
 }
 
-pub async fn signup(
+pub async fn create_account(
     mut session: WritableSession,
     State(app_state): State<AppState>,
     Form(mut user): Form<CreateUser>,
