@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use time::macros::time;
+use time::{macros::time, Time};
 
 use crate::{app_state::AppState, models::Shift};
 
@@ -18,8 +18,9 @@ pub struct ScheduleTemplate {
 #[derive(Template)]
 #[template(path = "schedule-item.html")]
 pub struct ScheduleItemTemplate {
-    shift: Option<Shift>,
-    time: i64,
+    title: Option<String>,
+    start_time: Time,
+    end_time: Time,
 }
 
 pub async fn schedule(
@@ -45,50 +46,97 @@ pub async fn schedule(
         .unwrap_or(time!(10:30 pm));
 
     // Split the shifts into columns first, then turn each column into ScheduleItems with the missing time
-    // TODO: If the shifts have the same start and end time, display them in the same ScheduleItem
-    let mut columns: Vec<Vec<Shift>> = vec![];
+    let mut shift_columns: Vec<Vec<ScheduleItemTemplate>> = vec![];
     for shift in shifts {
         let mut col_ind = 0;
-        while columns
+        while shift_columns
             .get(col_ind)
             .and_then(|col| col.last())
-            .is_some_and(|sh| sh.end_time > shift.start_time)
+            .is_some_and(|sh| {
+                sh.end_time > shift.start_time
+                    && !(sh.start_time == shift.start_time && sh.end_time == shift.end_time)
+            })
         {
             col_ind += 1;
         }
-        if col_ind >= columns.len() {
-            columns.push(vec![]);
-        }
-        columns[col_ind].push(shift);
-    }
-
-    let mut shift_columns: Vec<Vec<ScheduleItemTemplate>> = vec![];
-    for column in columns {
-        shift_columns.push(vec![]);
-        let col_ref = shift_columns.last_mut().unwrap();
-        let mut prev_end = start_time;
-
-        for shift in column {
-            if shift.start_time > prev_end {
-                col_ref.push(ScheduleItemTemplate {
-                    shift: None,
-                    time: (shift.start_time - prev_end).whole_minutes(),
-                });
+        if col_ind >= shift_columns.len() {
+            shift_columns.push(vec![]);
+            if shift.start_time != start_time {
+                shift_columns[col_ind].push(ScheduleItemTemplate {
+                    title: None,
+                    start_time,
+                    end_time: shift.start_time,
+                })
             }
-            prev_end = shift.end_time;
-            col_ref.push(ScheduleItemTemplate {
-                time: (shift.end_time - shift.start_time).whole_minutes(),
-                shift: Some(shift),
+            shift_columns[col_ind].push(ScheduleItemTemplate {
+                title: Some(shift.title),
+                start_time: shift.start_time,
+                end_time: shift.end_time,
             })
-        }
-
-        if prev_end < end_time {
-            col_ref.push(ScheduleItemTemplate {
-                shift: None,
-                time: (end_time - prev_end).whole_minutes(),
-            })
+        } else {
+            let prev = shift_columns[col_ind]
+                .last_mut()
+                .expect("Never an empty vec");
+            if prev.start_time == shift.start_time {
+                prev.title
+                    .iter_mut()
+                    .for_each(|t| *t = format!("{}\n{}", t, shift.title));
+            } else {
+                let end_time = prev.end_time;
+                if shift.start_time != end_time {
+                    shift_columns[col_ind].push(ScheduleItemTemplate {
+                        title: None,
+                        start_time: end_time,
+                        end_time: shift.start_time,
+                    })
+                }
+                shift_columns[col_ind].push(ScheduleItemTemplate {
+                    title: Some(shift.title),
+                    start_time: shift.start_time,
+                    end_time: shift.end_time,
+                })
+            }
         }
     }
+
+    for col in &mut shift_columns {
+        let col_end = col.last().expect("No empty columns").end_time;
+        if col_end != end_time {
+            col.push(ScheduleItemTemplate {
+                title: None,
+                start_time: col_end,
+                end_time,
+            });
+        }
+    }
+
+    // let mut shift_columns: Vec<Vec<ScheduleItemTemplate>> = vec![];
+    // for column in columns {
+    //     shift_columns.push(vec![]);
+    //     let col_ref = shift_columns.last_mut().unwrap();
+    //     let mut prev_end = start_time;
+
+    //     for shift in column {
+    //         if shift.start_time > prev_end {
+    //             col_ref.push(ScheduleItemTemplate {
+    //                 shift: None,
+    //                 time: (shift.start_time - prev_end).whole_minutes(),
+    //             });
+    //         }
+    //         prev_end = shift.end_time;
+    //         col_ref.push(ScheduleItemTemplate {
+    //             time: (shift.end_time - shift.start_time).whole_minutes(),
+    //             shift: Some(shift),
+    //         })
+    //     }
+
+    //     if prev_end < end_time {
+    //         col_ref.push(ScheduleItemTemplate {
+    //             shift: None,
+    //             time: (end_time - prev_end).whole_minutes(),
+    //         })
+    //     }
+    // }
 
     Ok(ScheduleTemplate {
         day_id,

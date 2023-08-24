@@ -41,15 +41,15 @@ pub async fn add_shift(
         end_time,
         description,
     } = shift_input;
-    // let _shift = sqlx::query_as!(
-    //     Shift,
-    //     "INSERT INTO shift (day_id, title, start_time, end_time, description) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-    //     day_id,
-    //     title,
-    //     start_time,
-    //     end_time,
-    //     description
-    // ).fetch_one(app_state.pool()).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let _shift = sqlx::query_as!(
+        Shift,
+        "INSERT INTO shift (day_id, title, start_time, end_time, description) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        day_id,
+        title,
+        start_time,
+        end_time,
+        description
+    ).fetch_one(app_state.pool()).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(Html(format!(
         r##"<span hx-target="#content" hx-push-url="true" hx-get="/day/{day_id}/schedule" hx-trigger="load">Success</span>"##
     )))
