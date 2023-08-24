@@ -1,10 +1,10 @@
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
-use chrono::NaiveDate;
+use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 
 use crate::app_state::AppState;
-use crate::models::Event;
+use crate::models::{Day, Event};
 use crate::utils;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,8 +27,14 @@ pub async fn create_event(
     State(app_state): State<AppState>,
     Form(event_input): Form<EventInput>,
 ) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
-    println!("Creating event: {:?}", event_input);
+    if event_input.start_date > event_input.end_date {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Html(r##"<span class="error">Start date must be before end date</span>"##),
+        ));
+    }
     let conn = app_state.pool();
+    let transaction = conn.begin().await.map_err(utils::ise)?;
     let event = sqlx::query_as!( Event,
         "INSERT INTO event (name, start_date, end_date, allow_signups) VALUES ($1, $2, $3, $4) RETURNING *",
         event_input.name,
@@ -39,5 +45,17 @@ pub async fn create_event(
     .fetch_one(conn)
     .await
     .map_err(utils::ise)?;
+    for offset in 0..=(event.end_date - event.start_date).num_days() as u64 {
+        let date = event.start_date + Days::new(offset);
+        sqlx::query!(
+            "INSERT INTO day (event_id, date) VALUES ($1, $2)",
+            event.id,
+            date,
+        )
+        .fetch_one(conn)
+        .await
+        .map_err(utils::ise)?;
+    }
+    transaction.commit().await.map_err(utils::ise)?;
     Ok(Html(format!("<span class=\"success\" hx-get=\"/event/{}\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>", event.id)))
 }

@@ -12,7 +12,7 @@ use crate::app_state::AppState;
 use crate::models::Shift;
 
 #[derive(Template)]
-#[template(path = "shift/create.html")]
+#[template(path = "schedule/add_shift.html")]
 pub struct CreateShiftTemplate {
     day_id: i32,
 }

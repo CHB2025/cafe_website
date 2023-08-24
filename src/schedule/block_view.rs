@@ -8,7 +8,7 @@ use chrono::NaiveTime;
 use crate::{app_state::AppState, models::Shift};
 
 #[derive(Template)]
-#[template(path = "schedule.html")]
+#[template(path = "schedule/block_view.html")]
 pub struct ScheduleTemplate {
     editable: bool,
     day_id: i32,
@@ -16,7 +16,7 @@ pub struct ScheduleTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "schedule-item.html")]
+#[template(path = "schedule/block_view_item.html")]
 pub struct ScheduleItemTemplate {
     title: Option<String>,
     start_time: NaiveTime,

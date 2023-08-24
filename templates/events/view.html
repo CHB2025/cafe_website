@@ -1,0 +1,7 @@
+<div class="tab">
+  {% for day in day_ids %}
+    <a class="tab_link{% if day.eq(active_day.id) %} active{% endif %}" hx-boost="true" href="">
+  {% endfor %}
+</div>
+<div class="tabcontent">
+</div>

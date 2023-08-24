@@ -15,13 +15,12 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod accounts;
 mod app_state;
-mod day;
 mod events;
 mod index;
 mod list;
 pub mod models;
 mod navigation;
-mod shift;
+mod schedule;
 mod time_ext;
 pub(crate) mod utils;
 
@@ -35,8 +34,9 @@ async fn main() {
     let app_state = AppState::init().await;
 
     let auth_routes = Router::new()
-        .nest("/day", day::protected_router())
+        .nest("/schedule", schedule::protected_router())
         .nest("/event", events::protected_router())
+        .nest("/account", accounts::protected_router())
         .with_state(app_state.clone())
         .layer(middleware::from_fn(auth_layer));
 
