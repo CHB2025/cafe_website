@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use time::{macros::time, Time};
+use chrono::NaiveTime;
 
 use crate::{app_state::AppState, models::Shift};
 
@@ -19,8 +19,8 @@ pub struct ScheduleTemplate {
 #[template(path = "schedule-item.html")]
 pub struct ScheduleItemTemplate {
     title: Option<String>,
-    start_time: Time,
-    end_time: Time,
+    start_time: NaiveTime,
+    end_time: NaiveTime,
 }
 
 pub async fn schedule(
@@ -39,11 +39,11 @@ pub async fn schedule(
     let start_time = shifts
         .first()
         .map(|sh| sh.start_time)
-        .unwrap_or(time!(8:00));
+        .unwrap_or(NaiveTime::from_hms_opt(8, 0, 0).unwrap());
     let end_time = shifts
         .last()
         .map(|sh| sh.end_time)
-        .unwrap_or(time!(10:30 pm));
+        .unwrap_or(NaiveTime::from_hms_opt(10, 30, 0).unwrap());
 
     // Split the shifts into columns first, then turn each column into ScheduleItems with the missing time
     let mut shift_columns: Vec<Vec<ScheduleItemTemplate>> = vec![];

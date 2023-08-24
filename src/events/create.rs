@@ -1,7 +1,7 @@
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use time::Date;
 
 use crate::app_state::AppState;
 use crate::models::Event;
@@ -10,8 +10,8 @@ use crate::utils;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventInput {
     pub name: String,
-    pub start_date: Date,
-    pub end_date: Date,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
     pub allow_signups: Option<String>, // "on" or "off"
 }
 
@@ -29,8 +29,7 @@ pub async fn create_event(
 ) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
     println!("Creating event: {:?}", event_input);
     let conn = app_state.pool();
-    let event = sqlx::query_as!(
-        Event,
+    let event = sqlx::query_as!( Event,
         "INSERT INTO event (name, start_date, end_date, allow_signups) VALUES ($1, $2, $3, $4) RETURNING *",
         event_input.name,
         event_input.start_date,

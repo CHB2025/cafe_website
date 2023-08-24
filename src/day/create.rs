@@ -1,14 +1,14 @@
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use time::Date;
 
 use crate::{app_state::AppState, models::Day, utils};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DayInput {
     event_id: i32,
-    date: Date,
+    date: NaiveDate,
     entertainment: String,
 }
 

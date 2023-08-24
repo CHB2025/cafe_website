@@ -11,13 +11,13 @@ askama = { version = "0.12.0", features = ["with-axum", "markdown"] }
 askama_axum = "0.3.0"
 axum = "0.6.19"
 axum-sessions = "0.5.0"
+chrono = { version = "0.4.26", features = ["serde"] }
 dotenvy = "0.15.7"
 rand = "0.8.5"
 scrypt = "0.11.0"
 serde = { version = "1.0.177", features = ["derive"] }
 serde_urlencoded = "0.7.1"
-sqlx = { version = "0.7.1", features = ["runtime-tokio", "tls-rustls", "postgres", "time"] }
-time = { version = "0.3.23", features = ["serde", "serde-human-readable"] }
+sqlx = { version = "0.7.1", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono"] }
 tokio = { version = "1.29.1", features = ["full"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.3", features = ["fs", "trace"] }

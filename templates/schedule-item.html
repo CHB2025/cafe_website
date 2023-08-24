@@ -1,11 +1,11 @@
 {% if let Some(title) = title %}
-	<div class="shift" style="flex:{{ (end_time-start_time).whole_minutes() }} 1 0">
+	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
 		<p class="time">
-			{{ start_time }}
-			-{{ end_time }}
+			{{ start_time.format("%-I:%M %p").to_string() }}
+			-{{ end_time.format("%-I:%M %p").to_string() }}
 		</p>
 		<p class="title">{{ title }}</p>
 	</div>
 {% else %}
-	<div class="filler" style="flex:{{ (end_time-start_time).whole_minutes() }} 1 0"></div>
+	<div class="filler" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0"></div>
 {% endif %}

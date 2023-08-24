@@ -5,8 +5,8 @@ use axum::{
     response::Html,
     Form,
 };
+use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
-use time::Time;
 
 use crate::app_state::AppState;
 use crate::models::Shift;
@@ -25,8 +25,10 @@ pub async fn add_shift_form(Path(day_id): Path<i32>) -> CreateShiftTemplate {
 #[derive(Serialize, Deserialize)]
 pub struct CreateShiftInput {
     title: String,
-    start_time: Time,
-    end_time: Time,
+    #[serde(deserialize_with = "crate::time_ext::deserialize_time")]
+    start_time: NaiveTime,
+    #[serde(deserialize_with = "crate::time_ext::deserialize_time")]
+    end_time: NaiveTime,
     description: String,
 }
 

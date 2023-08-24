@@ -1,5 +1,5 @@
+use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
-use time::{Date, Time};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct User {
@@ -20,8 +20,8 @@ pub struct CreateUser {
 pub struct Event {
     pub id: i32,
     pub name: String,
-    pub start_date: Date,
-    pub end_date: Date,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
     pub allow_signups: bool,
 }
 
@@ -29,7 +29,7 @@ pub struct Event {
 pub struct Day {
     pub id: i32,
     pub event_id: i32,
-    pub date: Date,
+    pub date: NaiveDate,
     pub entertainment: Option<String>,
 }
 
@@ -47,8 +47,8 @@ pub struct Shift {
     pub id: i32,
     pub day_id: i32,
     pub worker_id: Option<i32>,
-    pub start_time: Time,
-    pub end_time: Time,
+    pub start_time: NaiveTime,
+    pub end_time: NaiveTime,
     pub title: String,
     pub description: Option<String>,
 }

@@ -22,6 +22,7 @@ mod list;
 pub mod models;
 mod navigation;
 mod shift;
+mod time_ext;
 pub(crate) mod utils;
 
 #[tokio::main]
