@@ -4,7 +4,7 @@ use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 
 use crate::app_state::AppState;
-use crate::models::{Day, Event};
+use crate::models::Event;
 use crate::utils;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,6 +45,8 @@ pub async fn create_event(
     .fetch_one(conn)
     .await
     .map_err(utils::ise)?;
+
+    // Probably a better way to do this
     for offset in 0..=(event.end_date - event.start_date).num_days() as u64 {
         let date = event.start_date + Days::new(offset);
         sqlx::query!(
@@ -52,7 +54,7 @@ pub async fn create_event(
             event.id,
             date,
         )
-        .fetch_one(conn)
+        .execute(conn)
         .await
         .map_err(utils::ise)?;
     }

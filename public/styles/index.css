@@ -61,7 +61,7 @@ div.nav-right {
 .nav-item.button:hover {
   background-color: #f0f0f0;
 }
-.button + .button {
+.nav-item.button + .nav-item.button {
   border-left: none;
 }
 
@@ -75,6 +75,7 @@ div.nav-right {
   padding: 1rem;
 }
 button, input[type=submit] {
+  height: fit-content;
   padding: 0.7rem;
   background-color: white;
   border: 1px solid lightgray;

@@ -16,6 +16,8 @@ use list::*;
 
 use crate::{app_state::AppState, models::Event, utils};
 
+use self::view::view;
+
 pub async fn event_option_list(
     State(app_state): State<AppState>,
 ) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
@@ -33,6 +35,7 @@ pub async fn event_option_list(
 
 pub fn protected_router() -> Router<AppState> {
     Router::new()
+        .route("/:id", get(view))
         .route("/create", get(create_event_form).post(create_event))
         .route("/update/:id", patch(patch_event))
         .route("/option_list", get(event_option_list))
