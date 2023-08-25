@@ -35,11 +35,15 @@ pub async fn event_option_list(
 
 pub fn protected_router() -> Router<AppState> {
     Router::new()
-        .route("/:id", get(view))
+        .route("/:id", patch(patch_event))
         .route("/create", get(create_event_form).post(create_event))
         .route("/update/:id", patch(patch_event))
         .route("/option_list", get(event_option_list))
         .route("/list", get(event_list))
         .route("/list/row/:id", get(event_table_row))
         .route("/list/row/:id/edit", get(edit_event_table_row))
+}
+
+pub fn public_router() -> Router<AppState> {
+    Router::new().route("/:id", get(view))
 }

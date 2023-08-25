@@ -1,10 +1,14 @@
-{% if let Some(title) = title %}
+{% if !shifts.is_empty() %}
 	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
 		<p class="time">
 			{{ start_time.format("%-I:%M %p").to_string() }}
 			-{{ end_time.format("%-I:%M %p").to_string() }}
 		</p>
-		<p class="title">{{ title }}</p>
+		<p class="title" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+			{% for (id, title) in shifts %}
+				<a hx-boost="true" href="/todo/{{ id }}">{{ title }}</a><br>
+			{% endfor %}
+		</p>
 	</div>
 {% else %}
 	<div class="filler" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0"></div>
