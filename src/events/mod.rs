@@ -9,6 +9,7 @@ use axum::{
 mod create;
 mod list;
 mod list_row;
+mod pagination;
 mod view;
 
 use create::*;

@@ -17,7 +17,6 @@ mod accounts;
 mod app_state;
 mod events;
 mod index;
-mod list;
 pub mod models;
 mod navigation;
 mod schedule;

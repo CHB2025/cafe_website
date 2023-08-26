@@ -12,15 +12,28 @@ th {
   padding: 1rem 1rem;
 }
 
-th + th {
-
+th:after {
+  color: gray;
+  padding-left: 0.4rem;
 }
+
+th.orderable:after {
+  content: "-";
+}
+
+th.ordered.asc:after {
+  padding-left:0.4rem;
+  content: "^";
+}
+th.ordered.desc:after {
+  padding-left:0.4rem;
+  content: "v";
+}
+
 
 td {
   border: 1px solid lightgray;
   padding: 1rem 1rem;
-}
-td + td {
 }
 
 

@@ -1,0 +1,38 @@
+{% macro order_class(key) %}
+  {% if query.order_by.to_string() == key %}
+    ordered {{ query.order_dir }}
+  {% else %}
+    orderable
+  {% endif %}
+{% endmacro %}
+
+{% macro order_url(key) %}
+  {% if query.order_dir.to_string() == "asc" && query.order_by.to_string() == key %}
+    "/event/list?order_by={{ key }}&order_dir=desc&take={{ query.take }}"
+  {% else %}
+    "/event/list?order_by={{ key }}&take={{ query.take }}"
+  {% endif %}
+{% endmacro %}
+
+<div class="event-list card" hx-target="this" hx-swap="outerHTML" hx-push-url="true">
+  <table class="list" cellspacing="0">
+    <thead>
+      <th class="{% call order_class("name") %}" hx-get={% call order_url("name") %}>Name</th>
+      <th class="{% call order_class("start_date") %}" hx-get={% call order_url("start_date") %}>Start Date</th>
+      <th class="{% call order_class("end_date") %}" hx-get={% call order_url("end_date") %}>End Date</th>
+      <th>Allow Signups</th>
+      <th>Modify</th>
+      <th>Delete</th>
+    </thead>
+    <tbody>
+      {% for event in events %}
+        {% include "list_row.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="list-controls">
+    <button {% if prev_disabled %}disabled{% endif %} hx-get="/event/list?{{ prev_query }}">Previous</button>
+    <div class="current-page">{{ current_page }}/{{ page_count }}</div>
+    <button {% if next_disabled %}disabled{% endif %} hx-get="/event/list?{{ next_query }}">Next</button>
+  </div>
+</div>
