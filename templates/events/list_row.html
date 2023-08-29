@@ -4,5 +4,5 @@
   <td>{{ event.end_date }}</td>
   <td>{{ event.allow_signups }}</td>
   <td><button hx-get="/event/list/row/{{ event.id }}/edit">Modify</button></td>
-  <td><button hx-confirm="Are you sure you want to delete this event and all related schedules?">Delete</button>
+  <td><button hx-confirm="Are you sure you want to delete this event and all related schedules?" hx-delete="/event/{{ event.id }}">Delete</button>
 </tr>

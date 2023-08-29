@@ -3,6 +3,7 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
+use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
@@ -18,7 +19,7 @@ pub struct EventViewTemplate {
 
 pub async fn view(
     State(app_state): State<AppState>,
-    Path(id): Path<i32>,
+    Path(id): Path<Uuid>,
 ) -> Result<EventViewTemplate, StatusCode> {
     let event = sqlx::query_as!(Event, "SELECT * FROM event WHERE id = $1", id)
         .fetch_one(app_state.pool())

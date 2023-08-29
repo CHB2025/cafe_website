@@ -7,6 +7,7 @@ use axum::{
 };
 use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::app_state::AppState;
 use crate::models::Shift;
@@ -21,7 +22,6 @@ pub async fn add_shift_form(Path(day_id): Path<i32>) -> CreateShiftTemplate {
     CreateShiftTemplate { day_id }
 }
 
-// Cannot deserialize the time values? Works when they are strings
 #[derive(Serialize, Deserialize)]
 pub struct CreateShiftInput {
     title: String,
@@ -34,7 +34,7 @@ pub struct CreateShiftInput {
 
 pub async fn add_shift(
     State(app_state): State<AppState>,
-    Path(day_id): Path<i32>,
+    Path(day_id): Path<Uuid>,
     Form(shift_input): Form<CreateShiftInput>,
 ) -> Result<Html<String>, StatusCode> {
     let CreateShiftInput {

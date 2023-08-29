@@ -5,6 +5,7 @@ use axum::{
 };
 use axum_sessions::extractors::ReadableSession;
 use chrono::NaiveTime;
+use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
@@ -15,14 +16,14 @@ use crate::{
 #[template(path = "schedule/block_view.html")]
 pub struct ScheduleTemplate {
     editable: bool,
-    day_id: i32,
+    day_id: Uuid,
     shift_columns: Vec<Vec<ScheduleItemTemplate>>,
 }
 
 #[derive(Template)]
 #[template(path = "schedule/block_view_item.html")]
 pub struct ScheduleItemTemplate {
-    shifts: Vec<(i32, String)>,
+    shifts: Vec<(Uuid, String)>,
     start_time: NaiveTime,
     end_time: NaiveTime,
 }
@@ -30,7 +31,7 @@ pub struct ScheduleItemTemplate {
 pub async fn schedule(
     State(app_state): State<AppState>,
     session: ReadableSession,
-    Path(day_id): Path<i32>,
+    Path(day_id): Path<Uuid>,
 ) -> Result<ScheduleTemplate, StatusCode> {
     let editable =
         !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
