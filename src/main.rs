@@ -16,6 +16,7 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 mod accounts;
 mod app_state;
 mod events;
+mod home;
 mod index;
 pub mod models;
 mod navigation;
@@ -40,7 +41,7 @@ async fn main() {
         .layer(middleware::from_fn(auth_layer));
 
     let app = Router::new()
-        .route("/", get(|| async { Html("<p>Hello World</p>") }))
+        .route("/", get(home::view))
         .route("/nav", get(navigation::navigation))
         .route("/login", get(accounts::login_form).post(accounts::login))
         .route("/logout", get(accounts::logout))
