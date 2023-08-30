@@ -28,7 +28,7 @@ pub struct LoginRequest {
 
 fn login_err<E>(_: E) -> (StatusCode, Html<&'static str>) {
     (
-        StatusCode::FORBIDDEN,
+        StatusCode::BAD_REQUEST,
         Html("<span class=\"error\">Invalid username or password.</span>"),
     )
 }

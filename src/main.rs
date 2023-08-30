@@ -88,7 +88,7 @@ async fn auth_layer<B>(
 ) -> impl IntoResponse {
     if session.is_destroyed() || session.is_expired() || session.get::<User>("user").is_none() {
         return Err((
-            StatusCode::FORBIDDEN,
+            StatusCode::UNAUTHORIZED,
             Html(format!(
                 r##"<span hx-get="/login?from={}" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##,
                 request.uri()
@@ -101,29 +101,36 @@ async fn auth_layer<B>(
 
 async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoResponse {
     let from_htmx = request.headers().contains_key("HX-Request");
-    let is_index = request.uri() == "/index.html" || request.uri() == "/index";
     let response = next.run(request).await;
 
-    let is_html = response
-        .headers()
-        .get("content-type")
-        .is_some_and(|ct| ct.as_bytes().starts_with(b"text/html"));
     let Html(wrapper) = navigation::index().await;
 
-    response.map_data(move |b| {
-        if !from_htmx && !is_index && is_html {
-            let (header, footer) = wrapper
-                .split_once("Content")
-                .expect("Index.html is missing \"Content\"");
+    let (mut parts, mut body) = response.into_parts();
+    parts.headers.remove("content-length");
 
-            let mut new_body = header.as_bytes().to_vec();
-            new_body.extend(b);
-            new_body.extend_from_slice(footer.as_bytes());
-            Bytes::copy_from_slice(&new_body)
-        } else {
-            b
-        }
-    })
+    let is_html = parts
+        .headers
+        .get("content-type")
+        .is_some_and(|ct| ct.as_bytes().starts_with(b"text/html"));
+
+    body = body
+        .map_data(move |b| {
+            if !from_htmx && is_html {
+                let (header, footer) = wrapper
+                    .split_once("Content")
+                    .expect("Index.html is missing \"Content\"");
+
+                let mut new_body = header.as_bytes().to_vec();
+                new_body.extend(b);
+                new_body.extend_from_slice(footer.as_bytes());
+                Bytes::copy_from_slice(&new_body)
+            } else {
+                b
+            }
+        })
+        .boxed_unsync();
+
+    Response::from_parts(parts, body)
 }
 
 async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, Html<&'static str>)> {
