@@ -1,9 +1,12 @@
-{% if editable %}
-<div class="schedule-controls">
-<button class="button" hx-get="/schedule/{{ day_id }}/add_shift" hx-target="#content" hx-push-url="true">Add Shift</button>
-</div>
-{% endif %}
 <div class="schedule">
+  <div class="background">
+    {% for h in 0..(end_time - start_time).num_hours() %}
+      {% let time = start_time + Duration::hours(h.clone()) %}
+      <div class="block">
+        <span class="time">{{ time.format("%-I:%M %p") }}</span>
+      </div>
+    {% endfor %}
+  </div>
 {% for column in shift_columns %}
   <div class="schedule-column">
     {% for shift in column %}

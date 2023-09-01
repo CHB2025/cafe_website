@@ -4,7 +4,7 @@ use axum::{
     http::StatusCode,
 };
 use axum_sessions::extractors::ReadableSession;
-use chrono::NaiveTime;
+use chrono::{Duration, NaiveTime, Timelike};
 use uuid::Uuid;
 
 use crate::{
@@ -15,9 +15,9 @@ use crate::{
 #[derive(Template)]
 #[template(path = "schedule/block_view.html")]
 pub struct ScheduleTemplate {
-    editable: bool,
-    day_id: Uuid,
     shift_columns: Vec<Vec<ScheduleItemTemplate>>,
+    start_time: NaiveTime,
+    end_time: NaiveTime,
 }
 
 #[derive(Template)]
@@ -33,26 +33,37 @@ pub async fn schedule(
     session: ReadableSession,
     Path(day_id): Path<Uuid>,
 ) -> Result<ScheduleTemplate, StatusCode> {
-    let editable =
+    let logged_in =
         !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
 
-    let shifts = sqlx::query_as!(
-        Shift,
-        "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time, title ASC",
-        day_id
-    )
-    .fetch_all(app_state.pool())
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let shifts = if logged_in {
+        sqlx::query_as!(
+            Shift,
+            "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time, title ASC",
+            day_id
+        )
+        .fetch_all(app_state.pool())
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    } else {
+        sqlx::query_as!(
+            Shift,
+            "SELECT * FROM shift WHERE day_id = $1 AND public_signup ORDER BY start_time, title ASC",
+            day_id
+        )
+        .fetch_all(app_state.pool())
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    };
 
     let start_time = shifts
         .first()
-        .map(|sh| sh.start_time)
+        .map(|sh| sh.start_time - Duration::minutes(sh.start_time.minute().into()))
         .unwrap_or(NaiveTime::from_hms_opt(8, 0, 0).unwrap());
     let end_time = shifts
         .last()
-        .map(|sh| sh.end_time)
-        .unwrap_or(NaiveTime::from_hms_opt(10, 30, 0).unwrap());
+        .map(|sh| sh.end_time + Duration::minutes(60i64 - sh.end_time.minute() as i64))
+        .unwrap_or(NaiveTime::from_hms_opt(22, 00, 0).unwrap());
 
     let mut shift_columns: Vec<Vec<ScheduleItemTemplate>> = vec![];
     for shift in shifts {
@@ -114,8 +125,8 @@ pub async fn schedule(
     }
 
     Ok(ScheduleTemplate {
-        day_id,
-        editable,
         shift_columns,
+        start_time,
+        end_time,
     })
 }

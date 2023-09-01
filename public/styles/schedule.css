@@ -2,12 +2,31 @@ div.schedule {
 	display: flex;
 	min-height: 60rem;
 	height: 100%;
+	position: relative;
+	padding-left: 5rem;
 }
 
 .schedule div.schedule-column {
 	display: flex;
 	flex-direction: column;
 	flex: 1 1 0;
+	z-index: 15;
+}
+
+.schedule div.background {
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	z-index: 10;
+}
+
+.schedule .background .block {
+	flex: 1 1 0;
+	border-top: 1px solid lightgray;
 }
 
 .schedule-column + .schedule-column {

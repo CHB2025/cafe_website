@@ -1,8 +1,8 @@
 {% if !shifts.is_empty() %}
 	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
 		<p class="time">
-			{{ start_time.format("%-I:%M %p").to_string() }}
-			-{{ end_time.format("%-I:%M %p").to_string() }}
+			{{ start_time.format("%-I:%M %p") }}
+			-{{ end_time.format("%-I:%M %p") }}
 		</p>
 		<p class="title" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
 			{% for (id, title) in shifts %}

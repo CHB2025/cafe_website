@@ -1,10 +1,7 @@
 use std::{error::Error, fmt};
 
 use askama::Template;
-use axum::{
-    http::{uri::Parts, Response, StatusCode},
-    response::IntoResponse,
-};
+use axum::{http::StatusCode, response::IntoResponse};
 
 #[derive(Template, Debug)]
 #[template(path = "error.html")]
