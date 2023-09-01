@@ -1,0 +1,8 @@
+
+{% match kind %}
+  {% when Block %}
+    <h3>Error {{ code }}</h3>
+    <p>{{ message }}</p>
+  {% when Inline %}
+    <span class="error">{{ message }}</span>
+{% endmatch %}

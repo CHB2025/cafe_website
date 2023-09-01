@@ -15,6 +15,7 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod accounts;
 mod app_state;
+mod error;
 mod events;
 mod home;
 mod index;

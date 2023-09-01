@@ -1,11 +1,8 @@
 use askama::Template;
-use axum::{
-    extract::{Query, State},
-    http::StatusCode,
-};
+use axum::extract::{Query, State};
 use sqlx::Postgres;
 
-use crate::{app_state::AppState, models::Event};
+use crate::{app_state::AppState, error::AppError, models::Event};
 
 use super::pagination::*;
 
@@ -32,7 +29,7 @@ pub async fn event_list(
             skip,
         },
     ): Query<OrdinalPaginatedQuery>,
-) -> Result<EventListTemplate, StatusCode> {
+) -> Result<EventListTemplate, AppError> {
     let pool = app_state.pool();
 
     let events = sqlx::query_as::<Postgres, Event>(&format!(
@@ -41,13 +38,11 @@ pub async fn event_list(
     .bind(take)
     .bind(skip)
     .fetch_all(pool)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .await?;
 
     let event_count = sqlx::query_scalar!("SELECT COUNT(*) FROM event")
         .fetch_one(pool)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .await?
         .unwrap_or(0);
 
     let current_page = skip / take + 1;
@@ -71,12 +66,10 @@ pub async fn event_list(
         query,
 
         prev_disabled: current_page == 1,
-        prev_query: serde_urlencoded::to_string(prev_params)
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+        prev_query: serde_urlencoded::to_string(prev_params)?,
         current_page,
         page_count,
         next_disabled: current_page == page_count,
-        next_query: serde_urlencoded::to_string(next_params)
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+        next_query: serde_urlencoded::to_string(next_params)?,
     })
 }

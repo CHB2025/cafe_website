@@ -4,7 +4,7 @@ use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event, utils};
+use crate::{app_state::AppState, models::Event, error::AppError};
 
 use super::list_row::EventListRowTemplate;
 
@@ -27,15 +27,15 @@ pub async fn create_event_form() -> EventCreateTemplate {
 pub async fn create_event(
     State(app_state): State<AppState>,
     Form(event_input): Form<EventInput>,
-) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
+) -> Result<Html<String>, AppError> {
     if event_input.start_date > event_input.end_date {
-        return Err((
+        return Err(AppError::inline(
             StatusCode::BAD_REQUEST,
-            Html(r##"<span class="error">Start date must be before end date</span>"##),
+            "Start date must be before end date",
         ));
     }
     let conn = app_state.pool();
-    let transaction = conn.begin().await.map_err(utils::ise)?;
+    let transaction = conn.begin().await?;
     let event = sqlx::query_as!( Event,
         "INSERT INTO event (name, start_date, end_date, allow_signups) VALUES ($1, $2, $3, $4) RETURNING *",
         event_input.name,
@@ -44,8 +44,7 @@ pub async fn create_event(
         event_input.allow_signups.is_some_and(|s| s == "on")
     )
     .fetch_one(conn)
-    .await
-    .map_err(utils::ise)?;
+    .await?;
 
     // Probably a better way to do this
     for offset in 0..=(event.end_date - event.start_date).num_days() as u64 {
@@ -56,10 +55,9 @@ pub async fn create_event(
             date,
         )
         .execute(conn)
-        .await
-        .map_err(utils::ise)?;
+        .await?;
     }
-    transaction.commit().await.map_err(utils::ise)?;
+    transaction.commit().await?;
     Ok(Html(format!("<span class=\"success\" hx-get=\"/event/{}\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>", event.id)))
 }
 
@@ -67,8 +65,7 @@ pub async fn patch_event(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Form(event_input): Form<EventInput>,
-) -> Result<EventListRowTemplate, (StatusCode, String)> {
-    let conn = app_state.pool();
+) -> Result<EventListRowTemplate, AppError> {
     let event = sqlx::query_as!(
         Event, 
         "UPDATE event SET name = $2, start_date = $3, end_date = $4, allow_signups = $5 WHERE id = $1 RETURNING *",
@@ -78,9 +75,9 @@ pub async fn patch_event(
         event_input.end_date,
         event_input.allow_signups.is_some_and(|s| s == "on")
     )
-    .fetch_one(conn)
-    .await
-    .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Failed to update event".to_owned()))?;
+    .fetch_one(app_state.pool())
+    .await?;
+
     Ok(EventListRowTemplate { event })
 }
 
