@@ -3,18 +3,29 @@
 <div 
   class="tab-list"
   role="tablist"
-  hx-target="#tab-content"
-  _="on htmx:afterOnLoad set @aria-selected of <[aria-selected=true]/> to false tell the target take .selected set @aria-selected to true"
+  hx-target="#content"
 >
-  {% for (i, day) in days.iter().enumerate() %}
-    {% let selected = i == 0 %}
+  {% for day in days %}
+    {% let selected = day.id == selected_day_id %}
     <button
       class="tab-link{% if selected %} selected{% endif %}"
       role="tab"
       aria-selected="{% if selected %}true{% else %}false{% endif %}"
       aria-controls="tab-content"
-      hx-get="/schedule/{{ day.id }}"
+      {% if !selected %}
+      hx-get="/event/{{ event.id }}"
+      hx-vals='{"day": "{{ day.id }}"}'
+      {% endif %}
     >{{ day.date.format("%a, %b %e") }}</button>
   {% endfor %}
 </div>
-<div id="tab-content" class="tab-content" role="tabpanel" {% if let Some(day) = days.first() %} hx-get="/schedule/{{ day.id }}" hx-trigger="load"{% endif %}></div>
+<div 
+  id="tab-content"
+  class="tab-content"
+  role="tabpanel"
+  hx-get="/schedule/{{ selected_day_id }}"
+  hx-trigger="load"
+  hx-target="this"
+  hx-swap="innerHTML"
+>
+</div>

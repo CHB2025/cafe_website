@@ -2,7 +2,7 @@ use askama::Template;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
-    response::Redirect,
+    response::Html,
     Form,
 };
 use chrono::NaiveTime;
@@ -37,7 +37,7 @@ pub async fn add_shift(
     State(app_state): State<AppState>,
     Path(day_id): Path<Uuid>,
     Form(shift_input): Form<CreateShiftInput>,
-) -> Result<Redirect, StatusCode> {
+) -> Result<Html<String>, StatusCode> {
     let CreateShiftInput {
         title,
         start_time,
@@ -73,5 +73,7 @@ pub async fn add_shift(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    Ok(Redirect::to(&format!("/event/{event}")))
+    Ok(Html(format!(
+        r##"<span class="success" hx-get="/event/{event}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load"></span> "##
+    )))
 }

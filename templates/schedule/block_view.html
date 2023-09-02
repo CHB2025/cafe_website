@@ -1,3 +1,8 @@
+<div class="schedule-controls">
+  {% if !public %}
+  <button hx-get="/schedule/{{ day_id }}/add_shift" hx-target="#content">Add Shift</button>
+  {% endif %}
+</div>
 <div class="schedule">
   <div class="background">
     {% for h in 0..(end_time - start_time).num_hours() %}

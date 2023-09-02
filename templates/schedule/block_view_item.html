@@ -1,14 +1,8 @@
 {% if !shifts.is_empty() %}
-	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
-		<p class="time">
-			{{ start_time.format("%-I:%M %p") }}
-			-{{ end_time.format("%-I:%M %p") }}
-		</p>
-		<p class="title" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-			{% for (id, title) in shifts %}
-				<a hx-boost="true" href="/todo/{{ id }}">{{ title }}</a><br>
-			{% endfor %}
-		</p>
+	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+		{% for (id, title) in shifts %}
+			<a hx-boost="true" href="/todo/{{ id }}">{{ title }}</a><br>
+		{% endfor %}
 	</div>
 {% else %}
 	<div class="filler" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0"></div>

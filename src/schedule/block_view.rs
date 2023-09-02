@@ -1,14 +1,12 @@
 use askama::Template;
-use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-};
+use axum::extract::{Path, State};
 use axum_sessions::extractors::ReadableSession;
 use chrono::{Duration, NaiveTime, Timelike};
 use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
+    error::AppError,
     models::{Shift, User},
 };
 
@@ -18,6 +16,8 @@ pub struct ScheduleTemplate {
     shift_columns: Vec<Vec<ScheduleItemTemplate>>,
     start_time: NaiveTime,
     end_time: NaiveTime,
+    day_id: Uuid,
+    public: bool,
 }
 
 #[derive(Template)]
@@ -32,7 +32,7 @@ pub async fn schedule(
     State(app_state): State<AppState>,
     session: ReadableSession,
     Path(day_id): Path<Uuid>,
-) -> Result<ScheduleTemplate, StatusCode> {
+) -> Result<ScheduleTemplate, AppError> {
     let logged_in =
         !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
 
@@ -40,20 +40,18 @@ pub async fn schedule(
         sqlx::query_as!(
             Shift,
             "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time, title ASC",
-            day_id
+            day_id,
         )
         .fetch_all(app_state.pool())
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .await?
     } else {
         sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE day_id = $1 AND public_signup ORDER BY start_time, title ASC",
-            day_id
+            "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time, title ASC",
+            day_id,
         )
         .fetch_all(app_state.pool())
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .await?
     };
 
     let start_time = shifts
@@ -126,7 +124,9 @@ pub async fn schedule(
 
     Ok(ScheduleTemplate {
         shift_columns,
+        day_id,
         start_time,
         end_time,
+        public: !logged_in,
     })
 }
