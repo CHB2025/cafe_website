@@ -15,6 +15,7 @@ struct ErrorTemplate {
 pub enum DisplayKind {
     Block,
     Inline,
+    Redirect(String),
 }
 
 const ISE: AppError = AppError(
@@ -38,6 +39,10 @@ impl AppError {
 
     pub fn block(code: StatusCode, message: &'static str) -> AppError {
         AppError(code, message, DisplayKind::Block)
+    }
+
+    pub fn redirect(code: StatusCode, message: &'static str, url: String) -> AppError {
+        AppError(code, message, DisplayKind::Redirect(url))
     }
 }
 

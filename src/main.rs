@@ -8,6 +8,7 @@ use axum::{
     Router,
 };
 use axum_sessions::{async_session, extractors::ReadableSession, SessionHandle, SessionLayer};
+use error::AppError;
 use models::User;
 use rand::Rng;
 use tower::{ServiceBuilder, ServiceExt};
@@ -86,14 +87,12 @@ async fn auth_layer<B>(
     session: ReadableSession,
     request: Request<B>,
     next: Next<B>,
-) -> impl IntoResponse {
+) -> Result<Response<BoxBody>, AppError> {
     if session.is_destroyed() || session.is_expired() || session.get::<User>("user").is_none() {
-        return Err((
+        return Err(AppError::redirect(
             StatusCode::UNAUTHORIZED,
-            Html(format!(
-                r##"<span hx-get="/login?from={}" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##,
-                request.uri()
-            )),
+            "Restricted",
+            format!("/login?from={}", request.uri()),
         ));
     }
     drop(session);

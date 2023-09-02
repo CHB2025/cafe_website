@@ -1,8 +1,10 @@
 
 {% match kind %}
-  {% when Block %}
+  {% when DisplayKind::Block %}
     <h3>Error {{ code }}</h3>
     <p>{{ message }}</p>
-  {% when Inline %}
+  {% when DisplayKind::Inline %}
     <span class="error">{{ message }}</span>
+  {% when DisplayKind::Redirect(url) %}
+    <span class="error" hx-get="{{ url }}" hx-trigger="load" hx-target="#content" hx-swap="innerHTML">{{ message }}</span>
 {% endmatch %}
