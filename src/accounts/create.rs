@@ -2,7 +2,7 @@ use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
 use axum_sessions::extractors::WritableSession;
 use scrypt::password_hash::rand_core::OsRng;
-use scrypt::password_hash::{PasswordHasher, SaltString};
+use scrypt::password_hash::{self, PasswordHasher, SaltString};
 use scrypt::Scrypt;
 use tokio::task::spawn_blocking;
 
@@ -26,7 +26,7 @@ pub async fn create_account(
     // TODO: add path wildcard and Hashmap/database table for invitations
 
     let pswd = user.password.clone();
-    let pwd_fut = spawn_blocking(move || -> anyhow::Result<String> {
+    let pwd_fut = spawn_blocking(move || -> password_hash::Result<String> {
         let salt = SaltString::generate(&mut OsRng);
         Ok(Scrypt.hash_password(pswd.as_bytes(), &salt)?.to_string())
     });

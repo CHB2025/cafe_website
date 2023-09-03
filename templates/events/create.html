@@ -1,4 +1,11 @@
-<form class="form card" action="/event/create" method="post" hx-boost="true" hx-target="#create_event_results" hx-indicator="#create_event_submit" hx-disinherit="*">
+<form
+  class="form card" 
+  action="/event/create" 
+  method="post" 
+  hx-indicator="#create_event_submit" 
+  hx-push-url="false"
+  hx-target="#create_event_results"
+>
   <div class="form-item">
     <label>Name</label>
     <input name="name" type="text" required="true"></input>

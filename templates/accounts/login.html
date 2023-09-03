@@ -1,21 +1,22 @@
-<div class="form card">
-  <form 
-    action="/login?{{ query }}" 
-    method="POST"
-    hx-boost="true"
-    hx-target="#login_results"
-    hx-indicator="#login-submit">
-      <div class="form-item">
-        <label>Email:</label>
-        <input name="email" type="email" required="true"></input>
-      </div>
-      <div class="form-item">
-        <label>Password:</label>
-        <input name="password" type="password" required="true"></input>
-      </div>
-      <div class="form-item">
-        <button id="login-submit" type="submit">Submit</button>
-      </div>
-      <div id="login_results" class="form-item"></div>
-  </form>
-</div>
+<form 
+  class="form card"
+  action="/login?{{ query }}" 
+  method="POST"
+  hx-boost="true"
+  hx-target="#login_results"
+  hx-indicator="#login-submit"
+  hx-push-url="false"
+>
+  <div class="form-item">
+    <label>Email:</label>
+    <input name="email" type="email" required="true"></input>
+  </div>
+  <div class="form-item">
+    <label>Password:</label>
+    <input name="password" type="password" required="true"></input>
+  </div>
+  <div class="form-item">
+    <button id="login-submit" type="submit">Submit</button>
+  </div>
+  <div id="login_results" class="form-item"></div>
+</form>

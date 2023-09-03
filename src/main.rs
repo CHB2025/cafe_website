@@ -103,7 +103,7 @@ async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoRespons
     let from_htmx = request.headers().contains_key("HX-Request");
     let response = next.run(request).await;
 
-    let Html(wrapper) = navigation::index().await;
+    let Html(wrapper) = index::index().await;
 
     let (mut parts, mut body) = response.into_parts();
     parts.headers.remove("content-length");

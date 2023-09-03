@@ -1,8 +1,9 @@
-<div class="schedule-controls">
-  {% if !public %}
-  <button hx-get="/schedule/{{ day_id }}/add_shift" hx-target="#content">Add Shift</button>
-  {% endif %}
-</div>
+{% if !public %}
+  <div class="schedule-controls" hx-target="#modal">
+      <button hx-get="/schedule/{{ day_id }}/add_shift">Add Shift</button>
+      <button hx-get="/todo">Copy</button>
+  </div>
+{% endif %}
 <div class="schedule">
   <div class="background">
     {% for h in 0..(end_time - start_time).num_hours() %}
@@ -13,7 +14,7 @@
     {% endfor %}
   </div>
 {% for column in shift_columns %}
-  <div class="schedule-column">
+  <div class="schedule-column" hx-target="#modal">
     {% for shift in column %}
       {{ shift|safe }}
     {% endfor %}

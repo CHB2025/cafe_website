@@ -1,7 +1,7 @@
 {% if !shifts.is_empty() %}
-	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+	<div class="shift" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
 		{% for (id, title) in shifts %}
-			<a hx-boost="true" href="/todo/{{ id }}">{{ title }}</a><br>
+			<a hx-boost="true" href="/signup/{{ id }}">{{ title }}</a><br>
 		{% endfor %}
 	</div>
 {% else %}

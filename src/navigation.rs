@@ -1,5 +1,4 @@
 use askama::Template;
-use axum::response::Html;
 use axum_sessions::extractors::ReadableSession;
 
 use crate::models::User;
@@ -24,28 +23,4 @@ pub async fn navigation(session: ReadableSession) -> Nav {
         )
     };
     Nav { left, right }
-}
-
-pub async fn index() -> Html<String> {
-    Html(
-        r##"
-            <head>
-                <link rel="stylesheet" href="/styles/index.css">
-                <link rel="stylesheet" href="/styles/form.css">
-                <link rel="stylesheet" href="/styles/list.css">
-                <link rel="stylesheet" href="/styles/schedule.css">
-                <link rel="stylesheet" href="/styles/tab.css">
-                <script src="https://unpkg.com/htmx.org@1.9.3"></script>
-                <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
-            </head>
-            <body>
-                <div id="navigation" hx-get="/nav" hx-swap="outerHTML" hx-trigger="load"></div>
-                <div id="content">
-                    Content
-                </div>
-
-            </body>
-        "##
-        .to_string(),
-    )
 }

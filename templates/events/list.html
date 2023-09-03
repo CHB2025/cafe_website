@@ -14,7 +14,7 @@
   {% endif %}
 {% endmacro %}
 
-<div class="event-list card" hx-target="this" hx-swap="outerHTML" hx-push-url="true">
+<div class="event-list card">
   <table class="list" cellspacing="0">
     <thead>
       <th class="{% call order_class("name") %}" hx-get={% call order_url("name") %}>Name</th>
@@ -35,4 +35,5 @@
     <div class="current-page">{{ current_page }}/{{ page_count }}</div>
     <button {% if next_disabled %}disabled{% endif %} hx-get="/event/list?{{ next_query }}">Next</button>
   </div>
+  <button hx-get="/event/create" hx-push-url="false" hx-target="#modal">+</button>
 </div>

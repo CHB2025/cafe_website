@@ -1,0 +1,23 @@
+#modal:empty {
+  display: none;
+}
+
+#modal {
+  display: block;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: none;
+  backdrop-filter:blur(8px);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#modal > * {
+  background-color: white;
+}

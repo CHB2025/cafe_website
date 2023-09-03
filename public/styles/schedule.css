@@ -7,6 +7,20 @@ div.schedule {
 	overflow-x: auto;
 }
 
+div.schedule-controls {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding-bottom: 1rem;
+}
+
+div.schedule-controls > div {
+	flex: 1 1 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 .schedule div.schedule-column {
 	display: flex;
 	flex-direction: column;
