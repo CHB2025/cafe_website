@@ -16,6 +16,7 @@
       hx-get="/event/{{ event.id }}"
       hx-vals='{"day": "{{ day.id }}"}'
       {% endif %}
+      hx-indicator="this"
     >{{ day.date.format("%a, %b %e") }}</button>
   {% endfor %}
 </div>

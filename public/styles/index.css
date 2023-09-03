@@ -1,13 +1,46 @@
 * {
   box-sizing: border-box;
 }
+
+html {
+   font-size: 14px;
+}
+body > div {
+  padding: 0% 4%;
+}
+/* tablet */
+@media only screen and (min-width: 600px) {
+   html {
+      font-size: 16px;
+   }
+  body > div {
+    padding: 0% 8%;
+  }
+}
+/* desktop */
+@media only screen and (min-width: 1000px) {
+   html {
+      font-size: 18px;
+   }
+  body > div {
+    padding: 0% 10%;
+  }
+}
+/* extra large */
+@media only screen and (min-width: 1200px) {
+   html {
+      font-size: 20px;
+   }
+  body > div {
+    padding: 0% 12%;
+  }
+}
+
 body {
   padding: 0px;
   margin: 0px;
 }
-body > div {
-  padding: 0% 10%;
-}
+
 #content {
   display: flex;
   flex-direction: column;
@@ -102,4 +135,10 @@ button:disabled:hover, input[type=submit]:hover:disabled {
 .success {
   color: green;
 }
-
+.htmx-request:after {
+  content: url("/spinner.svg");
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  padding-left: 1em;
+}

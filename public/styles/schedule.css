@@ -4,12 +4,13 @@ div.schedule {
 	height: 100%;
 	position: relative;
 	padding-left: 5rem;
+	overflow-x: auto;
 }
 
 .schedule div.schedule-column {
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 0;
+	flex: 1 1 0px;
 	z-index: 15;
 }
 
@@ -35,7 +36,12 @@ div.schedule {
 
 .schedule .shift {
   border-radius: 1rem;
-  background: lightgray;
+  background: white;
+	border: 2px solid lightgray;
   padding: 0rem 0.6rem;
 	overflow: hidden;
+}
+
+.schedule .shift:hover {
+	box-shadow: 0px 1px 2px lightgray;
 }
