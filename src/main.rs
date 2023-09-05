@@ -23,6 +23,7 @@ mod index;
 pub mod models;
 mod navigation;
 mod schedule;
+mod shift;
 mod time_ext;
 pub(crate) mod utils;
 
@@ -39,19 +40,23 @@ async fn main() {
         .nest("/schedule", schedule::protected_router())
         .nest("/event", events::protected_router())
         .nest("/account", accounts::protected_router())
-        .with_state(app_state.clone())
+        .nest("/shift", shift::protected_router())
         .layer(middleware::from_fn(auth_layer));
+
+    let public_routes = Router::new()
+        .nest("/event", events::public_router())
+        .nest("/schedule", schedule::public_router())
+        .nest("/account", accounts::public_router())
+        .nest("/shift", shift::public_router());
 
     let app = Router::new()
         .route("/", get(home::view))
         .route("/nav", get(navigation::navigation))
         .route("/login", get(accounts::login_form).post(accounts::login))
         .route("/logout", get(accounts::logout))
-        .nest("/event", events::public_router())
-        .nest("/schedule", schedule::public_router())
-        .nest("/account", accounts::public_router())
-        .with_state(app_state)
+        .merge(public_routes)
         .merge(auth_routes)
+        .with_state(app_state)
         .fallback(get_static_files)
         .layer(
             ServiceBuilder::new()

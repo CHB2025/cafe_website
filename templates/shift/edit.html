@@ -1,0 +1,28 @@
+<form class="card form" hx-put="/shift/{{ shift.id }}" hx-target="#shift-edit-results">
+  <div class="form-item">
+    <label>Title:</label>
+    <input type="text" name="title" value="{{ shift.title }}"/>
+  </div>
+  <div class="form-item">
+    <label>Start Time:</label>
+    <input type="time" name="start_time" value="{{ shift.start_time }}"/>
+  </div>
+  <div class="form-item">
+    <label>End Time:</label>
+    <input type="time" name="end_time" value="{{ shift.end_time }}"/>
+  </div>
+  <div class="form-item">
+    <label>Description:</label>
+    <textarea name="description" rows="5" {% if let Some(d) = shift.description %}value="{{ d }}"{% endif %}></textarea>
+  </div>
+  <div class="form-item">
+    <label>Allow public signups</label>
+    <input name="public_signup" type="checkbox" {% if shift.public_signup %}checked{% endif %}/>
+    <div class="spacer"></div>
+  </div>
+  <div class="form-item">
+    <button hx-indicator="this" hx-get="/shift/{{ shift.id }}" hx-target="closest form" hx-swap="outerHTML">Cancel</button>
+    <button type="submit" hx-indicator="this">Submit</button>
+  </div>
+  <div id="edit_shift_results" class="form-item"></div>
+</form>

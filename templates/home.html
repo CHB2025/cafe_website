@@ -1,5 +1,5 @@
 {% if let Some(id) = event%}
-  <span hx-get="/event/{{ id }}" hx-trigger="load" hx-swap="outerHTML" hx-indicator="this"></span>
+  <span hx-get="/event/{{ id }}" hx-trigger="load" hx-push-url="false" hx-indicator="this"></span>
 {% else %}
   <p>Unfortunately we have nothing to sign up for right now. Please come back later.</p>
 {% endif %}

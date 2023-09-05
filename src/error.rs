@@ -24,7 +24,7 @@ const ISE: AppError = AppError(
     DisplayKind::Block,
 );
 const NOT_FOUND: AppError = AppError(
-    StatusCode::INTERNAL_SERVER_ERROR,
+    StatusCode::NOT_FOUND,
     "The requested resource could not be found",
     DisplayKind::Block,
 );

@@ -86,6 +86,9 @@ div.nav-right {
   justify-content: center;
   align-items: center;
 }
+.nav-item.title {
+  padding-right: 0.7rem;
+}
 .nav-item.button {
   padding: 0.7rem;
   border-left: 1px solid gray;
