@@ -1,4 +1,4 @@
-<form class="card form" hx-put="/shift/{{ shift.id }}" hx-target="#shift-edit-results">
+<form class="form card" hx-put="/shift/{{ shift.id }}" hx-target="#edit-shift-results" hx-push-url="false">
   <div class="form-item">
     <label>Title:</label>
     <input type="text" name="title" value="{{ shift.title }}"/>
@@ -13,7 +13,7 @@
   </div>
   <div class="form-item">
     <label>Description:</label>
-    <textarea name="description" rows="5" {% if let Some(d) = shift.description %}value="{{ d }}"{% endif %}></textarea>
+    <textarea name="description" rows="5">{% if let Some(d) = shift.description %}{{ d }}{% endif %}</textarea>
   </div>
   <div class="form-item">
     <label>Allow public signups</label>
@@ -21,8 +21,8 @@
     <div class="spacer"></div>
   </div>
   <div class="form-item">
+    <button class="primary" type="submit">Submit</button>
     <button hx-indicator="this" hx-get="/shift/{{ shift.id }}" hx-target="closest form" hx-swap="outerHTML">Cancel</button>
-    <button type="submit" hx-indicator="this">Submit</button>
   </div>
-  <div id="edit_shift_results" class="form-item"></div>
+  <div id="edit-shift-results" class="form-item"></div>
 </form>

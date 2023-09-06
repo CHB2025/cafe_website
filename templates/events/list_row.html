@@ -1,5 +1,5 @@
 <tr hx-target="this" hx-swap="outerHTML" hx-push-url="false">
-  <td><a href="/event/{{ event.id }}" hx-boost hx-target="#content" hx-push-url hx-swap="innerHTML">{{ event.name }}</a></td>
+  <td><a href="/event/{{ event.id }}" hx-target="#content"  hx-push-url="true" hx-swap="innerHTML">{{ event.name }}</a></td>
   <td>{{ event.start_date }}</td>
   <td>{{ event.end_date }}</td>
   <td>{{ event.allow_signups }}</td>

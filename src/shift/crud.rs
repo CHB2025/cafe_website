@@ -8,9 +8,7 @@ use crate::{app_state::AppState, error::AppError};
 #[derive(Serialize, Deserialize)]
 pub struct ShiftUpdate {
     title: String,
-    #[serde(deserialize_with = "crate::time_ext::deserialize_time")]
     start_time: NaiveTime,
-    #[serde(deserialize_with = "crate::time_ext::deserialize_time")]
     end_time: NaiveTime,
     description: Option<String>,
     public_signup: Option<String>,
@@ -31,11 +29,10 @@ pub async fn update_shift(
         id
     ).execute(app_state.pool()).await?;
     Ok(Html(format!(
-        r##"<span class="success" hx-get="/shift/{id}" hx-target="first form" hx-swap="outerHTML" hx-trigger="load:delay 2s">Success</span>"##
+        r##"<span class="success" hx-get="/shift/{id}" hx-target="closest form" hx-swap="outerHTML" hx-trigger="load delay:2s">Success</span>"##
     )))
 }
 
-// Don't know if this is working at all yet.
 pub async fn delete_shift(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -55,6 +52,6 @@ pub async fn delete_shift(
     ).fetch_one(app_state.pool()).await?;
 
     Ok(Html(format!(
-        r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load:delay 2s">Success</span>"##
+        r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load delay:2s">Success</span>"##
     )))
 }

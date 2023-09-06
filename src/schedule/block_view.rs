@@ -47,7 +47,7 @@ pub async fn schedule(
     } else {
         sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE day_id = $1 AND public_signup AND worker_id = NULL ORDER BY start_time, title ASC",
+            "SELECT * FROM shift WHERE day_id = $1 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
             day_id,
         )
         .fetch_all(app_state.pool())
