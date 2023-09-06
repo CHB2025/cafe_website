@@ -1,7 +1,7 @@
 {% if !public %}
   <div class="schedule-controls" hx-target="#modal">
       <button hx-get="/schedule/{{ day_id }}/add_shift">Add Shift</button>
-      <button hx-get="/todo">Copy</button>
+      <button hx-get="/schedule/{{ day_id }}/copy">Copy</button>
   </div>
 {% endif %}
 <div class="schedule">
