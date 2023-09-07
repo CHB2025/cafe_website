@@ -34,7 +34,13 @@ form {
 .form-item > .spacer {
   flex: 3 0 0;
 }
-input[type=text], input[type=email], input[type=password], input[type=date], input[type=time], select {
+input[type=text], 
+input[type=email], 
+input[type=password], 
+input[type=date], 
+input[type=time], 
+input[type=phone],
+select {
   flex: 3 1 0;
   border-radius: 0.4rem;
   border: 1px solid lightgray;
