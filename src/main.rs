@@ -1,3 +1,5 @@
+use std::{net::SocketAddr, path::PathBuf};
+
 use app_state::AppState;
 use axum::{
     body::{boxed, Body, BoxBody, Bytes, HttpBody},
@@ -7,12 +9,14 @@ use axum::{
     routing::get,
     Router,
 };
+use axum_server::tls_rustls::RustlsConfig;
 use axum_sessions::{async_session, extractors::ReadableSession, SessionHandle, SessionLayer};
 use error::AppError;
 use models::User;
 use rand::Rng;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
+use tracing_subscriber::prelude::*;
 
 mod accounts;
 mod app_state;
@@ -29,13 +33,26 @@ pub(crate) mod utils;
 
 #[tokio::main]
 async fn main() {
+    // Sessions
     let store = async_session::MemoryStore::new(); // Should create adapter for postgres store?
     let mut secret = [0u8; 128];
     rand::thread_rng().fill(&mut secret[..]);
     let session_layer = SessionLayer::new(store, &secret);
 
+    // Tracing
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "cafe_website=debug,tower_http=debug,axum::rejection=trace".into()
+            }),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    // State
     let app_state = AppState::init().await;
 
+    // Routes
     let auth_routes = Router::new()
         .nest("/schedule", schedule::protected_router())
         .nest("/event", events::protected_router())
@@ -44,16 +61,17 @@ async fn main() {
         .layer(middleware::from_fn(auth_layer));
 
     let public_routes = Router::new()
+        .route("/", get(home::view))
+        .route("/nav", get(navigation::navigation))
+        .route("/login", get(accounts::login_form).post(accounts::login))
+        .route("/logout", get(accounts::logout))
         .nest("/event", events::public_router())
         .nest("/schedule", schedule::public_router())
         .nest("/account", accounts::public_router())
         .nest("/shift", shift::public_router());
 
+    // App
     let app = Router::new()
-        .route("/", get(home::view))
-        .route("/nav", get(navigation::navigation))
-        .route("/login", get(accounts::login_form).post(accounts::login))
-        .route("/logout", get(accounts::logout))
         .merge(public_routes)
         .merge(auth_routes)
         .with_state(app_state)
@@ -66,7 +84,23 @@ async fn main() {
                 .layer(TraceLayer::new_for_http()),
         );
 
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    // TLS config
+    // Currently errors out if certs aren't there, but could be setup to run https only if they are
+    let config = RustlsConfig::from_pem_file(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("certs")
+            .join("cert.pem"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("certs")
+            .join("key.pem"),
+    )
+    .await
+    .unwrap();
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+
+    tracing::debug!("listening on {}", addr);
+    axum_server::bind_rustls(addr, config)
         .serve(app.into_make_service())
         .await
         .unwrap();

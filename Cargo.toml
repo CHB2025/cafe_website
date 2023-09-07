@@ -9,6 +9,7 @@ edition = "2021"
 askama = { version = "0.12.0", features = ["with-axum", "markdown"] }
 askama_axum = "0.3.0"
 axum = "0.6.19"
+axum-server = { version = "0.5.1", features = ["tls-rustls"] }
 axum-sessions = "0.5.0"
 chrono = { version = "0.4.26", features = ["serde"] }
 dotenvy = "0.15.7"
@@ -20,4 +21,6 @@ sqlx = { version = "0.7.1", features = ["runtime-tokio", "tls-rustls", "postgres
 tokio = { version = "1.29.1", features = ["full"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.3", features = ["fs", "trace"] }
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 uuid = { version = "1.4.1", features = ["serde", "v4", "v7"] }
