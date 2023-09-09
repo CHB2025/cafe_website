@@ -1,33 +1,19 @@
-<form class="card form" method="POST" hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results" hx-push-url="false">
-  <div class="form-item" hx-target="closest form" hx-swap="outerHTML">
-    <label>Email:</label>
-    <input
-      type="email"
-      name="email"
-      hx-get="/shift/{{ shift.id }}/signup"
-      {% if let Some(email) = email %}
-      value="{{ email }}"
-      {% endif %}
-    />
+{% match worker %}
+  {% when None %}
+  <div class="form-item" style="margin-top:1rem">
+    <label>First Name:</label>
+    <input type="text" name="first_name" required/>
   </div>
-  {% if show_all %}
-    <div class="form-item">
-      <label>First Name:</label>
-      <input type="text" name="first_name" required/>
-    </div>
-    <div class="form-item">
-      <label>Last Name:</label>
-      <input type="text" name="last_name" required/>
-    </div>
-    <div class="form-item">
-      <label>Phone number:</label>
-      <input type="phone" name="phone_number"/>
-    </div>
-  {% endif %}
   <div class="form-item">
-    <button class="cancel" hx-get="/shift/{{ shift.id }}" hx-target="closest form" hx-swap="outerHTML">Cancel</button>
-    // <button class="primary" type="submit">Signup</button>
+    <label>Last Name:</label>
+    <input type="text" name="last_name" required/>
   </div>
-  <div class="form-item" id="signup-results"></div>
-</form>
- 
+  <div class="form-item">
+    <label>Phone number:</label>
+    <input type="phone" name="phone_number"/>
+  </div>
+  {% when Some with (worker) %}
+  <div class="form-item" style="margin-top:1rem">
+    <p>Welcome, {{ worker.name_first }}</p>
+  </div>
+{% endmatch %}

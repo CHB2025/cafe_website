@@ -13,9 +13,10 @@ use crud::{delete_shift, update_shift};
 use view::{edit_form, view};
 
 pub fn public_router() -> Router<AppState> {
-    Router::new()
-        .route("/:id", get(view))
-        .route("/:id/signup", get(signup::signup_form))
+    Router::new().route("/:id", get(view)).route(
+        "/:id/signup",
+        get(signup::signup_form).patch(signup::signup),
+    )
 }
 
 pub fn protected_router() -> Router<AppState> {
