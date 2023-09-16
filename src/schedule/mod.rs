@@ -1,6 +1,7 @@
 mod add_shift;
 mod block_view;
 mod copy;
+mod list_view;
 
 pub use add_shift::*;
 use axum::{
@@ -45,5 +46,7 @@ pub fn protected_router() -> Router<AppState> {
 }
 
 pub fn public_router() -> Router<AppState> {
-    Router::new().route("/:id", get(block_view::schedule))
+    Router::new()
+        .route("/:id", get(block_view::schedule))
+        .route("/:id/list", get(list_view::list_view))
 }

@@ -14,7 +14,7 @@ div.schedule-controls {
 	padding-bottom: 1rem;
 }
 
-div.schedule-controls > div {
+div.schedule-controls>div {
 	flex: 1 1 0;
 	display: flex;
 	justify-content: center;
@@ -44,18 +44,46 @@ div.schedule-controls > div {
 	border-top: 1px solid lightgray;
 }
 
-.schedule-column + .schedule-column {
+.schedule-column+.schedule-column {
 	margin-left: 1rem;
 }
 
 .schedule .shift {
-  border-radius: 1rem;
-  background: white;
+	border-radius: 1rem;
+	background: white;
 	border: 2px solid lightgray;
-  padding: 0rem 0.6rem;
+	padding: 0rem 0.6rem;
 	overflow: hidden;
 }
 
 .schedule .shift:hover {
 	box-shadow: 0px 1px 2px lightgray;
+}
+
+.schedule-list {
+	display: flex;
+	flex-direction: column;
+	min-height: 60rem;
+	height: 100%;
+	position: relative;
+	width: 100%;
+
+}
+
+.schedule-list dt {
+	font-weight: bold;
+	border-top: 0.1rem solid;
+	line-height: 1.5rem;
+	font-size: 1.4rem;
+	padding-bottom: 0.5rem;
+}
+
+.schedule-list dd+dt {
+	margin-top: 2rem;
+}
+
+.schedule-list dd {
+	line-height: 1.3rem;
+	font-size: 1.2rem;
+	padding-bottom: 0.3rem;
 }

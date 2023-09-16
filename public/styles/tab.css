@@ -20,6 +20,8 @@ button[role=tab] {
 
 button[role=tab]:hover {
   padding: 0.85rem 0.7rem;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
 }
 
 button[role=tab].selected {
