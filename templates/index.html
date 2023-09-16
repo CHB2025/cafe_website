@@ -1,26 +1,33 @@
 <!doctype html>
 <html>
-  <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
-      <title>Cornerstone Cafe</title>
-      <link rel="stylesheet" href="/styles/index.css">
-      <link rel="stylesheet" href="/styles/form.css">
-      <link rel="stylesheet" href="/styles/list.css">
-      <link rel="stylesheet" href="/styles/schedule.css">
-      <link rel="stylesheet" href="/styles/tab.css">
-      <link rel="stylesheet" href="/styles/modal.css">
-      <script src="https://unpkg.com/htmx.org@1.9.5" integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO" crossorigin="anonymous"></script>
-      <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
-  </head>
-  <body hx-boost="true">
-    <div id="navigation" hx-get="/nav" hx-swap="outerHTML" hx-trigger="load"></div>
-    <div id="content" hx-push-url="true" hx-target="#content">
-      {{ content|safe }}
-    </div>
-    <div id="modal" hx-on:click="if (event.target.id==='modal') {this.innerHTML = ''}" hx-on::after-request="if (event.detail.target.id==='content') {this.innerHTML = ''}"></div>
-  </body>
-  <foot>
-      <script src="/setup.js"></script>
-  </foot>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+  <title>Cornerstone Cafe</title>
+  <link rel="stylesheet" href="/styles/index.css">
+  <link rel="stylesheet" href="/styles/form.css">
+  <link rel="stylesheet" href="/styles/list.css">
+  <link rel="stylesheet" href="/styles/schedule.css">
+  <link rel="stylesheet" href="/styles/tab.css">
+  <link rel="stylesheet" href="/styles/modal.css">
+  <script src="https://unpkg.com/htmx.org@1.9.5"
+    integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+</head>
+
+<body hx-boost="true">
+  <div id="navigation" hx-get="/nav" hx-swap="outerHTML" hx-trigger="load"></div>
+  <div id="content" hx-push-url="true" hx-target="#content">
+    {{ content|safe }}
+  </div>
+  <div id="modal" hx-on:click="if (event.target.id==='modal') {this.innerHTML = ''}"
+    hx-on::after-request="if (event.detail.target.id==='content') {this.innerHTML = ''}"></div>
+</body>
+<foot>
+  <script src="/setup.js"></script>
+</foot>
+
 </html>

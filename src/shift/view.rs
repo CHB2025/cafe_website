@@ -1,35 +1,25 @@
 use askama::Template;
 use axum::extract::{Path, State};
 use axum_sessions::extractors::ReadableSession;
-use chrono::NaiveTime;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, models::User};
+use crate::{
+    app_state::AppState,
+    error::AppError,
+    models::{Shift, User},
+};
 
 #[derive(Debug, Template, Clone)]
 #[template(path = "shift/view.html")]
 pub struct ShiftTemplate {
-    shift: ShiftWithEvent,
+    shift: Shift,
     logged_in: bool,
 }
 
 #[derive(Debug, Template, Clone)]
 #[template(path = "shift/edit.html")]
 pub struct ShiftEditTemplate {
-    shift: ShiftWithEvent,
-}
-
-#[derive(Debug, Clone)]
-struct ShiftWithEvent {
-    id: Uuid,
-    day_id: Uuid,
-    event_id: Uuid,
-    worker_id: Option<Uuid>,
-    start_time: NaiveTime,
-    end_time: NaiveTime,
-    title: String,
-    description: Option<String>,
-    public_signup: bool,
+    shift: Shift,
 }
 
 pub async fn view(
@@ -40,11 +30,9 @@ pub async fn view(
     let logged_in =
         !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
     let shift = sqlx::query_as!(
-        ShiftWithEvent,
-        "SELECT s.*, e.id as event_id 
+        Shift,
+        "SELECT s.* 
         FROM shift as s
-        INNER JOIN day as d ON s.day_id = d.id
-        INNER JOIN event as e ON d.event_id = e.id
         WHERE s.id = $1
         ",
         id
@@ -60,11 +48,9 @@ pub async fn edit_form(
     Path(id): Path<Uuid>,
 ) -> Result<ShiftEditTemplate, AppError> {
     let shift = sqlx::query_as!(
-        ShiftWithEvent,
-        "SELECT s.*, e.id as event_id 
+        Shift,
+        "SELECT s.*
         FROM shift as s
-        INNER JOIN day as d ON s.day_id = d.id
-        INNER JOIN event as e ON d.event_id = e.id
         WHERE s.id = $1
         ",
         id

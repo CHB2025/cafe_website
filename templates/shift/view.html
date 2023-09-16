@@ -2,21 +2,25 @@
   <h3>{{ shift.title }}</h3>
   <p>{{ shift.start_time }} - {{ shift.end_time }}</p>
   {% if let Some(description) = shift.description %}
-    <p>{{ description|markdown }}</p>
+  <p>{{ description|markdown }}</p>
   {% endif %}
   {% if logged_in %}
-    <p>Worker information here</p>
+  <p>Worker information here</p>
   {% endif %}
   {% if logged_in || (shift.worker_id.is_none() && shift.public_signup) %}
   <form hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results">
     <div class="form-item" hx-target="next span" hx-swap="innerHTML">
       <label>Email:</label>
-      <input type="email" name="email" hx-get="/shift/{{ shift.id }}/signup" hx-trigger="change" hx-indicator="closest div" hx-sync="closest form:replace"/>
-    </div> 
+      <input type="email" name="email" hx-get="/shift/{{ shift.id }}/signup" hx-trigger="change"
+        hx-indicator="closest div" hx-sync="closest form:replace" />
+    </div>
     <span style="display:contents"></span>
     <div class="form-item" id="signup-results"></div>
     <div class="form-item">
       <button class="primary" type="submit">Signup</button>
+      <button hx-on:click="document.getElementById('modal').innerHTML = ''">
+        Cancel
+      </button>
     </div>
   </form>
   {% endif %}
@@ -26,12 +30,4 @@
     <button hx-delete="/shift/{{ shift.id }}" hx-confirm="Are you sure you want to delete this shift?">Delete</button>
   </div>
   {% endif %}
-  <button
-    hx-get="/event/{{ shift.event_id }}?day={{ shift.day_id }}"
-    hx-target="#content"
-    hx-swap="innerHTML"
-    hx-push-url="true"
-  >
-    Cancel
-  </button>
 </div>

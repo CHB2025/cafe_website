@@ -1,9 +1,14 @@
 use askama::Template;
 use axum::extract::{Path, State};
+use axum_sessions::extractors::ReadableSession;
 use chrono::NaiveTime;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, models::Shift};
+use crate::{
+    app_state::AppState,
+    error::AppError,
+    models::{Shift, User},
+};
 
 #[derive(Template)]
 #[template(path = "schedule/list_view.html")]
@@ -19,15 +24,28 @@ struct ShiftGroup {
 
 pub async fn list_view(
     State(app_state): State<AppState>,
+    session: ReadableSession,
     Path(id): Path<Uuid>,
 ) -> Result<ListViewTemplate, AppError> {
-    let shifts = sqlx::query_as!(
-        Shift,
-        "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time ASC",
-        id
-    )
-    .fetch_all(app_state.pool())
-    .await?;
+    let logged_in =
+        !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
+
+    let shifts = if logged_in {
+        sqlx::query_as!(
+            Shift,
+            "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time ASC",
+            id
+        )
+        .fetch_all(app_state.pool())
+        .await?
+    } else {
+        sqlx::query_as!(
+            Shift,
+            "SELECT * FROM shift WHERE day_id = $1 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
+            id
+        ).fetch_all(app_state.pool())
+        .await?
+    };
 
     let start_time = shifts
         .first()
