@@ -76,6 +76,7 @@ where
             self.order_dir = !self.order_dir;
         } else {
             self.order_by = order;
+            self.order_dir = OrderDirection::Asc;
         }
         self
     }

@@ -31,6 +31,7 @@ mod schedule;
 mod shift;
 mod time_ext;
 pub(crate) mod utils;
+mod worker;
 
 #[tokio::main]
 async fn main() {
@@ -59,6 +60,7 @@ async fn main() {
         .nest("/event", events::protected_router())
         .nest("/account", accounts::protected_router())
         .nest("/shift", shift::protected_router())
+        .nest("/worker", worker::protected_router())
         .layer(middleware::from_fn(auth_layer));
 
     let public_routes = Router::new()

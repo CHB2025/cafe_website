@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::StatusCode,
     response::Html,
     routing::{get, patch},
@@ -11,18 +11,25 @@ mod list;
 mod list_row;
 mod pagination;
 mod view;
-mod worker_list;
 
 use crud::*;
 use list::*;
 use list_row::*;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{app_state::AppState, models::Event, utils};
 
 use self::view::view;
 
+#[derive(Serialize, Deserialize)]
+pub struct EventOptionQuery {
+    selected: Option<Uuid>,
+}
+
 pub async fn event_option_list(
     State(app_state): State<AppState>,
+    Query(query): Query<EventOptionQuery>,
 ) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
     let conn = app_state.pool();
     let events = sqlx::query_as!(Event, "SELECT * from event ORDER BY start_date ASC")
@@ -31,7 +38,14 @@ pub async fn event_option_list(
         .map_err(utils::ise)?;
     let result: String = events
         .iter()
-        .map(|e| format!("<option value=\"{}\">{}</option>", e.id, e.name))
+        .map(|e| {
+            let sel = if query.selected.is_some_and(|s_id| s_id == e.id) {
+                "selected"
+            } else {
+                ""
+            };
+            format!("<option value=\"{}\" {}>{}</option>", e.id, sel, e.name)
+        })
         .collect();
     Ok(Html(result))
 }
@@ -39,7 +53,6 @@ pub async fn event_option_list(
 pub fn protected_router() -> Router<AppState> {
     Router::new()
         .route("/:id", patch(patch_event).delete(delete_event))
-        .route("/:id/workers", get(worker_list::worker_list))
         .route("/create", get(create_event_form).post(create_event))
         .route("/option_list", get(event_option_list))
         .route("/list", get(event_list))
