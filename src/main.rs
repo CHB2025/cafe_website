@@ -26,6 +26,7 @@ mod home;
 mod index;
 pub mod models;
 mod navigation;
+mod pagination;
 mod schedule;
 mod shift;
 mod time_ext;

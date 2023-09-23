@@ -1,0 +1,7 @@
+<tr>
+  <td>{{ worker.name_first }}</td>
+  <td>{{ worker.name_last }}</td>
+  <td>{{ worker.email }}</td>
+  <td>{{ worker.phone.clone().unwrap_or("".to_owned()) }}</td>
+  <td>{{ worker.shifts.unwrap_or(0) }}</td>
+</tr>

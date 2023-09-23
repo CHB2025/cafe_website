@@ -11,6 +11,7 @@ mod list;
 mod list_row;
 mod pagination;
 mod view;
+mod worker_list;
 
 use crud::*;
 use list::*;
@@ -38,6 +39,7 @@ pub async fn event_option_list(
 pub fn protected_router() -> Router<AppState> {
     Router::new()
         .route("/:id", patch(patch_event).delete(delete_event))
+        .route("/:id/workers", get(worker_list::worker_list))
         .route("/create", get(create_event_form).post(create_event))
         .route("/option_list", get(event_option_list))
         .route("/list", get(event_list))

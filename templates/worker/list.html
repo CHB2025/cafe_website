@@ -1,0 +1,34 @@
+{% macro order_class(key) %}
+{% if query.order_by.to_string() == key %}
+ordered {{ query.order_dir }}
+{% else %}
+orderable
+{% endif %}
+{% endmacro %}
+
+<div class="worker-list card">
+  <table class="list" cellspacing="0">
+    <thead>
+      <th class='{% call order_class("name_first") %}'
+        hx-get="/worker/list?{{ query.with_order(WorkerOrderBy::NameFirst) }}">First Name</th>
+      <th class='{% call order_class("name_last") %}'
+        hx-get="/worker/list?{{ query.with_order(WorkerOrderBy::NameLast )}}">Last Name</th>
+      <th class='{% call order_class("email") %}' hx-get="/worker/list?{{ query.with_order(WorkerOrderBy::Email )}}">
+        Email</th>
+      <th class='{% call order_class("phone") %}' hx-get="/worker/list?{{ query.with_order(WorkerOrderBy::Phone )}}">
+        Phone Number</th>
+      <th class='{% call order_class("shift_count") %}'
+        hx-get="/worker/list?{{ query.with_order(WorkerOrderBy::Shifts )}}">Shifts</th>
+    </thead>
+    <tbody>
+      {% for worker in workers %}
+      {% include "list_row.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="list-controls">
+    <button {% if query.skip==0 %}disabled{% endif %} hx-get="/worker/list?{{ query.previous() }}">Previous</button>
+    <div class="current-page">{{ current_page }}/{{ page_count }}</div>
+    <button {% if current_page==page_count %}disabled{% endif %} hx-get="/worker/list?{{ query.next() }}">Next</button>
+  </div>
+</div>
