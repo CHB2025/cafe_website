@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use axum_sessions::extractors::ReadableSession;
 use chrono::NaiveTime;
 use uuid::Uuid;
 
@@ -24,11 +23,10 @@ struct ShiftGroup {
 
 pub async fn list_view(
     State(app_state): State<AppState>,
-    session: ReadableSession,
+    user: Option<User>,
     Path(id): Path<Uuid>,
 ) -> Result<ListViewTemplate, AppError> {
-    let logged_in =
-        !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
+    let logged_in = user.is_some();
 
     let shifts = if logged_in {
         sqlx::query_as!(

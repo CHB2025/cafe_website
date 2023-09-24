@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
-use axum_sessions::extractors::WritableSession;
 use scrypt::password_hash::rand_core::OsRng;
 use scrypt::password_hash::{self, PasswordHasher, SaltString};
 use scrypt::Scrypt;
@@ -19,7 +18,6 @@ pub async fn account_creation_form() -> AccountCreateTemplate {
 }
 
 pub async fn create_account(
-    mut session: WritableSession,
     State(app_state): State<AppState>,
     Form(mut user): Form<CreateUser>,
 ) -> Result<Html<&'static str>, (StatusCode, Html<&'static str>)> {
@@ -46,7 +44,7 @@ pub async fn create_account(
 
     user.password = pwd_fut.await.map_err(utils::ise)?.map_err(utils::ise)?;
 
-    let new_user = sqlx::query_as!(
+    let _new_user = sqlx::query_as!(
         User,
         "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
         user.name,
@@ -57,7 +55,7 @@ pub async fn create_account(
     .await
     .map_err(utils::ise)?;
 
-    session.insert("user", new_user).expect("serializable");
+    // TODO: Create session for new user
 
     Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
 }

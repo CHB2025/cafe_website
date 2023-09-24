@@ -1,7 +1,8 @@
 use std::{error::Error, fmt};
 
 use askama::Template;
-use axum::{http::StatusCode, response::IntoResponse};
+use askama_axum::IntoResponse;
+use axum::http::StatusCode;
 
 #[derive(Template, Debug)]
 #[template(path = "error.html")]
@@ -66,6 +67,23 @@ impl From<sqlx::Error> for AppError {
 impl From<serde_urlencoded::ser::Error> for AppError {
     fn from(_: serde_urlencoded::ser::Error) -> Self {
         ISE
+    }
+}
+
+impl From<tokio::task::JoinError> for AppError {
+    fn from(_: tokio::task::JoinError) -> Self {
+        ISE
+    }
+}
+
+impl From<scrypt::password_hash::Error> for AppError {
+    fn from(err: scrypt::password_hash::Error) -> Self {
+        match err {
+            scrypt::password_hash::Error::Password => {
+                Self::inline(StatusCode::BAD_REQUEST, "Invalid username or password")
+            }
+            _ => ISE,
+        }
     }
 }
 

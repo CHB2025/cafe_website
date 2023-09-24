@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use axum_sessions::extractors::ReadableSession;
 use uuid::Uuid;
 
 use crate::{
@@ -25,10 +24,9 @@ pub struct ShiftEditTemplate {
 pub async fn view(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
-    session: ReadableSession,
+    user: Option<User>,
 ) -> Result<ShiftTemplate, AppError> {
-    let logged_in =
-        !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
+    let logged_in = user.is_some();
     let shift = sqlx::query_as!(
         Shift,
         "SELECT s.* 

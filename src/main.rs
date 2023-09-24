@@ -10,10 +10,10 @@ use axum::{
     Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
-use axum_sessions::{async_session, extractors::ReadableSession, SessionHandle, SessionLayer};
+
 use error::AppError;
 use models::User;
-use rand::Rng;
+
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
 use tracing_subscriber::prelude::*;
@@ -28,6 +28,7 @@ pub mod models;
 mod navigation;
 mod pagination;
 mod schedule;
+mod session;
 mod shift;
 mod time_ext;
 pub(crate) mod utils;
@@ -35,12 +36,6 @@ mod worker;
 
 #[tokio::main]
 async fn main() {
-    // Sessions
-    let store = async_session::MemoryStore::new(); // Should create adapter for postgres store?
-    let mut secret = [0u8; 128];
-    rand::thread_rng().fill(&mut secret[..]);
-    let session_layer = SessionLayer::new(store, &secret);
-
     // Tracing
     tracing_subscriber::registry()
         .with(
@@ -61,7 +56,10 @@ async fn main() {
         .nest("/account", accounts::protected_router())
         .nest("/shift", shift::protected_router())
         .nest("/worker", worker::protected_router())
-        .layer(middleware::from_fn(auth_layer));
+        .layer(middleware::from_fn_with_state(
+            app_state.clone(),
+            auth_layer,
+        ));
 
     let public_routes = Router::new()
         .route("/", get(home::view))
@@ -81,8 +79,6 @@ async fn main() {
         .fallback(get_static_files)
         .layer(
             ServiceBuilder::new()
-                .layer(session_layer)
-                .layer(middleware::from_fn(auth_changes_layer))
                 .layer(middleware::from_fn(html_wrapper))
                 .layer(TraceLayer::new_for_http()),
         );
@@ -109,35 +105,18 @@ async fn main() {
         .unwrap();
 }
 
-async fn auth_changes_layer<B>(request: Request<B>, next: Next<B>) -> impl IntoResponse {
-    let session_handle = request //use session handle so it doesn't lock it
-        .extensions()
-        .get::<SessionHandle>()
-        .cloned()
-        .expect("Session handle should exist");
-    let mut res = next.run(request).await;
-    if session_handle.read().await.data_changed() {
-        res.headers_mut().append(
-            "HX-Trigger",
-            "auth-change".parse().expect("Valid header value"),
-        );
-    }
-    res
-}
-
 async fn auth_layer<B>(
-    session: ReadableSession,
+    user_session: Option<User>,
     request: Request<B>,
     next: Next<B>,
 ) -> Result<Response<BoxBody>, AppError> {
-    if session.is_destroyed() || session.is_expired() || session.get::<User>("user").is_none() {
+    if user_session.is_none() {
         return Err(AppError::redirect(
             StatusCode::UNAUTHORIZED,
             "Restricted",
             format!("/login?from={}", request.uri()),
         ));
     }
-    drop(session);
     Ok(next.run(request).await)
 }
 

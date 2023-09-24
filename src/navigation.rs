@@ -1,5 +1,4 @@
 use askama::Template;
-use axum_sessions::extractors::ReadableSession;
 
 use crate::models::User;
 
@@ -10,11 +9,8 @@ pub struct Nav {
     right: Vec<(String, String)>,
 }
 
-pub async fn navigation(session: ReadableSession) -> Nav {
-    let (left, right) = if session.is_destroyed()
-        || session.is_expired()
-        || session.get::<User>("user").is_none()
-    {
+pub async fn navigation(user: Option<User>) -> Nav {
+    let (left, right) = if user.is_none() {
         (vec![], vec![("Log In".to_string(), "/login".to_string())])
     } else {
         (

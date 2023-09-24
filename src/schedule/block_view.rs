@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use axum_sessions::extractors::ReadableSession;
 use chrono::{Duration, NaiveTime, Timelike};
 use uuid::Uuid;
 
@@ -30,11 +29,10 @@ pub struct ScheduleItemTemplate {
 
 pub async fn schedule(
     State(app_state): State<AppState>,
-    session: ReadableSession,
+    user: Option<User>, // wasteful db request. Should just validate session without getting user
     Path(day_id): Path<Uuid>,
 ) -> Result<ScheduleTemplate, AppError> {
-    let logged_in =
-        !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
+    let logged_in = user.is_some();
 
     let shifts = if logged_in {
         sqlx::query_as!(

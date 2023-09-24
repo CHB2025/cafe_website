@@ -5,7 +5,6 @@ use axum::{
     response::Html,
     Form,
 };
-use axum_sessions::extractors::ReadableSession;
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -47,15 +46,14 @@ pub async fn signup_form(
 
 pub async fn signup(
     State(app_state): State<AppState>,
-    session: ReadableSession,
+    user: Option<User>,
     Path(id): Path<Uuid>,
     Form(body): Form<SignupBody>,
 ) -> Result<Html<String>, AppError> {
     // TODO: validate email and phone
     // TODO: send email with link to cancel signup
 
-    let logged_in =
-        !session.is_destroyed() && !session.is_expired() && session.get::<User>("user").is_some();
+    let logged_in = user.is_some();
     let tran = app_state.pool().begin().await?;
     let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
         .fetch_one(app_state.pool())
