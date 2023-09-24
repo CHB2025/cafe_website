@@ -1,12 +1,15 @@
 use askama::Template;
+use askama_axum::IntoResponse;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
+use axum_extra::extract::PrivateCookieJar;
 use scrypt::password_hash::rand_core::OsRng;
 use scrypt::password_hash::{self, PasswordHasher, SaltString};
 use scrypt::Scrypt;
 use tokio::task::spawn_blocking;
 
+use crate::error::AppError;
 use crate::models::User;
-use crate::utils;
+use crate::session::create_session;
 use crate::{app_state::AppState, models::CreateUser};
 
 #[derive(Template)]
@@ -19,8 +22,9 @@ pub async fn account_creation_form() -> AccountCreateTemplate {
 
 pub async fn create_account(
     State(app_state): State<AppState>,
+    cookie_jar: PrivateCookieJar,
     Form(mut user): Form<CreateUser>,
-) -> Result<Html<&'static str>, (StatusCode, Html<&'static str>)> {
+) -> Result<impl IntoResponse, AppError> {
     // TODO: add path wildcard and Hashmap/database table for invitations
 
     let pswd = user.password.clone();
@@ -32,19 +36,18 @@ pub async fn create_account(
     let conn = app_state.pool();
     let already_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", user.email)
         .fetch_optional(conn)
-        .await
-        .map_err(utils::ise)?;
+        .await?;
     if already_exists.is_some() {
         pwd_fut.abort();
-        return Err((
+        return Err(AppError::inline(
             StatusCode::CONFLICT,
-            Html("<span class=\"error\">Email already taken</span>"),
+            "Email already taken",
         ));
     }
 
-    user.password = pwd_fut.await.map_err(utils::ise)?.map_err(utils::ise)?;
+    user.password = pwd_fut.await??;
 
-    let _new_user = sqlx::query_as!(
+    let new_user = sqlx::query_as!(
         User,
         "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
         user.name,
@@ -52,10 +55,10 @@ pub async fn create_account(
         user.password
     )
     .fetch_one(conn)
-    .await
-    .map_err(utils::ise)?;
+    .await?;
 
-    // TODO: Create session for new user
-
-    Ok(Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>"))
+    Ok((
+        create_session(cookie_jar, new_user.id),
+        Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>")
+    ))
 }

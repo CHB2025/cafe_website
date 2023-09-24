@@ -1,6 +1,9 @@
 use crate::{app_state::AppState, error::AppError, models::User};
 use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
-use axum_extra::extract::{cookie::Key, PrivateCookieJar};
+use axum_extra::extract::{
+    cookie::{Cookie, Key, SameSite},
+    PrivateCookieJar,
+};
 use uuid::Uuid;
 
 #[async_trait]
@@ -29,4 +32,17 @@ impl FromRequestParts<AppState> for Option<User> {
 
         Ok(Some(user))
     }
+}
+
+pub fn create_session(jar: PrivateCookieJar, user_id: Uuid) -> PrivateCookieJar {
+    let mut cookie = Cookie::new("session", user_id.to_string());
+    cookie.set_secure(true);
+    cookie.set_http_only(true);
+    cookie.set_expires(None);
+    cookie.set_same_site(SameSite::Strict);
+    jar.add(cookie)
+}
+
+pub fn destroy_session(jar: PrivateCookieJar) -> PrivateCookieJar {
+    jar.remove(Cookie::named("session"))
 }

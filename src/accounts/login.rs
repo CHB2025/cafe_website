@@ -5,16 +5,20 @@ use axum::{
     response::{Html, IntoResponse},
     Form,
 };
-use axum_extra::extract::{cookie::Cookie, PrivateCookieJar};
+use axum_extra::extract::PrivateCookieJar;
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
     Scrypt,
 };
 use serde::{Deserialize, Serialize};
 use tokio::task::spawn_blocking;
-use tracing::log::debug;
 
-use crate::{app_state::AppState, error::AppError, models::User};
+use crate::{
+    app_state::AppState,
+    error::AppError,
+    models::User,
+    session::{create_session, destroy_session},
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginParams {
@@ -66,15 +70,10 @@ pub async fn login(
     .await??;
 
     let name = user.name.clone();
-    //session.insert("user", user).expect("serializable");
-    let session = Cookie::new("session", user.id.to_string());
-    // Set secure, samesite, and expires
-    debug!("{}", session.to_string());
-    let cookie_jar = cookie_jar.add(session);
 
     Ok((
-        cookie_jar,
         // ["HX-Trigger", "auth-change"],
+        create_session(cookie_jar, user.id),
         Html(format!(
             r##"<span class="success" hx-get="{path}" hx-trigger="load delay:1s" hx-target="#content" hx-push-url="true">Welcome {name}</span>"##,
             path = params.from.unwrap_or("/".to_string()),
@@ -82,14 +81,9 @@ pub async fn login(
     ))
 }
 
-pub async fn logout(mut cookie_jar: PrivateCookieJar) -> impl IntoResponse {
-    // session.remove("user");
-    // session.destroy();
-    if let Some(session) = cookie_jar.get("session") {
-        cookie_jar = cookie_jar.remove(session);
-    }
+pub async fn logout(cookie_jar: PrivateCookieJar) -> impl IntoResponse {
     (
-        cookie_jar,
+        destroy_session(cookie_jar),
         Html(
             r##"<span hx-get="/" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##,
         ),
