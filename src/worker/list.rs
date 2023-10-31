@@ -69,7 +69,7 @@ pub async fn worker_list(
                 "SELECT w.*, COUNT(*) as shifts 
                 FROM worker as w 
                 INNER JOIN shift as s ON w.id = s.worker_id
-                INNER JOIN day as d ON d.id = s.day_id
+                INNER JOIN day as d ON (d.event_id, d.date) = (s.event_id, s.date)
                 WHERE d.event_id = $1
                 GROUP BY w.id",
                 event_id

@@ -38,10 +38,8 @@ pub async fn delete_shift(
     Path(id): Path<Uuid>,
 ) -> Result<Html<String>, AppError> {
     let event_id = sqlx::query_scalar!(
-        "SELECT e.id 
+        "SELECT event_id
         FROM shift as s 
-        INNER JOIN day as d ON s.day_id = d.id
-        INNER JOIN event as e ON d.event_id = e.id
         WHERE s.id = $1",
         id
     ).fetch_one(app_state.pool()).await?;

@@ -3,6 +3,7 @@ use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
 };
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -14,7 +15,7 @@ use crate::{
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct EventParams {
-    day: Option<Uuid>,
+    date: Option<NaiveDate>,
 }
 
 #[derive(Template)]
@@ -22,7 +23,7 @@ pub struct EventParams {
 pub struct EventViewTemplate {
     event: Event,
     days: Vec<Day>,
-    selected_day_id: Uuid,
+    selected_date: NaiveDate,
 }
 
 pub async fn view(
@@ -41,17 +42,17 @@ pub async fn view(
     .fetch_all(app_state.pool())
     .await?;
 
-    let selected_day_id = query.day.unwrap_or(
+    let selected_date = query.date.unwrap_or(
         days.first()
             .ok_or(AppError::block(
                 StatusCode::NOT_FOUND,
                 "No schedules found for this event",
             ))?
-            .id,
+            .date,
     );
     Ok(EventViewTemplate {
         event,
         days,
-        selected_day_id,
+        selected_date,
     })
 }

@@ -21,14 +21,11 @@ pub struct CreateUser {
 pub struct Event {
     pub id: Uuid,
     pub name: String,
-    pub start_date: NaiveDate,
-    pub end_date: NaiveDate,
     pub allow_signups: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Day {
-    pub id: Uuid,
     pub event_id: Uuid,
     pub date: NaiveDate,
     pub entertainment: Option<String>,
@@ -46,7 +43,8 @@ pub struct Worker {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Shift {
     pub id: Uuid,
-    pub day_id: Uuid,
+    pub event_id: Uuid,
+    pub date: NaiveDate,
     pub worker_id: Option<Uuid>,
     pub start_time: NaiveTime,
     pub end_time: NaiveTime,

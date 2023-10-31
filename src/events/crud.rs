@@ -1,12 +1,17 @@
 use askama::Template;
-use axum::{extract::{State, Path}, http::StatusCode, Form, response::Html};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::Html,
+    Form,
+};
 use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event, error::AppError};
+use crate::{app_state::AppState, error::AppError, models::Event};
 
-use super::list_row::EventListRowTemplate;
+use super::list_row::{event_table_row, EventListRowTemplate};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventInput {
@@ -36,19 +41,18 @@ pub async fn create_event(
     }
     let conn = app_state.pool();
     let transaction = conn.begin().await?;
-    let event = sqlx::query_as!( Event,
-        "INSERT INTO event (name, start_date, end_date, allow_signups) VALUES ($1, $2, $3, $4) RETURNING *",
+    let event = sqlx::query_as!(
+        Event,
+        "INSERT INTO event (name, allow_signups) VALUES ($1, $2) RETURNING *",
         event_input.name,
-        event_input.start_date,
-        event_input.end_date,
         event_input.allow_signups.is_some_and(|s| s == "on")
     )
     .fetch_one(conn)
     .await?;
 
     // Probably a better way to do this
-    for offset in 0..=(event.end_date - event.start_date).num_days() as u64 {
-        let date = event.start_date + Days::new(offset);
+    for offset in 0..=(event_input.end_date - event_input.start_date).num_days() as u64 {
+        let date = event_input.start_date + Days::new(offset);
         sqlx::query!(
             "INSERT INTO day (event_id, date) VALUES ($1, $2)",
             event.id,
@@ -66,26 +70,25 @@ pub async fn patch_event(
     Path(id): Path<Uuid>,
     Form(event_input): Form<EventInput>,
 ) -> Result<EventListRowTemplate, AppError> {
-    let event = sqlx::query_as!(
-        Event, 
-        "UPDATE event SET name = $2, start_date = $3, end_date = $4, allow_signups = $5 WHERE id = $1 RETURNING *",
+    sqlx::query!(
+        "UPDATE event SET name = $2, allow_signups = $3 WHERE id = $1",
         id,
         event_input.name,
-        event_input.start_date,
-        event_input.end_date,
         event_input.allow_signups.is_some_and(|s| s == "on")
     )
     .fetch_one(app_state.pool())
     .await?;
 
-    Ok(EventListRowTemplate { event })
+    // TODO: Update days.
+
+    event_table_row(State(app_state), Path(id)).await
 }
 
-pub async fn delete_event(
-    State(app_state): State<AppState>,
-    Path(id): Path<Uuid>
-) -> StatusCode {
-    match sqlx::query!("DELETE FROM event WHERE id = $1", id).execute(app_state.pool()).await {
+pub async fn delete_event(State(app_state): State<AppState>, Path(id): Path<Uuid>) -> StatusCode {
+    match sqlx::query!("DELETE FROM event WHERE id = $1", id)
+        .execute(app_state.pool())
+        .await
+    {
         Ok(x) if x.rows_affected() == 1 => StatusCode::OK,
         Ok(_) => StatusCode::NOT_FOUND,
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,

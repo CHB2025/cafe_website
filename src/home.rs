@@ -12,7 +12,11 @@ pub struct HomeTemplate {
 
 pub async fn view(State(app_state): State<AppState>) -> Result<HomeTemplate, StatusCode> {
     let event: Option<Uuid> = sqlx::query_scalar!(
-        "SELECT id FROM event WHERE allow_signups = true AND start_date > now() ORDER BY start_date ASC"
+        "SELECT event.id FROM event 
+        JOIN day ON event.id = event_id
+        GROUP BY event.id
+        HAVING min(date) > now() AND allow_signups = true
+        ORDER BY min(date) ASC"
     )
     .fetch_optional(app_state.pool())
     .await

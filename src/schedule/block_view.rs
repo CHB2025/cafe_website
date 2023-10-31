@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use chrono::{Duration, NaiveTime, Timelike};
+use chrono::{Duration, NaiveDate, NaiveTime, Timelike};
 use uuid::Uuid;
 
 use crate::{
@@ -15,7 +15,8 @@ pub struct ScheduleTemplate {
     shift_columns: Vec<Vec<ScheduleItemTemplate>>,
     start_time: NaiveTime,
     end_time: NaiveTime,
-    day_id: Uuid,
+    event_id: Uuid,
+    date: NaiveDate,
     public: bool,
 }
 
@@ -30,23 +31,26 @@ pub struct ScheduleItemTemplate {
 pub async fn schedule(
     State(app_state): State<AppState>,
     user: Option<User>, // wasteful db request. Should just validate session without getting user
-    Path(day_id): Path<Uuid>,
+    Path(event_id): Path<Uuid>,
+    Path(date): Path<NaiveDate>,
 ) -> Result<ScheduleTemplate, AppError> {
     let logged_in = user.is_some();
 
     let shifts = if logged_in {
         sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time, title ASC",
-            day_id,
+            "SELECT * FROM shift WHERE date = $1 AND event_id = $2 ORDER BY start_time, title ASC",
+            date,
+            event_id
         )
         .fetch_all(app_state.pool())
         .await?
     } else {
         sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE day_id = $1 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
-            day_id,
+            "SELECT * FROM shift WHERE date = $1 AND event_id = $2 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
+            date,
+            event_id
         )
         .fetch_all(app_state.pool())
         .await?
@@ -122,7 +126,8 @@ pub async fn schedule(
 
     Ok(ScheduleTemplate {
         shift_columns,
-        day_id,
+        event_id,
+        date,
         start_time,
         end_time,
         public: !logged_in,

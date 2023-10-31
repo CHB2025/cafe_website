@@ -1,19 +1,23 @@
-<form class="form card" method="POST" action="/schedule/{{ id }}/copy" hx-target="#schedule-copy-results">
+<form class="form card" method="POST" action="/event/{{ event_id }}/{{ date }}/copy" hx-target="#schedule-copy-results">
   <h2>Copy to:</h2>
   <div class="form-item">
     <label>Event:</label>
-    <select name="event_id" value="{{ event_id }}" hx-get="/schedule/option_list" hx-trigger="change" hx-target="next select">
-      <option disabled value="" hx-get="/event/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend">Select an event</option>
+    <select name="event_id" value="{{ event_id }}" hx-get="/schedule/option_list" hx-trigger="change"
+      hx-target="next select">
+      <option disabled value="" hx-get="/event/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend">Select
+        an event</option>
     </select>
   </div>
   <div class="form-item">
     <label>Day:</label>
     <select name="day_id" value="">
-      <option disabled value="" hx-get="/schedule/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend" hx-vals='{"event_id": "{{ event_id }}"}'>Select a day</option>
+      <option disabled value="" hx-get="/schedule/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend"
+        hx-vals='{"event_id": "{{ event_id }}"}'>Select a day</option>
     </select>
   </div>
   <div class="form-item">
-    <button class="primary" type="submit" hx-confirm="Are you sure you want to copy this schedule to the selected day? This will remove any shifts you have scheduled for that day.">Copy</button>
+    <button class="primary" type="submit"
+      hx-confirm="Are you sure you want to copy this schedule to the selected day? This will remove any shifts you have scheduled for that day.">Copy</button>
   </div>
   <div class="form-item" id="schedule-copy-results"></div>
 </form>

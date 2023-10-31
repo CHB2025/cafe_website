@@ -33,7 +33,7 @@ pub async fn option_list(
     .await?;
     let result: String = days
         .iter()
-        .map(|d| format!(r##"<option value="{}">{}</option>"##, d.id, d.date))
+        .map(|d| format!(r##"<option value="{}">{}</option>"##, d.date, d.date))
         .collect();
     Ok(Html(result))
 }

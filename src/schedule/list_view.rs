@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use chrono::NaiveTime;
+use chrono::{NaiveDate, NaiveTime};
 use uuid::Uuid;
 
 use crate::{
@@ -24,23 +24,26 @@ struct ShiftGroup {
 pub async fn list_view(
     State(app_state): State<AppState>,
     user: Option<User>,
-    Path(id): Path<Uuid>,
+    Path(event_id): Path<Uuid>,
+    Path(date): Path<NaiveDate>,
 ) -> Result<ListViewTemplate, AppError> {
     let logged_in = user.is_some();
 
     let shifts = if logged_in {
         sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE day_id = $1 ORDER BY start_time ASC",
-            id
+            "SELECT * FROM shift WHERE event_id = $1 AND date = $2 ORDER BY start_time ASC",
+            event_id,
+            date
         )
         .fetch_all(app_state.pool())
         .await?
     } else {
         sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE day_id = $1 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
-            id
+            "SELECT * FROM shift WHERE event_id = $1 AND date = $2 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
+            event_id,
+            date
         ).fetch_all(app_state.pool())
         .await?
     };

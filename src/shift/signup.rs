@@ -77,13 +77,15 @@ pub async fn signup(
             // Check any overlapping shifts
             let overlaps = sqlx::query_scalar!(
                 "SELECT COUNT(*) FROM shift 
-                WHERE day_id = $1 
-                AND worker_id = $2
+                WHERE event_id = $1
+                AND date = $2 
+                AND worker_id = $3
                 AND (
-                    start_time < $3 AND end_time > $4
+                    start_time < $4 AND end_time > $5
                 )
                 ",
-                shift.day_id,
+                shift.event_id,
+                shift.date,
                 w.id,
                 shift.end_time,
                 shift.start_time,

@@ -32,7 +32,7 @@ pub async fn event_option_list(
     Query(query): Query<EventOptionQuery>,
 ) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
     let conn = app_state.pool();
-    let events = sqlx::query_as!(Event, "SELECT * from event ORDER BY start_date ASC")
+    let events = sqlx::query_as!(Event, "SELECT * from event ORDER BY id ASC")
         .fetch_all(conn)
         .await
         .map_err(utils::ise)?;

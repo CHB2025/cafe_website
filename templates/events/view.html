@@ -1,14 +1,13 @@
 <h2>{{ event.name }}</h2>
-<p>{{ event.start_date.format("%a, %b %e, %Y") }} - {{ event.end_date.format("%a, %b %e, %Y") }}</p>
 <div class="tab-list" role="tablist" hx-target="#content">
   {% for day in days %}
-  {% let selected = day.id == selected_day_id %}
+  {% let selected = day.date == selected_date %}
   <button class="tab-link{% if selected %} selected{% endif %}" role="tab"
     aria-selected="{% if selected %}true{% else %}false{% endif %}" aria-controls="tab-content" {% if !selected %}
-    hx-get="/event/{{ event.id }}" hx-vals='{"day": "{{ day.id }}"}' {% endif %} hx-indicator="this">{{
+    hx-get="/event/{{ event.id }}" hx-vals='{"date": "{{ day.date }}"}' {% endif %} hx-indicator="this">{{
     day.date.format("%a, %b %e") }}</button>
   {% endfor %}
 </div>
-<div id="tab-content" class="tab-content" role="tabpanel" hx-get="/schedule/{{ selected_day_id }}" hx-trigger="load"
+<div id="tab-content" class="tab-content" role="tabpanel" hx-get="/schedule/{{ selected_date }}" hx-trigger="load"
   hx-target="this" hx-swap="innerHTML" hx-push-url="false">
 </div>

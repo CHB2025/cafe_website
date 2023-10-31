@@ -1,10 +1,9 @@
 <tr hx-target="this" hx-swap="outerHTML" hx-push-url="false">
   <form hx-patch="/event/{{ event.id }}">
     <td><input type="text" name="name" value="{{ event.name }}"></input></td>
-    <td><input type="date" name="start_date" value="{{ event.start_date }}"></input></td>
-    <td><input type="date" name="end_date" value="{{ event.end_date }}"></input></td>
-    <td><input type="checkbox" name="allow_signups" {% if event.allow_signups %}checked="true"{% endif %}></input></td>
+    <td><input type="checkbox" name="allow_signups" {% if event.allow_signups %}checked="true" {% endif %}></input></td>
     <td><button class="primary" type="submit">Save</button></td>
-    <td><button hx-confirm="Are you sure you want to discard your changes?" hx-get="/event/list/row/{{ event.id }}">Discard Changes</button></td>
+    <td><button hx-confirm="Are you sure you want to discard your changes?"
+        hx-get="/event/list/row/{{ event.id }}">Discard Changes</button></td>
   </form>
 </tr>

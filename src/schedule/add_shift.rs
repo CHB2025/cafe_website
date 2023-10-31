@@ -1,16 +1,14 @@
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
     response::Html,
     Form,
 };
-use chrono::NaiveTime;
+use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::app_state::AppState;
-use crate::models::Shift;
+use crate::{app_state::AppState, error::AppError};
 
 #[derive(Template)]
 #[template(path = "schedule/add_shift.html")]
@@ -35,9 +33,10 @@ pub struct CreateShiftInput {
 
 pub async fn add_shift(
     State(app_state): State<AppState>,
-    Path(day_id): Path<Uuid>,
+    Path(event_id): Path<Uuid>,
+    Path(date): Path<NaiveDate>,
     Form(shift_input): Form<CreateShiftInput>,
-) -> Result<Html<String>, StatusCode> {
+) -> Result<Html<String>, AppError> {
     let CreateShiftInput {
         title,
         start_time,
@@ -45,35 +44,19 @@ pub async fn add_shift(
         description,
         public_signup,
     } = shift_input;
-    let tran = app_state
-        .pool()
-        .begin()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let shift = sqlx::query_as!(
-        Shift,
-        "INSERT INTO shift (day_id, title, start_time, end_time, description, public_signup) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-        day_id,
+
+    sqlx::query!(
+        "INSERT INTO shift (date, event_id, title, start_time, end_time, description, public_signup) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+        date,
+        event_id,
         title,
         start_time,
         end_time,
         description,
         public_signup.is_some_and(|s| s == "on")
-    ).fetch_one(app_state.pool()).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    let event = sqlx::query_scalar!(
-        "SELECT e.id FROM event AS e INNER JOIN day AS d ON d.event_id = e.id WHERE d.id = $1",
-        shift.day_id
-    )
-    .fetch_one(app_state.pool())
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    tran.commit()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    ).fetch_one(app_state.pool()).await?;
 
     Ok(Html(format!(
-        r##"<span class="success" hx-get="/event/{event}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load"></span> "##
+        r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load"></span> "##
     )))
 }
