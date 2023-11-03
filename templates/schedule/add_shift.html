@@ -1,12 +1,5 @@
-<form 
-  class="form card"
-  method="post"
-  action="/schedule/{{day_id}}/add_shift"
-  hx-boost="true" 
-  hx-target="#create_shift_results" 
-  hx-indicator="create_shift_submit" 
-  hx-disinherit="*"
->
+<form class="form card" method="post" action="/event/{{ event_id }}/{{ date }}/add_shift" hx-boost="true"
+  hx-target="#create_shift_results" hx-indicator="create_shift_submit" hx-disinherit="*">
   <div class="form-item">
     <label>Title:</label>
     <input name="title" type="text" required></input>

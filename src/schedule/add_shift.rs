@@ -13,11 +13,14 @@ use crate::{app_state::AppState, error::AppError};
 #[derive(Template)]
 #[template(path = "schedule/add_shift.html")]
 pub struct CreateShiftTemplate {
-    day_id: Uuid,
+    event_id: Uuid,
+    date: NaiveDate,
 }
 
-pub async fn add_shift_form(Path(day_id): Path<Uuid>) -> CreateShiftTemplate {
-    CreateShiftTemplate { day_id }
+pub async fn add_shift_form(
+    Path((event_id, date)): Path<(Uuid, NaiveDate)>,
+) -> CreateShiftTemplate {
+    CreateShiftTemplate { event_id, date }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,8 +36,7 @@ pub struct CreateShiftInput {
 
 pub async fn add_shift(
     State(app_state): State<AppState>,
-    Path(event_id): Path<Uuid>,
-    Path(date): Path<NaiveDate>,
+    Path((event_id, date)): Path<(Uuid, NaiveDate)>,
     Form(shift_input): Form<CreateShiftInput>,
 ) -> Result<Html<String>, AppError> {
     let CreateShiftInput {

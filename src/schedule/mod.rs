@@ -40,13 +40,12 @@ pub async fn option_list(
 
 pub fn protected_router() -> Router<AppState> {
     Router::new()
-        .route("/:id/add_shift", get(add_shift_form).post(add_shift))
-        .route("/:id/copy", get(copy::copy_form).post(copy::copy))
-        .route("/option_list", get(option_list))
+        .route("/:date/add_shift", get(add_shift_form).post(add_shift))
+        .route("/:date/copy", get(copy::copy_form).post(copy::copy))
 }
 
 pub fn public_router() -> Router<AppState> {
     Router::new()
-        .route("/:id", get(block_view::schedule))
-        .route("/:id/list", get(list_view::list_view))
+        .route("/:date", get(block_view::schedule))
+        .route("/:date/list", get(list_view::list_view))
 }

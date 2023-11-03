@@ -18,7 +18,7 @@ use list_row::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event, utils};
+use crate::{app_state::AppState, models::Event, schedule, utils};
 
 use self::view::view;
 
@@ -55,11 +55,15 @@ pub fn protected_router() -> Router<AppState> {
         .route("/:id", patch(patch_event).delete(delete_event))
         .route("/create", get(create_event_form).post(create_event))
         .route("/option_list", get(event_option_list))
+        .route("/day/option_list", get(schedule::option_list))
         .route("/list", get(event_list))
         .route("/list/row/:id", get(event_table_row))
         .route("/list/row/:id/edit", get(edit_event_table_row))
+        .nest("/:id", schedule::protected_router())
 }
 
 pub fn public_router() -> Router<AppState> {
-    Router::new().route("/:id", get(view))
+    Router::new()
+        .route("/:id", get(view))
+        .nest("/:id", schedule::public_router())
 }

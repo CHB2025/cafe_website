@@ -7,7 +7,7 @@
   {% if logged_in %}
   <p>Worker information here</p>
   {% endif %}
-  {% if logged_in || (shift.worker_id.is_none() && shift.public_signup) %}
+  {% if shift.worker_id.is_none() && (shift.public_signup || logged_in) %}
   <form hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results">
     <div class="form-item" hx-target="next span" hx-swap="innerHTML">
       <label>Email:</label>
@@ -18,9 +18,6 @@
     <div class="form-item" id="signup-results"></div>
     <div class="form-item">
       <button class="primary" type="submit">Signup</button>
-      <button hx-on:click="document.getElementById('modal').innerHTML = ''">
-        Cancel
-      </button>
     </div>
   </form>
   {% endif %}

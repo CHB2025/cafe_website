@@ -31,8 +31,7 @@ pub struct ScheduleItemTemplate {
 pub async fn schedule(
     State(app_state): State<AppState>,
     user: Option<User>, // wasteful db request. Should just validate session without getting user
-    Path(event_id): Path<Uuid>,
-    Path(date): Path<NaiveDate>,
+    Path((event_id, date)): Path<(Uuid, NaiveDate)>,
 ) -> Result<ScheduleTemplate, AppError> {
     let logged_in = user.is_some();
 

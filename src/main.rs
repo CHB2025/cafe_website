@@ -51,7 +51,6 @@ async fn main() {
 
     // Routes
     let auth_routes = Router::new()
-        .nest("/schedule", schedule::protected_router())
         .nest("/event", events::protected_router())
         .nest("/account", accounts::protected_router())
         .nest("/shift", shift::protected_router())
@@ -67,7 +66,6 @@ async fn main() {
         .route("/login", get(accounts::login_form).post(accounts::login))
         .route("/logout", get(accounts::logout))
         .nest("/event", events::public_router())
-        .nest("/schedule", schedule::public_router())
         .nest("/account", accounts::public_router())
         .nest("/shift", shift::public_router());
 

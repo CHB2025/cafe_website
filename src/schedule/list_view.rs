@@ -24,8 +24,7 @@ struct ShiftGroup {
 pub async fn list_view(
     State(app_state): State<AppState>,
     user: Option<User>,
-    Path(event_id): Path<Uuid>,
-    Path(date): Path<NaiveDate>,
+    Path((event_id, date)): Path<(Uuid, NaiveDate)>,
 ) -> Result<ListViewTemplate, AppError> {
     let logged_in = user.is_some();
 

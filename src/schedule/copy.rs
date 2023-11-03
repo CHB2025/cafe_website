@@ -18,8 +18,7 @@ pub struct CopyTemplate {
 }
 
 pub async fn copy_form(
-    Path(event_id): Path<Uuid>,
-    Path(date): Path<NaiveDate>,
+    Path((event_id, date)): Path<(Uuid, NaiveDate)>,
 ) -> Result<CopyTemplate, AppError> {
     Ok(CopyTemplate { event_id, date })
 }
@@ -32,8 +31,7 @@ pub struct CopyBody {
 
 pub async fn copy(
     State(app_state): State<AppState>,
-    Path(event_from): Path<Uuid>,
-    Path(date_from): Path<NaiveDate>,
+    Path((event_from, date_from)): Path<(Uuid, NaiveDate)>,
     Form(CopyBody {
         event_id: event_to,
         date: date_to,

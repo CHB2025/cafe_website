@@ -8,6 +8,6 @@
     day.date.format("%a, %b %e") }}</button>
   {% endfor %}
 </div>
-<div id="tab-content" class="tab-content" role="tabpanel" hx-get="/schedule/{{ selected_date }}" hx-trigger="load"
-  hx-target="this" hx-swap="innerHTML" hx-push-url="false">
+<div id="tab-content" class="tab-content" role="tabpanel" hx-get="/event/{{event.id}}/{{ selected_date }}"
+  hx-trigger="load" hx-target="this" hx-swap="innerHTML" hx-push-url="false">
 </div>

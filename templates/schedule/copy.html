@@ -2,7 +2,7 @@
   <h2>Copy to:</h2>
   <div class="form-item">
     <label>Event:</label>
-    <select name="event_id" value="{{ event_id }}" hx-get="/schedule/option_list" hx-trigger="change"
+    <select name="event_id" value="{{ event_id }}" hx-get="/event/day/option_list" hx-trigger="change"
       hx-target="next select">
       <option disabled value="" hx-get="/event/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend">Select
         an event</option>
@@ -10,8 +10,8 @@
   </div>
   <div class="form-item">
     <label>Day:</label>
-    <select name="day_id" value="">
-      <option disabled value="" hx-get="/schedule/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend"
+    <select name="date" value="">
+      <option disabled value="" hx-get="/event/day/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend"
         hx-vals='{"event_id": "{{ event_id }}"}'>Select a day</option>
     </select>
   </div>
