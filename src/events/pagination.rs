@@ -42,16 +42,12 @@ impl fmt::Display for OrderDirection {
 pub enum EventOrderBy {
     #[default]
     Name,
-    StartDate,
-    EndDate,
 }
 
 impl fmt::Display for EventOrderBy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let str = match self {
             Self::Name => "name",
-            Self::StartDate => "start_date",
-            Self::EndDate => "end_date",
         };
         write!(f, "{}", str)
     }

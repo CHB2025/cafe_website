@@ -18,8 +18,6 @@ orderable
   <table class="list" cellspacing="0">
     <thead>
       <th class="{% call order_class(" name") %}" hx-get={% call order_url("name") %}>Name</th>
-      <th class="{% call order_class(" start_date") %}" hx-get={% call order_url("start_date") %}>Start Date</th>
-      <th class="{% call order_class(" end_date") %}" hx-get={% call order_url("end_date") %}>End Date</th>
       <th>Allow Signups</th>
       <th>Modify</th>
       <th>Delete</th>

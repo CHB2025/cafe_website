@@ -21,6 +21,12 @@ pub struct EventInput {
     pub allow_signups: Option<String>, // "on" or "off"
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EditEventInput {
+    pub name: String,
+    pub allow_signups: Option<String>, // "on" or "off"
+}
+
 #[derive(Template)]
 #[template(path = "events/create.html")]
 pub struct EventCreateTemplate {}
@@ -68,10 +74,11 @@ pub async fn create_event(
 pub async fn patch_event(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
-    Form(event_input): Form<EventInput>,
+    Form(event_input): Form<EditEventInput>,
 ) -> Result<EventListRowTemplate, AppError> {
-    sqlx::query!(
-        "UPDATE event SET name = $2, allow_signups = $3 WHERE id = $1",
+    let event = sqlx::query_as!(
+        Event,
+        "UPDATE event SET name = $2, allow_signups = $3 WHERE id = $1 RETURNING *",
         id,
         event_input.name,
         event_input.allow_signups.is_some_and(|s| s == "on")
@@ -79,9 +86,7 @@ pub async fn patch_event(
     .fetch_one(app_state.pool())
     .await?;
 
-    // TODO: Update days.
-
-    event_table_row(State(app_state), Path(id)).await
+    Ok(EventListRowTemplate { event })
 }
 
 pub async fn delete_event(State(app_state): State<AppState>, Path(id): Path<Uuid>) -> StatusCode {

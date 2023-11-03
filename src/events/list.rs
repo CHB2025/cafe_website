@@ -4,7 +4,7 @@ use chrono::NaiveDate;
 use sqlx::{FromRow, Postgres};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError};
+use crate::{app_state::AppState, error::AppError, models::Event};
 
 use super::pagination::*;
 
@@ -20,7 +20,7 @@ pub struct EventWithDates {
 #[derive(Template)]
 #[template(path = "events/list.html")]
 pub struct EventListTemplate {
-    events: Vec<EventWithDates>,
+    events: Vec<Event>,
     query: OrdinalPaginatedQuery,
     prev_disabled: bool,
     prev_query: String,
@@ -43,9 +43,8 @@ pub async fn event_list(
 ) -> Result<EventListTemplate, AppError> {
     let pool = app_state.pool();
 
-    let events = sqlx::query_as::<Postgres, EventWithDates>(&format!(
-        "SELECT e.*, min(date) as start_date, max(date) as end_date FROM event AS e JOIN day ON e.id = day.event_id
-        GROUP BY e.id
+    let events = sqlx::query_as::<Postgres, Event>(&format!(
+        "SELECT * FROM event
         ORDER BY {order_by} {order_dir} LIMIT $1 OFFSET $2"
     ))
     .bind(take)
