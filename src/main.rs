@@ -23,6 +23,7 @@ mod app_state;
 mod email;
 mod error;
 mod events;
+mod filters;
 mod home;
 mod index;
 pub mod models;

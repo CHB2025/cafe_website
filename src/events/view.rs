@@ -10,6 +10,7 @@ use uuid::Uuid;
 use crate::{
     app_state::AppState,
     error::AppError,
+    filters,
     models::{Day, Event},
 };
 

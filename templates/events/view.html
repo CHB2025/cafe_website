@@ -5,7 +5,7 @@
   <button class="tab-link{% if selected %} selected{% endif %}" role="tab"
     aria-selected="{% if selected %}true{% else %}false{% endif %}" aria-controls="tab-content" {% if !selected %}
     hx-get="/event/{{ event.id }}" hx-vals='{"date": "{{ day.date }}"}' {% endif %} hx-indicator="this">{{
-    day.date.format("%a, %b %e") }}</button>
+    day.date|date_long }}</button>
   {% endfor %}
 </div>
 <div id="tab-content" class="tab-content" role="tabpanel" hx-get="/event/{{event.id}}/{{ selected_date }}"
