@@ -10,18 +10,20 @@ orderable
   <h3>Workers for {{ event_name }}</h3>
   <table class="list" cellspacing="0">
     <thead>
-      <th class='{% call order_class("name_first") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameFirst) }}">First Name</th>
-      <th class='{% call order_class("name_last") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameLast )}}">Last Name</th>
-      <th class='{% call order_class("email") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}">
-        Email</th>
-      <th class='{% call order_class("phone") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}">
-        Phone Number</th>
-      <th class='{% call order_class("shift_count") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}">Shifts</th>
+      <tr>
+        <th class='{% call order_class("name_first") %}'
+          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameFirst) }}">First Name</th>
+        <th class='{% call order_class("name_last") %}'
+          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameLast )}}">Last Name</th>
+        <th class='{% call order_class("email") %}'
+          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}">
+          Email</th>
+        <th class='{% call order_class("phone") %}'
+          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}">
+          Phone Number</th>
+        <th class='{% call order_class("shift_count") %}'
+          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}">Shifts</th>
+      </tr>
     </thead>
     <tbody>
       {% for worker in workers %}

@@ -20,6 +20,7 @@ use tracing_subscriber::prelude::*;
 
 mod accounts;
 mod app_state;
+mod email;
 mod error;
 mod events;
 mod home;
@@ -55,6 +56,7 @@ async fn main() {
         .nest("/account", accounts::protected_router())
         .nest("/shift", shift::protected_router())
         .nest("/worker", worker::protected_router())
+        .nest("/email", email::protected_router())
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             auth_layer,
@@ -67,7 +69,8 @@ async fn main() {
         .route("/logout", get(accounts::logout))
         .nest("/event", events::public_router())
         .nest("/account", accounts::public_router())
-        .nest("/shift", shift::public_router());
+        .nest("/shift", shift::public_router())
+        .nest("/email", email::public_router());
 
     // App
     let app = Router::new()
@@ -112,7 +115,10 @@ async fn auth_layer<B>(
         return Err(AppError::redirect(
             StatusCode::UNAUTHORIZED,
             "Restricted",
-            format!("/login?from={}", request.uri()),
+            format!(
+                "/login?from={}",
+                request.uri().path_and_query().map_or("", |p| p.as_str())
+            ),
         ));
     }
     Ok(next.run(request).await)

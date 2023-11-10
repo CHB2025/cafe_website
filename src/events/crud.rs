@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::{app_state::AppState, error::AppError, models::Event};
 
-use super::list_row::{event_table_row, EventListRowTemplate};
+use super::list_row::EventListRowTemplate;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventInput {

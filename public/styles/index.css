@@ -161,6 +161,7 @@ input[type=submit]:hover:disabled {
   color: green;
 }
 
+/*
 .htmx-request:after {
   content: url("/spinner.svg");
   display: inline-block;
@@ -168,3 +169,4 @@ input[type=submit]:hover:disabled {
   width: 1em;
   padding-left: 1em;
 }
+*/
