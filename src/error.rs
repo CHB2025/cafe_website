@@ -87,6 +87,12 @@ impl From<scrypt::password_hash::Error> for AppError {
     }
 }
 
+impl From<askama::Error> for AppError {
+    fn from(value: askama::Error) -> Self {
+        ISE
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> askama_axum::Response {
         let AppError(code, message, kind) = self;

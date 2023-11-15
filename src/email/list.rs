@@ -63,7 +63,7 @@ pub async fn email_list(
     Query(query): Query<EmailQuery>,
 ) -> Result<EmailListTemplate, AppError> {
     let emails: Vec<Email> = sqlx::query_as(&format!(
-        "SELECT *FROM email
+        "SELECT * FROM email
         ORDER BY {order_by} {order_dir} LIMIT $1 OFFSET $2"
     ))
     .bind(take)

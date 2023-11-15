@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+  <h1>Thank you!</h1>
+  <p>
+    Thank you for volunteering your time to work at the Cornerstone Cafe! We are looking forward to having you in the
+    booth! Below you can find the details of your shift. If your schedule changes and this no longer works for you,
+    <a href="{{domain}}/shift/cancel/{{ shift.id }}/{{ worker.id }}">click here</a> to cancel.
+  </p>
+  <br>
+  <div class="shift-details">
+    <h2>{{ shift.title }}</h2>
+    <p>{{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}</p>
+    {% if let Some(d) = shift.description %}<p>{{ d }}</p>{% endif %}
+  </div>
+
+</body>
+
+</html>

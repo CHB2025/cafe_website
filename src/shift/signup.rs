@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
+    email,
     error::AppError,
     models::{Shift, User, Worker},
 };
@@ -51,7 +52,6 @@ pub async fn signup(
     Form(body): Form<SignupBody>,
 ) -> Result<Html<String>, AppError> {
     // TODO: validate email and phone
-    // TODO: send email with link to cancel signup
 
     let logged_in = user.is_some();
     let tran = app_state.pool().begin().await?;
@@ -113,9 +113,14 @@ pub async fn signup(
         }
     };
 
+    let (worker_name, worker_id) = (worker.name_first.clone(), worker.id);
+
+    // Send email
+    let _ = email::send_signup(app_state.pool(), worker, shift).await?;
+
     sqlx::query!(
         "UPDATE shift SET worker_id = $1 WHERE id = $2",
-        worker.id,
+        worker_id,
         id
     )
     .execute(app_state.pool())
@@ -125,6 +130,6 @@ pub async fn signup(
 
     Ok(Html(format!(
         r##"<span class="Success" hx-get="/" hx-trigger="load:delay 2s" hx-target="#content">Thanks for signing up {}!</span>"##,
-        worker.name_first
+        worker_name
     )))
 }
