@@ -6,13 +6,14 @@ use crate::{
     app_state::AppState,
     error::AppError,
     filters,
-    models::{Shift, User},
+    models::{Shift, User, Worker},
 };
 
 #[derive(Debug, Template, Clone)]
 #[template(path = "shift/view.html")]
 pub struct ShiftTemplate {
     shift: Shift,
+    worker: Option<Worker>,
     logged_in: bool,
 }
 
@@ -38,8 +39,20 @@ pub async fn view(
     )
     .fetch_one(app_state.pool())
     .await?;
+    let worker = match shift.worker_id {
+        Some(id) => Some(
+            sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
+                .fetch_one(app_state.pool())
+                .await?,
+        ),
+        None => None,
+    };
 
-    Ok(ShiftTemplate { shift, logged_in })
+    Ok(ShiftTemplate {
+        shift,
+        logged_in,
+        worker,
+    })
 }
 
 pub async fn edit_form(

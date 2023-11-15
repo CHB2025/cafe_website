@@ -1,14 +1,23 @@
-<div class="card form" hx-target="this" hx-swap="outerHTML">
-  <h3>{{ shift.title }}</h3>
-  <p>{{ shift.start_time|time_short }} - {{ shift.end_time|time_short }}</p>
+<div class="card" hx-target="this" hx-swap="outerHTML">
+  <div class="title-block">
+    <h1>{{ shift.title }}</h1>
+    <h2>{{ shift.start_time|time_short }} - {{ shift.end_time|time_short }}</h2>
+  </div>
+
   {% if let Some(description) = shift.description %}
   <p>{{ description|markdown }}</p>
   {% endif %}
+
   {% if logged_in %}
-  <p>Worker information here</p>
+  {% match worker %}
+  {% when Some with (worker) %}
+  <p>Filled by {{ worker.name_first }} {{ worker.name_last }}</p>
+  {% when None %}
+  <p>Unfilled</p>
+  {% endmatch %}
   {% endif %}
   {% if shift.worker_id.is_none() && (shift.public_signup || logged_in) %}
-  <form hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results">
+  <form class="form" hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results">
     <div class="form-item" hx-target="next span" hx-swap="innerHTML">
       <label>Email:</label>
       <input type="email" name="email" hx-get="/shift/{{ shift.id }}/signup" hx-trigger="change"

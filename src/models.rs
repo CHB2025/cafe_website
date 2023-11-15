@@ -2,7 +2,7 @@ use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
 use sqlx::{types::Uuid, FromRow};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct User {
     pub id: Uuid,
     pub email: String,
@@ -10,28 +10,28 @@ pub struct User {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateUser {
     pub email: String,
     pub password: String,
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, FromRow)]
+#[derive(Debug, Deserialize, Serialize, FromRow, Clone)]
 pub struct Event {
     pub id: Uuid,
     pub name: String,
     pub allow_signups: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Day {
     pub event_id: Uuid,
     pub date: NaiveDate,
     pub entertainment: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Worker {
     pub id: Uuid,
     pub email: String,

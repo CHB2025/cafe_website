@@ -15,7 +15,7 @@ button[role=tab] {
   border-radius: 0px;
   box-shadow: inset 0px -4px 4px -5px;
   border-radius: 0.7rem 0.7rem 0rem 0rem;
-  background-color: #f0f0f0;
+  background-color: var(--highlight);
 }
 
 button[role=tab]:hover {
@@ -27,7 +27,7 @@ button[role=tab]:hover {
 button[role=tab].selected {
   padding: 1rem 0.7rem;
   border-radius: 0.7rem 0.7rem 0rem 0rem;
-  background-color: white;
+  background-color: var(--base);
   box-shadow: none;
   border-bottom: none;
 }
