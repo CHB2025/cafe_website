@@ -28,7 +28,7 @@
   width: 2.5rem;
   text-align: center;
   border-radius: 1.25rem;
-  background-color: var(--highlight);
+  background-color: var(--ui);
   box-shadow: 0px 2px 4px var(--dimmed);
 
   content: "X"

@@ -18,14 +18,14 @@
   {% endif %}
   {% if shift.worker_id.is_none() && (shift.public_signup || logged_in) %}
   <form class="form" hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results">
-    <div class="form-item" hx-target="next span" hx-swap="innerHTML">
-      <label>Email:</label>
+    <label class="form-item" hx-target="next span" hx-swap="innerHTML">
+      Email:
       <input type="email" name="email" hx-get="/shift/{{ shift.id }}/signup" hx-trigger="change"
         hx-indicator="closest div" hx-sync="closest form:replace" />
-    </div>
-    <span style="display:contents"></span>
+    </label>
+    <span style="display:contents" class="form-item"></span>
     <div class="form-item" id="signup-results"></div>
-    <div class="form-item">
+    <div class="form-controls">
       <button class="primary" type="submit">Signup</button>
     </div>
   </form>

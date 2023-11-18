@@ -4,11 +4,20 @@ form {
 
 .form {
   width: 30rem;
-  display: flex;  
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
 }
+
+.form-controls {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .form-item {
   width: 100%;
   height: auto;
@@ -16,13 +25,21 @@ form {
   align-items: center;
   justify-content: space-around;
 }
+
 .form-item:empty {
   display: none;
 }
-.form-item + .form-item {
+
+.form-item+.form-item {
   margin-top: 1rem;
 }
-.form-item > label {
+
+.form-item+.form-controls {
+  margin-top: 1rem;
+}
+
+label.form-item,
+.form-item>label {
   flex: 1 0 0;
   font-weight: bold;
   text-align: right;
@@ -31,34 +48,52 @@ form {
   align-items: center;
   justify-content: end;
 }
-.form-item > .spacer {
+
+label.form-item {
+  padding-right: 0;
+}
+
+label.form-item>input {
+  margin-left: 0.5rem;
+}
+
+.form-item>.spacer {
   flex: 3 0 0;
 }
-input[type=text], 
-input[type=email], 
-input[type=password], 
-input[type=date], 
-input[type=time], 
+
+input[type=text],
+input[type=email],
+input[type=password],
+input[type=date],
+input[type=time],
 input[type=phone],
 select {
   flex: 3 1 0;
-  border-radius: 0.4rem;
-  border: 1px solid lightgray;
-  background-color: white;
+  border-radius: 0.5rem;
+  border: 2px solid var(--ui);
+  background-color: var(--base);
+  color: var(--text);
   height: 2rem;
+  font-size: 0.8rem;
 }
+
 textarea {
   flex: 3 1 0;
-  border-radius: 0.4rem;
-  border: 1px solid lightgray;
-  background-color: white;
+  border-radius: 0.5rem;
+  border: 2px solid var(--ui);
+  background-color: var(--base);
+  color: var(--text);
+  font-size: 0.8rem;
 }
-button[type=submit]{
+
+button[type=submit] {
   position: relative;
 }
+
 button[type=submit].htmx-request::after {
   content: url('/spinner.svg');
   position: absolute;
-  right: -2rem; /* Not sure if this positioning will be good for every situation */
+  right: -2rem;
+  /* Not sure if this positioning will be good for every situation */
   top: 0.4rem;
 }

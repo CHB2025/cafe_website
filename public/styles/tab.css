@@ -1,6 +1,6 @@
 .tab-list {
   display: flex;
-  box-shadow: inset 0px -4px 4px -5px;
+  box-shadow: inset 0px -7px 4px -5px var(--ui);
   justify-content: center;
   align-items: flex-end;
   width: 100%;
@@ -13,9 +13,9 @@ div[role=tabpanel] {
 
 button[role=tab] {
   border-radius: 0px;
-  box-shadow: inset 0px -4px 4px -5px;
+  box-shadow: inset 0px -4px 4px -5px var(--dimmed);
   border-radius: 0.7rem 0.7rem 0rem 0rem;
-  background-color: var(--highlight);
+  background-color: var(--ui);
 }
 
 button[role=tab]:hover {

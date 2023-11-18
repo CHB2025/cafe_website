@@ -3,9 +3,9 @@
 }
 
 html {
-  --base: #101010;
+  --base: #151515;
   --dimmed: #000000;
-  --highlight: #202020;
+  --ui: #353535;
   --text: #DDDDDD;
   --text-dim: #aaaaaa;
   --primary: #420303;
@@ -150,9 +150,9 @@ div.nav-right {
 
 /* reusable formatting things */
 .card {
-  border: 1px solid var(--highlight);
+  border: 1px solid var(--ui);
   border-radius: 1rem;
-  box-shadow: 0px 2px 4px var(--highlight);
+  box-shadow: 0px 2px 4px var(--ui);
   padding: 1rem;
 }
 
@@ -161,8 +161,8 @@ input[type=submit] {
   height: fit-content;
   padding: 0.7rem;
   color: inherit;
-  background-color: var(--highlight);
-  border: 1px solid var(--highlight);
+  background-color: var(--ui);
+  border: 1px solid var(--ui);
   border-radius: 0.7rem;
   box-shadow: 0rem 0.1rem 0.1rem var(--dimmed);
 }
