@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM shift WHERE event_id = $1 AND date = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Date"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b98b6c764eb0fad7d20a42b4967524755d26418945a14c6425f43ec89d4fa314"
+}

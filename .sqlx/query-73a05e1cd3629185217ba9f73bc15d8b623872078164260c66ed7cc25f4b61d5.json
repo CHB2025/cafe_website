@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM shift WHERE date = $1 AND event_id = $2 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "start_time",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 2,
+        "name": "end_time",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 3,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "public_signup",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "worker_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 7,
+        "name": "event_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 8,
+        "name": "date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Date",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "73a05e1cd3629185217ba9f73bc15d8b623872078164260c66ed7cc25f4b61d5"
+}

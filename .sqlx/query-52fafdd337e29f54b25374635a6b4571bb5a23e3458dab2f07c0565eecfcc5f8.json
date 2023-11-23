@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO shift (event_id, date, start_time, end_time, title, description, public_signup) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Date",
+        "Time",
+        "Time",
+        "Varchar",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "52fafdd337e29f54b25374635a6b4571bb5a23e3458dab2f07c0565eecfcc5f8"
+}

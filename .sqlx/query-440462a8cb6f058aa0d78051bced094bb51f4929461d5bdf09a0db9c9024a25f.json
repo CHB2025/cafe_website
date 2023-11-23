@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) FROM shift \n                WHERE event_id = $1\n                AND date = $2 \n                AND worker_id = $3\n                AND (\n                    start_time < $4 AND end_time > $5\n                )\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Date",
+        "Uuid",
+        "Time",
+        "Time"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "440462a8cb6f058aa0d78051bced094bb51f4929461d5bdf09a0db9c9024a25f"
+}
