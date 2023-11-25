@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, path::PathBuf};
+use std::{env, net::SocketAddr, path::PathBuf};
 
 use app_state::AppState;
 use axum::{
@@ -38,6 +38,8 @@ mod worker;
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok(); // Should not use this in production.
+
     // Tracing
     tracing_subscriber::registry()
         .with(
@@ -85,26 +87,35 @@ async fn main() {
                 .layer(TraceLayer::new_for_http()),
         );
 
-    // TLS config
-    // Currently errors out if certs aren't there, but could be setup to run https only if they are
-    let config = RustlsConfig::from_pem_file(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("certs")
-            .join("cert.pem"),
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("certs")
-            .join("key.pem"),
-    )
-    .await
-    .unwrap();
+    let config = match env::var("CERTS_DIR") {
+        Ok(dir) => {
+            let path = PathBuf::from(dir);
+            Some(
+                RustlsConfig::from_pem_file(path.clone().join("cert.pem"), path.join("key.pem"))
+                    .await
+                    .expect("Invalid CERTS directory"),
+            )
+        }
+        Err(_) => None,
+    };
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let port = env::var("PORT").map_or(3000, |p| p.parse().expect("PORT should be an integer"));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     tracing::debug!("listening on {}", addr);
-    axum_server::bind_rustls(addr, config)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+
+    match config {
+        Some(cfg) => {
+            axum_server::bind_rustls(addr, cfg)
+                .serve(app.into_make_service())
+                .await
+                .unwrap();
+        }
+        None => axum_server::bind(addr)
+            .serve(app.into_make_service())
+            .await
+            .unwrap(),
+    };
 }
 
 async fn auth_layer<B>(

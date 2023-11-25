@@ -30,7 +30,6 @@ impl FromRef<AppState> for Key {
 }
 
 async fn db_connection_pool() -> Pool<Postgres> {
-    dotenvy::dotenv().ok(); // Should not use this in production.
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let pool = PgPoolOptions::new()
