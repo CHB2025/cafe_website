@@ -1,27 +1,27 @@
 <form class="form card" method="post" action="/event/{{ event_id }}/{{ date }}/add_shift" hx-boost="true"
   hx-target="#create_shift_results" hx-indicator="create_shift_submit" hx-disinherit="*">
-  <div class="form-item">
-    <label>Title:</label>
+  <label class="form-item">
+    Title:
     <input name="title" type="text" required></input>
-  </div>
-  <div class="form-item">
-    <label>Start Time:</label>
+  </label>
+  <label class="form-item">
+    Start Time:
     <input name="start_time" type="time" required></input>
-  </div>
-  <div class="form-item">
-    <label>End Time:</label>
+  </label>
+  <label class="form-item">
+    End Time:
     <input name="end_time" type="time" required></input>
-  </div>
-  <div class="form-item">
-    <label>Description:</label>
+  </label>
+  <label class="form-item">
+    Description:
     <textarea name="description" rows="5"></textarea>
-  </div>
-  <div class="form-item">
-    <label>Allow public signups</label>
+  </label>
+  <label class="form-item">
+    Allow public signups
     <input name="public_signup" type="checkbox" checked></input>
     <div class="spacer"></div>
-  </div>
-  <div class="form-item">
+  </label>
+  <div class="form-controls">
     <button id="create_shift_submit" type="submit">Submit</button>
   </div>
   <div id="create_shift_results" class="form-item"></div>

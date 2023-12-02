@@ -5,6 +5,7 @@ use axum::{
     response::Html,
     Form,
 };
+use regex::Regex;
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -14,6 +15,8 @@ use crate::{
     error::AppError,
     models::{Shift, User, Worker},
 };
+
+const PHONE_REGEX: &str = r#"^[2-9][0-9]{2}-[2-9][0-9]{2}-[0-9]{4}$"#;
 
 #[derive(Template)]
 #[template(path = "shift/signup.html")]
@@ -102,6 +105,25 @@ pub async fn signup(
         }
         None => {
             // Create a new worker
+            let em_rx = Regex::new(r#"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"#).expect("Email regex should be valid");
+            let email_match = em_rx.is_match(&body.email);
+            if !email_match {
+                return Err(AppError::inline(StatusCode::BAD_REQUEST, "Invalid email"));
+            }
+            let phone_match = match body.phone.as_ref() {
+                Some(ph) => {
+                    let ph_rx = Regex::new(PHONE_REGEX).expect("Phone regex should be valid");
+                    ph_rx.is_match(ph)
+                }
+                None => true,
+            };
+            if !phone_match {
+                return Err(AppError::inline(
+                    StatusCode::BAD_REQUEST,
+                    "Invalid phone number",
+                ));
+            }
+
             sqlx::query_as!(
                 Worker,
                 "INSERT INTO worker (email, name_first, name_last, phone) VALUES ($1, $2, $3, $4) RETURNING *",

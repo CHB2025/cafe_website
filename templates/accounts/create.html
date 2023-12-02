@@ -8,16 +8,16 @@
   hx-indicator="#signup-submit"
   hx-push-url="false"
 >
-  <div class="form-item">
-    <label>Name:</label>
+  <label class="form-item">
+    Name:
     <input type="text" name="name" required="true"></input>
-  </div>
-  <div class="form-item">
-    <label>Email:</label>
+  </label>
+  <label class="form-item">
+    Email:
     <input name="email" type="email" required="true"></input>
-  </div>
-  <div class="form-item">
-    <label>Password:</label>
+  </label>
+  <label class="form-item">
+    Password:
     <input 
       _="
         on htmx:validation:validate
@@ -32,12 +32,12 @@
       type="password" 
       required="true">
     </input>
-  </div>
-  <div class="form-item">
-    <label>Password:</label>
+  </label>
+  <label class="form-item">
+    Password:
     <input name="password_repeat" type="password" required="true"></input>
-  </div>
-  <div class="form-item">
+  </label>
+  <div class="form-controls">
     <button id="signup-submit" type="submit">Submit</button>
   </div>
   <div id="signup_results" class="form-item"></div>

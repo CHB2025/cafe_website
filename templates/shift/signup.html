@@ -1,17 +1,17 @@
 {% match worker %}
   {% when None %}
-  <div class="form-item" style="margin-top:1rem">
-    <label>First Name:</label>
+  <label class="form-item" style="margin-top:1rem">
+    First Name:
     <input type="text" name="first_name" required/>
-  </div>
-  <div class="form-item">
-    <label>Last Name:</label>
+  </label>
+  <label class="form-item">
+    Last Name:
     <input type="text" name="last_name" required/>
-  </div>
-  <div class="form-item">
-    <label>Phone number:</label>
-    <input type="phone" name="phone_number"/>
-  </div>
+  </label>
+  <label class="form-item">
+    Phone number:
+    <input type="tel" name="phone_number" pattern="{{ PHONE_REGEX }}" placeholder="999-999-9999"/>
+  </label>
   {% when Some with (worker) %}
   <div class="form-item" style="margin-top:1rem">
     <p>Welcome, {{ worker.name_first }}</p>

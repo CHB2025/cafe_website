@@ -26,6 +26,16 @@ form {
   justify-content: space-around;
 }
 
+label.form-item {
+  flex: 1 0 0;
+  font-weight: bold;
+  text-align: right;
+  padding-right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
 .form-item:empty {
   display: none;
 }
@@ -38,27 +48,19 @@ form {
   margin-top: 1rem;
 }
 
-label.form-item,
-.form-item>label {
-  flex: 1 0 0;
-  font-weight: bold;
-  text-align: right;
-  padding-right: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: end;
-}
 
-label.form-item {
-  padding-right: 0;
-}
-
-label.form-item>input {
+label.form-item>input,
+label.form-item>textarea {
   margin-left: 0.5rem;
 }
 
+label.form-item>input:not([type=checkbox]),
+label.form-item>textarea {
+  flex: 0 0 70%;
+}
+
 .form-item>.spacer {
-  flex: 3 0 0;
+  flex: 0 0 70%;
 }
 
 input[type=text],
@@ -66,9 +68,8 @@ input[type=email],
 input[type=password],
 input[type=date],
 input[type=time],
-input[type=phone],
+input[type=tel],
 select {
-  flex: 3 1 0;
   border-radius: 0.5rem;
   border: 2px solid var(--ui);
   background-color: var(--base);
@@ -78,7 +79,6 @@ select {
 }
 
 textarea {
-  flex: 3 1 0;
   border-radius: 0.5rem;
   border: 2px solid var(--ui);
   background-color: var(--base);

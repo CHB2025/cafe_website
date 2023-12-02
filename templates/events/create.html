@@ -6,24 +6,20 @@
   hx-push-url="false"
   hx-target="#create_event_results"
 >
-  <div class="form-item">
-    <label>Name</label>
-    <input name="name" type="text" required="true"></input>
-  </div>
-  <div class="form-item">
-    <label>Start Date</label>
-    <input name="start_date" type="date" required="true"></input>
-  </div>
-  <div class="form-item">
-    <label>End Date</label>
-    <input name="end_date" type="date" required="true"></input>
-  </div>
-  <div class="form-item">
-    <label>Allow Signups</label>
-    <input name="allow_signups" type="checkbox"></input>
+  <label class="form-item">
+    Name:<input name="name" type="text" required="true"></input>
+  </label>
+  <label class="form-item">
+    Start Date:<input name="start_date" type="date" required="true"></input>
+  </label>
+  <label class="form-item">
+    End Date:<input name="end_date" type="date" required="true"></input>
+  </label>
+  <label class="form-item">
+    Allow Signups:<input name="allow_signups" type="checkbox"></input>
     <div class="spacer"></div>
-  </div>
-  <div class="form-item">
+  </label>
+  <div class="form-controls">
     <button id="create_event_submit" type="submit">Submit</button>
   </div>
   <div id="create_event_results" class="form-item"></div>

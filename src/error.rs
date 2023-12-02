@@ -88,7 +88,7 @@ impl From<scrypt::password_hash::Error> for AppError {
 }
 
 impl From<askama::Error> for AppError {
-    fn from(value: askama::Error) -> Self {
+    fn from(_: askama::Error) -> Self {
         ISE
     }
 }

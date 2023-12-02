@@ -1,21 +1,21 @@
 <form class="form card" method="POST" action="/event/{{ event_id }}/{{ date }}/copy" hx-target="#schedule-copy-results">
   <h2>Copy to:</h2>
-  <div class="form-item">
-    <label>Event:</label>
+  <label class="form-item">
+    Event:
     <select name="event_id" value="{{ event_id }}" hx-get="/event/day/option_list" hx-trigger="change"
       hx-target="next select">
       <option disabled value="" hx-get="/event/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend">Select
         an event</option>
     </select>
-  </div>
-  <div class="form-item">
-    <label>Day:</label>
+  </label>
+  <label class="form-item">
+    Day:
     <select name="date" value="">
       <option disabled value="" hx-get="/event/day/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend"
         hx-vals='{"event_id": "{{ event_id }}"}'>Select a day</option>
     </select>
-  </div>
-  <div class="form-item">
+  </label>
+  <div class="form-controls">
     <button class="primary" type="submit"
       hx-confirm="Are you sure you want to copy this schedule to the selected day? This will remove any shifts you have scheduled for that day.">Copy</button>
   </div>

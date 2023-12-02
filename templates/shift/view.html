@@ -15,7 +15,12 @@
   {% when None %}
   <p>Unfilled</p>
   {% endmatch %}
+  <div class="controls">
+    <button hx-get="/shift/{{ shift.id }}/edit">Edit</button>
+    <button hx-delete="/shift/{{ shift.id }}" hx-confirm="Are you sure you want to delete this shift?">Delete</button>
+  </div>
   {% endif %}
+
   {% if shift.worker_id.is_none() && (shift.public_signup || logged_in) %}
   <form class="form" hx-patch="/shift/{{ shift.id }}/signup" hx-target="#signup-results">
     <label class="form-item" hx-target="next span" hx-swap="innerHTML">
@@ -29,11 +34,5 @@
       <button class="primary" type="submit">Signup</button>
     </div>
   </form>
-  {% endif %}
-  {% if logged_in %}
-  <div class="controls">
-    <button hx-get="/shift/{{ shift.id }}/edit">Edit</button>
-    <button hx-delete="/shift/{{ shift.id }}" hx-confirm="Are you sure you want to delete this shift?">Delete</button>
-  </div>
   {% endif %}
 </div>
