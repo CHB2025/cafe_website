@@ -1,4 +1,4 @@
-use std::{env, net::SocketAddr, path::PathBuf};
+use std::{env, net::SocketAddr};
 
 use app_state::AppState;
 use axum::{
@@ -20,6 +20,7 @@ use tracing_subscriber::prelude::*;
 
 mod accounts;
 mod app_state;
+mod config;
 mod email;
 mod events;
 mod filters;
@@ -35,9 +36,19 @@ mod worker;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().ok(); // Should not use this in production.
+    let config_path = env::current_dir()
+        .expect("Couldn't load current dir")
+        .join("config.toml");
+    let config = match config::Config::load(config_path).await {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("Failed to parse config: {}", e);
+            return;
+        }
+    };
 
     // Tracing
+    // TODO: put tracing configuration in the config file
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
@@ -48,7 +59,7 @@ async fn main() {
         .init();
 
     // State
-    let app_state = AppState::init().await;
+    let app_state = AppState::init(config).await;
 
     // Routes
     let auth_routes = Router::new()
@@ -76,7 +87,7 @@ async fn main() {
     let app = Router::new()
         .merge(public_routes)
         .merge(auth_routes)
-        .with_state(app_state)
+        .with_state(app_state.clone())
         .fallback(get_static_files)
         .layer(
             ServiceBuilder::new()
@@ -84,26 +95,18 @@ async fn main() {
                 .layer(TraceLayer::new_for_http()),
         );
 
-    let config = match env::var("CERTS_DIR") {
-        Ok(dir) => {
-            let path = PathBuf::from(dir);
-            Some(
-                RustlsConfig::from_pem_file(path.clone().join("cert.pem"), path.join("key.pem"))
-                    .await
-                    .expect("Invalid CERTS directory"),
-            )
-        }
-        Err(_) => None,
-    };
-
-    let port = env::var("PORT").map_or(3000, |p| p.parse().expect("PORT should be an integer"));
+    let port = app_state.config().website.port;
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     tracing::debug!("listening on {}", addr);
 
-    match config {
+    match &app_state.config().ssl {
         Some(cfg) => {
-            axum_server::bind_rustls(addr, cfg)
+            let rustls_config = RustlsConfig::from_pem_file(cfg.cert.clone(), cfg.key.clone())
+                .await
+                .expect("Invalid Certs");
+
+            axum_server::bind_rustls(addr, rustls_config)
                 .serve(app.into_make_service())
                 .await
                 .unwrap();

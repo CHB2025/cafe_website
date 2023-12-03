@@ -1,7 +1,6 @@
 use askama::Template;
 use axum::{routing::get, Router};
 use cafe_website::AppError;
-use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
 use crate::{
@@ -32,7 +31,7 @@ pub struct SignupEmail {
 }
 
 pub async fn send_signup(
-    pool: &Pool<Postgres>,
+    app_state: &AppState,
     worker: Worker,
     shift: Shift,
 ) -> Result<Uuid, AppError> {
@@ -41,7 +40,7 @@ pub async fn send_signup(
     let message = SignupEmail {
         worker,
         shift,
-        domain: "https://chbarch.local:3000".to_string(), // Need to set this via config somehow
+        domain: app_state.config().website.base_url.clone(),
     }
     .render()?;
 
@@ -53,7 +52,7 @@ pub async fn send_signup(
         message,
         event_id
     )
-    .fetch_one(pool)
+    .fetch_one(app_state.pool())
     .await?;
     Ok(id)
 }

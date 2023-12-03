@@ -138,7 +138,7 @@ pub async fn signup(
     let (worker_name, worker_id) = (worker.name_first.clone(), worker.id);
 
     // Send email
-    let _ = email::send_signup(app_state.pool(), worker, shift).await?;
+    let _ = email::send_signup(&app_state, worker, shift).await?;
 
     sqlx::query!(
         "UPDATE shift SET worker_id = $1 WHERE id = $2",
