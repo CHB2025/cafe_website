@@ -1,6 +1,5 @@
 use axum::{
     extract::{Query, State},
-    http::StatusCode,
     response::Html,
     routing::{get, patch},
     Router,
@@ -12,13 +11,14 @@ mod list_row;
 mod pagination;
 mod view;
 
+use cafe_website::AppError;
 use crud::*;
 use list::*;
 use list_row::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event, schedule, utils};
+use crate::{app_state::AppState, models::Event, schedule};
 
 use self::view::view;
 
@@ -30,23 +30,27 @@ pub struct EventOptionQuery {
 pub async fn event_option_list(
     State(app_state): State<AppState>,
     Query(query): Query<EventOptionQuery>,
-) -> Result<Html<String>, (StatusCode, Html<&'static str>)> {
-    let conn = app_state.pool();
+) -> Result<Html<String>, AppError> {
+    use std::fmt::Write;
+
     let events = sqlx::query_as!(Event, "SELECT * from event ORDER BY id ASC")
-        .fetch_all(conn)
-        .await
-        .map_err(utils::ise)?;
-    let result: String = events
-        .iter()
-        .map(|e| {
-            let sel = if query.selected.is_some_and(|s_id| s_id == e.id) {
-                "selected"
-            } else {
-                ""
-            };
-            format!("<option value=\"{}\" {}>{}</option>", e.id, sel, e.name)
-        })
-        .collect();
+        .fetch_all(app_state.pool())
+        .await?;
+
+    let result: String = events.iter().fold(String::new(), |mut output, e| {
+        let sel = if query.selected.is_some_and(|s_id| s_id == e.id) {
+            "selected"
+        } else {
+            ""
+        };
+        let _ = write!(
+            output,
+            "<option value=\"{}\" {}>{}</option>",
+            e.id, sel, e.name
+        );
+        output
+    });
+
     Ok(Html(result))
 }
 

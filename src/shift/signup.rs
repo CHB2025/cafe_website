@@ -5,6 +5,7 @@ use axum::{
     response::Html,
     Form,
 };
+use cafe_website::AppError;
 use regex::Regex;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -12,7 +13,6 @@ use uuid::Uuid;
 use crate::{
     app_state::AppState,
     email,
-    error::AppError,
     models::{Shift, User, Worker},
 };
 

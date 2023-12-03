@@ -1,9 +1,10 @@
-use crate::{app_state::AppState, error::AppError, models::User};
+use crate::{app_state::AppState, models::User};
 use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
 use axum_extra::extract::{
     cookie::{Cookie, Key, SameSite},
     PrivateCookieJar,
 };
+use cafe_website::AppError;
 use uuid::Uuid;
 
 #[async_trait]

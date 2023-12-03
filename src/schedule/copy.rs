@@ -4,11 +4,12 @@ use axum::{
     response::Html,
     Form,
 };
+use cafe_website::AppError;
 use chrono::NaiveDate;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, models::Shift};
+use crate::{app_state::AppState, models::Shift};
 
 #[derive(Template, Debug, Clone)]
 #[template(path = "schedule/copy.html")]

@@ -4,11 +4,12 @@ use axum::{
     response::Html,
     Form,
 };
+use cafe_website::AppError;
 use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError};
+use crate::app_state::AppState;
 
 #[derive(Template)]
 #[template(path = "schedule/add_shift.html")]

@@ -1,8 +1,9 @@
 use askama::Template;
 use axum::extract::{Path, State};
+use cafe_website::AppError;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, models::Event};
+use crate::{app_state::AppState, models::Event};
 
 #[derive(Template)]
 #[template(path = "events/list_row.html")]

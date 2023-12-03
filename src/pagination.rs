@@ -1,7 +1,13 @@
-use std::{fmt, ops};
+use std::{
+    fmt::{self, Display},
+    ops,
+};
 
 use serde::{Deserialize, Serialize};
 
+/// A general-purpose struct to extract pagination query params.
+/// WARNING: Do not use raw user input for the OrderBy type (eg. a String)
+///          as it may open you to sql injection attacks.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub struct PaginatedQuery<O> {
     #[serde(default)]
@@ -65,6 +71,14 @@ impl<O> PaginatedQuery<O> {
         self.skip = (self.skip - self.take).min(0);
         self
     }
+
+    pub fn page(&self) -> i64 {
+        self.skip / self.take + 1
+    }
+
+    pub fn page_count(&self, total_count: i64) -> i64 {
+        total_count / self.take + (total_count % self.take > 0) as i64
+    }
 }
 
 impl<O> PaginatedQuery<O>
@@ -79,5 +93,17 @@ where
             self.order_dir = OrderDirection::Asc;
         }
         self
+    }
+}
+
+impl<O> PaginatedQuery<O>
+where
+    O: Display,
+{
+    pub fn sql(&self) -> String {
+        format!(
+            "ORDER BY {} {} LIMIT {} OFFSET {}",
+            self.order_by, self.order_dir, self.take, self.skip
+        )
     }
 }

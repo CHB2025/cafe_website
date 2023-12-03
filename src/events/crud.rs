@@ -5,11 +5,12 @@ use axum::{
     response::Html,
     Form,
 };
+use cafe_website::AppError;
 use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, models::Event};
+use crate::{app_state::AppState, models::Event};
 
 use super::list_row::EventListRowTemplate;
 

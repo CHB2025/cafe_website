@@ -6,6 +6,7 @@ use axum::{
     Form,
 };
 use axum_extra::extract::PrivateCookieJar;
+use cafe_website::AppError;
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
     Scrypt,
@@ -15,7 +16,6 @@ use tokio::task::spawn_blocking;
 
 use crate::{
     app_state::AppState,
-    error::AppError,
     models::User,
     session::{create_session, destroy_session},
 };

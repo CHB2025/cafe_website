@@ -1,9 +1,10 @@
 use axum::{extract::{Path, State}, response::Html, Form};
+use cafe_website::AppError;
 use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError};
+use crate::app_state::AppState;
 
 #[derive(Serialize, Deserialize)]
 pub struct ShiftUpdate {

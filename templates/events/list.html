@@ -6,18 +6,11 @@ orderable
 {% endif %}
 {% endmacro %}
 
-{% macro order_url(key) %}
-{% if query.order_dir.to_string() == "asc" && query.order_by.to_string() == key %}
-"/event/list?order_by={{ key }}&order_dir=desc&take={{ query.take }}"
-{% else %}
-"/event/list?order_by={{ key }}&take={{ query.take }}"
-{% endif %}
-{% endmacro %}
 
 <div class="event-list card">
   <table class="list" cellspacing="0">
     <thead>
-      <th class="{% call order_class(" name") %}" hx-get={% call order_url("name") %}>Name</th>
+      <th class='{% call order_class("name") %}' hx-get="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</th>
       <th>Allow Signups</th>
       <th>Modify</th>
       <th>Delete</th>

@@ -10,10 +10,11 @@ use axum::{
     routing::get,
     Router,
 };
+use cafe_website::AppError;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, models::Day};
+use crate::{app_state::AppState, models::Day};
 
 #[derive(Deserialize)]
 pub struct OptionListParams {

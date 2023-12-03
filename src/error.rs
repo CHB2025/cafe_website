@@ -19,12 +19,12 @@ pub enum DisplayKind {
     Redirect(String),
 }
 
-const ISE: AppError = AppError(
+pub const ISE: AppError = AppError(
     StatusCode::INTERNAL_SERVER_ERROR,
     "An unexpected error occured",
     DisplayKind::Block,
 );
-const NOT_FOUND: AppError = AppError(
+pub const NOT_FOUND: AppError = AppError(
     StatusCode::NOT_FOUND,
     "The requested resource could not be found",
     DisplayKind::Block,

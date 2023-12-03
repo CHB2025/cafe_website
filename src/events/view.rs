@@ -3,13 +3,13 @@ use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
 };
+use cafe_website::AppError;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
-    error::AppError,
     filters,
     models::{Day, Event},
 };

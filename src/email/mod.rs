@@ -1,11 +1,11 @@
 use askama::Template;
 use axum::{routing::get, Router};
+use cafe_website::AppError;
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
-    error::AppError,
     filters,
     models::{Shift, Worker},
 };

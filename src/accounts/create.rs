@@ -2,12 +2,12 @@ use askama::Template;
 use askama_axum::IntoResponse;
 use axum::{extract::State, http::StatusCode, response::Html, Form};
 use axum_extra::extract::PrivateCookieJar;
+use cafe_website::AppError;
 use scrypt::password_hash::rand_core::OsRng;
 use scrypt::password_hash::{self, PasswordHasher, SaltString};
 use scrypt::Scrypt;
 use tokio::task::spawn_blocking;
 
-use crate::error::AppError;
 use crate::models::User;
 use crate::session::create_session;
 use crate::{app_state::AppState, models::CreateUser};

@@ -2,10 +2,11 @@ use std::fmt;
 
 use askama::Template;
 use axum::extract::{Query, State};
+use cafe_website::{AppError, PaginatedQuery};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, error::AppError, pagination::PaginatedQuery};
+use crate::app_state::AppState;
 
 use super::{Email, EmailKind, EmailStatus};
 
