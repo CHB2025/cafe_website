@@ -86,20 +86,29 @@ pub async fn send_all(
             if let Err(e) = try_send(msg, &transport).await {
                 // Mark email as failed
                 tracing::error!("Failed to send email: {}", e);
-                sqlx::query!("UPDATE email SET status = 'failed' WHERE id = $1", this_id)
-                    .execute(pool)
-                    .await?; // Should probably not exit out at this point?
+                sqlx::query!(
+                    "UPDATE email SET status = 'failed', sent_at = now() WHERE id = $1",
+                    this_id
+                )
+                .execute(pool)
+                .await?; // Should probably not exit out at this point?
             } else {
                 // Mark email as sent
-                sqlx::query!("UPDATE email SET status = 'sent' WHERE id = $1", this_id)
-                    .execute(pool)
-                    .await?; // Should probably not exit out at this point?
+                sqlx::query!(
+                    "UPDATE email SET status = 'sent', sent_at = now() WHERE id = $1",
+                    this_id
+                )
+                .execute(pool)
+                .await?; // Should probably not exit out at this point?
             };
         } else {
             // Mark email as failed
-            sqlx::query!("UPDATE email SET status = 'failed' WHERE id = $1", this_id)
-                .execute(pool)
-                .await?; // Should probably not exit out at this point?
+            sqlx::query!(
+                "UPDATE email SET status = 'failed', sent_at = now() WHERE id = $1",
+                this_id
+            )
+            .execute(pool)
+            .await?; // Should probably not exit out at this point?
         }
     }
     Ok(())

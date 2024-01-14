@@ -35,8 +35,13 @@ orderable
           {% endmatch %}
         </td>
         <td>{{ email.status }}</td>
-        <td>{{ email.created_at }}</td>
+        <td>{{ email.created_at|date_short }} {{ email.created_at|time_short}} UTC</td>
+        {% if let Some(sent_at) = email.sent_at %}
+        {% let sent_at = email.sent_at.unwrap() -%}
+        <td>{{ sent_at|date_short }} {{ sent_at|time_short}} UTC</td>
+        {% else %}
         <td></td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>

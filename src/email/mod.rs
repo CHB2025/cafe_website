@@ -40,10 +40,18 @@ pub async fn send_signup(
 ) -> Result<Uuid, AppError> {
     let (recipient, event_id) = (worker.id, shift.event_id);
     let subject = format!("Thanks {}!", worker.name_first);
+
+    let config = app_state.config();
+    let mut base_url = config.website.base_url.clone();
+    if config.website.port != 443 {
+        base_url += ":";
+        base_url += &config.website.port.to_string();
+    };
+
     let message = SignupEmail {
         worker,
         shift,
-        domain: app_state.config().website.base_url.clone(),
+        domain: base_url,
     }
     .render()?;
 

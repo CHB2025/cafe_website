@@ -6,7 +6,7 @@ use cafe_website::{AppError, PaginatedQuery};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::app_state::AppState;
+use crate::{app_state::AppState, filters};
 
 use super::{Email, EmailKind, EmailStatus};
 
@@ -46,7 +46,7 @@ pub struct EmailQuery {
 
 impl fmt::Display for EmailQuery {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = serde_urlencoded::to_string(self).unwrap_or(String::new());
+        let s = serde_urlencoded::to_string(self).unwrap_or_default();
         write!(f, "{}", s)
     }
 }
