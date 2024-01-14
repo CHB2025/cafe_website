@@ -1,5 +1,8 @@
 use std::path::{Path, PathBuf};
 
+use lettre::{
+    transport::smtp::authentication::Credentials, Address, AsyncSmtpTransport, Tokio1Executor,
+};
 use serde::Deserialize;
 use tokio::{fs::File, io::AsyncReadExt};
 
@@ -12,6 +15,7 @@ pub struct Config {
     pub website: Website,
     pub database: Database,
     pub ssl: Option<Ssl>,
+    pub email: Option<Email>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -34,6 +38,28 @@ pub struct Database {
 pub struct Ssl {
     pub cert: PathBuf,
     pub key: PathBuf,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Email {
+    server: String,
+    address: Address,
+    password: String,
+}
+
+impl Email {
+    pub fn mailer(
+        &self,
+    ) -> Result<AsyncSmtpTransport<Tokio1Executor>, lettre::transport::smtp::Error> {
+        let builder = AsyncSmtpTransport::<Tokio1Executor>::relay(&self.server)?.credentials(
+            Credentials::new(self.address.user().to_owned(), self.password.clone()),
+        );
+        Ok(builder.build())
+    }
+
+    pub fn address(&self) -> Address {
+        self.address.clone()
+    }
 }
 
 impl Config {

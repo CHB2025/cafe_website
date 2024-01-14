@@ -11,7 +11,10 @@ use crate::{
 
 mod list;
 mod model;
+mod sender;
+
 pub use model::{Email, EmailKind, EmailStatus};
+pub use sender::send_all;
 
 // Verify emails? anything else?
 pub fn public_router() -> Router<AppState> {

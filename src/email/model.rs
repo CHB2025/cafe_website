@@ -22,8 +22,7 @@ use crate::models::{Event, Worker};
     Debug,
 )]
 #[serde(rename_all = "snake_case")]
-#[sqlx(type_name = "email_status")]
-#[sqlx(rename_all = "lowercase")]
+#[sqlx(type_name = "email_status", rename_all = "lowercase")]
 pub enum EmailStatus {
     #[default]
     Draft,
@@ -59,8 +58,7 @@ impl fmt::Display for EmailStatus {
     Debug,
 )]
 #[serde(rename_all = "snake_case")]
-#[sqlx(type_name = "email_kind")]
-#[sqlx(rename_all = "lowercase")]
+#[sqlx(type_name = "email_kind", rename_all = "lowercase")]
 pub enum EmailKind {
     #[default]
     Html,

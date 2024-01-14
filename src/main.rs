@@ -1,4 +1,4 @@
-use std::{env, net::SocketAddr};
+use std::{env, net::SocketAddr, time::Duration};
 
 use app_state::AppState;
 use axum::{
@@ -60,6 +60,21 @@ async fn main() {
 
     // State
     let app_state = AppState::init(config).await;
+
+    // Emailing!
+    let email_state = app_state.clone();
+    tokio::spawn(async move {
+        if let Some(cfg) = &email_state.config().email {
+            loop {
+                if let Err(e) = email::send_all(email_state.pool(), cfg).await {
+                    tracing::error!("Email error: {}", e);
+                }
+                tokio::time::sleep(Duration::from_secs(30)).await;
+            }
+        } else {
+            tracing::warn!("No email config, not starting");
+        }
+    });
 
     // Routes
     let auth_routes = Router::new()
