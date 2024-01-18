@@ -3,7 +3,8 @@ name = "cafe_website"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev.package.scrypt]
+opt-level = 3
 
 [dependencies]
 askama = { version = "0.12.0", features = ["with-axum", "markdown"] }
