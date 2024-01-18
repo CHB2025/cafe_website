@@ -1,7 +1,12 @@
-<div class="card" hx-target="this" hx-swap="outerHTML">
-  <div class="title-block">
-    <h1>{{ shift.title }}</h1>
-    <h2>{{ shift.start_time|time_short }} - {{ shift.end_time|time_short }}</h2>
+{% extends "card.html" %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+<div hx-target="this" hx-swap="outerHTML">
+  <div class="mb-4">
+    <h1 class="font-serif text-3xl font-bold">{{ shift.title }}</h1>
+    <h2 class="font-serif text-xl font-medium text-zinc-400">{{ shift.start_time|time_short }} - {{ shift.end_time|time_short }}</h2>
   </div>
 
   {% if let Some(description) = shift.description %}
@@ -36,3 +41,5 @@
   </form>
   {% endif %}
 </div>
+
+{% endblock %}

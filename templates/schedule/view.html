@@ -1,0 +1,34 @@
+{% if !public %}
+<div class="schedule-controls" hx-target="#modal">
+  <button hx-get="/event/{{ event_id }}/{{ date }}/add_shift">Add Shift</button>
+  <button hx-get="/event/{{ event_id }}/{{ date }}/copy">Copy</button>
+</div>
+{% endif %}
+<div class="hidden lg:flex relative flex-row gap-4 pl-20 overflow-x-auto min-h-[60rem] h-screen w-full">
+  {% for column in shift_columns %}
+  <div class="flex flex-col flex-1 z-10" hx-target="#modal">
+    {% for shift in column %}
+    {{ shift|safe }}
+    {% endfor %}
+  </div>
+  {% endfor %}
+  <div class="absolute left-0 right-0 top-0 bottom-0 flex flex-col z-0">
+    {% for h in 0..(end_time - start_time).num_hours() %}
+    {% let time = start_time + Duration::hours(h.clone()) %}
+    <div class="flex-1 border-t">
+      <span class="time">{{ time|time_short }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<div class="flex lg:hidden relative flex-col h-full w-full min-h-[60rem]" hx-target="#modal">
+  <dl>
+    {% for group in grouped_shifts %}
+    <dt class="border-b mb-2 text-xl font-bold">{{ group.start_time|time_short }}:</dt>
+    {% for shift in group.shifts %}
+    <dd class="pb-1 leading-5 text-lg"><a href="/shift/{{ shift.id }}">{{ shift.title }}</a> (until {{ shift.end_time|time_short }})</dd>
+    {% endfor %}
+    <br/>
+    {% endfor %}
+  </dl>
+</div>

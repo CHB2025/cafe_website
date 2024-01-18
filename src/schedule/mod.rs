@@ -1,7 +1,6 @@
 mod add_shift;
-mod block_view;
 mod copy;
-mod list_view;
+mod view;
 
 pub use add_shift::*;
 use axum::{
@@ -32,10 +31,15 @@ pub async fn option_list(
     )
     .fetch_all(app_state.pool())
     .await?;
-    let result: String = days
-        .iter()
-        .map(|d| format!(r##"<option value="{}">{}</option>"##, d.date, d.date))
-        .collect();
+    let result: String = days.iter().fold(String::new(), |mut output, d| {
+        use std::fmt::Write;
+        let _ = write!(
+            output,
+            r##"<option value="{}">{}</option>"##,
+            d.date, d.date
+        );
+        output
+    });
     Ok(Html(result))
 }
 
@@ -46,7 +50,5 @@ pub fn protected_router() -> Router<AppState> {
 }
 
 pub fn public_router() -> Router<AppState> {
-    Router::new()
-        .route("/:date", get(block_view::schedule))
-        .route("/:date/list", get(list_view::list_view))
+    Router::new().route("/:date", get(view::schedule))
 }

@@ -1,5 +1,10 @@
+{% extends "card.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
 <form 
-  class="form card"
+  class="w-96 grid grid-cols-3 gap-4"
   action="/login?{{ query }}" 
   method="POST"
   hx-boost="true"
@@ -7,16 +12,23 @@
   hx-indicator="#login-submit"
   hx-push-url="false"
 >
-  <label class="form-item">
+  <label class="font-semibold text-right">
     Email:
-    <input name="email" type="email" required="true"></input>
   </label>
-  <label class="form-item">
+  <input class="col-span-2 border px-2 py-1 rounded-xl" name="email" type="email" required="true"></input>
+  <label class="font-semibold text-right">
     Password:
-    <input name="password" type="password" required="true"></input>
   </label>
-  <div class="form-controls">
-    <button id="login-submit" type="submit">Submit</button>
+  <input class="col-span-2 border px-2 py-1 rounded-xl" name="password" type="password" required="true"></input>
+  <div class="col-span-3 flex align-center justify-center w-full">
+    <button 
+      id="login-submit"
+      class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
+      type="submit">
+      Submit
+    </button>
   </div>
   <div id="login_results" class="form-item"></div>
 </form>
+
+{% endblock %}

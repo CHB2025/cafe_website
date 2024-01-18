@@ -6,24 +6,48 @@
   <meta name="viewport"
     content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
   <title>Cornerstone Cafe</title>
+  <!--
   <link rel="stylesheet" href="/styles/index.css">
   <link rel="stylesheet" href="/styles/form.css">
   <link rel="stylesheet" href="/styles/list.css">
   <link rel="stylesheet" href="/styles/schedule.css">
   <link rel="stylesheet" href="/styles/tab.css">
   <link rel="stylesheet" href="/styles/modal.css">
+  -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.5"
     integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
     crossorigin="anonymous"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#420303'
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+  
+  </style>
 </head>
 
-<body hx-boost="true">
+<body hx-boost="true" class="box-border">
   <div id="navigation" hx-get="/nav" hx-swap="outerHTML" hx-trigger="load"></div>
-  <div id="content" hx-push-url="true" hx-target="#content">
+  <div
+    id="content"
+    class="flex flex-col items-center justify-start pb-12 px-8 md:px-[10%] lg:px-[15%] xl:px-[20%]"
+    hx-push-url="true"
+    hx-target="#content">
     {{ content|safe }}
   </div>
-  <div id="modal" hx-on:click="if (event.target.id==='modal') {this.innerHTML = ''}"
+  <div 
+    id="modal" 
+    class="empty:hidden block fixed top-0 right-0 bottom-0 left-0 px-4 md:px-48 bg-none backdrop-blur z-20 flex flex-col justify-center items-center"
+    hx-on:click="if (event.target.id==='modal') {this.innerHTML = ''}"
     hx-on::after-request="if (event.detail.target.id==='content') {this.innerHTML = ''}"></div>
 </body>
 <foot>

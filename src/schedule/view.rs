@@ -11,14 +11,22 @@ use crate::{
 };
 
 #[derive(Template)]
-#[template(path = "schedule/block_view.html")]
+#[template(path = "schedule/view.html")]
 pub struct ScheduleTemplate {
+    /// For Block view
     shift_columns: Vec<Vec<ScheduleItemTemplate>>,
     start_time: NaiveTime,
     end_time: NaiveTime,
     event_id: Uuid,
     date: NaiveDate,
     public: bool,
+    /// For list view
+    grouped_shifts: Vec<ShiftGroup>,
+}
+#[derive(Debug)]
+struct ShiftGroup {
+    start_time: NaiveTime,
+    shifts: Vec<Shift>,
 }
 
 #[derive(Template)]
@@ -65,8 +73,9 @@ pub async fn schedule(
         .map(|sh| sh.end_time + Duration::minutes(60i64 - sh.end_time.minute() as i64))
         .unwrap_or(NaiveTime::from_hms_opt(22, 00, 0).unwrap());
 
+    // Columns for groups
     let mut shift_columns: Vec<Vec<ScheduleItemTemplate>> = vec![];
-    for shift in shifts {
+    for shift in shifts.clone() {
         let mut col_ind = 0;
         while shift_columns
             .get(col_ind)
@@ -124,6 +133,30 @@ pub async fn schedule(
         }
     }
 
+    // Groups for list
+    let group_start_time = shifts
+        .first()
+        .map(|sh| sh.start_time)
+        .unwrap_or(NaiveTime::from_hms_opt(8, 0, 0).unwrap());
+    let mut current = ShiftGroup {
+        shifts: Vec::new(),
+        start_time: group_start_time,
+    };
+    let mut grouped_shifts = vec![];
+    for shift in shifts {
+        if shift.start_time != current.start_time {
+            grouped_shifts.push(current);
+            current = ShiftGroup {
+                shifts: Vec::new(),
+                start_time: shift.start_time,
+            }
+        }
+        current.shifts.push(shift);
+    }
+    if !current.shifts.is_empty() {
+        grouped_shifts.push(current);
+    }
+
     Ok(ScheduleTemplate {
         shift_columns,
         event_id,
@@ -131,5 +164,7 @@ pub async fn schedule(
         start_time,
         end_time,
         public: !logged_in,
+
+        grouped_shifts,
     })
 }
