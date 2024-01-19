@@ -36,13 +36,19 @@
 </head>
 
 <body hx-boost="true" class="box-border">
-  <div id="navigation" hx-get="/nav" hx-swap="outerHTML" hx-trigger="load"></div>
-  <div
-    id="content"
-    class="flex flex-col items-center justify-start pb-12 px-8 md:px-[10%] lg:px-[15%] xl:px-[20%]"
-    hx-push-url="true"
-    hx-target="#content">
-    {{ content|safe }}
+  <div 
+    class="w-screen flex flex-col items-center justify-start shadow mb-6"
+    hx-get="/nav"
+    hx-swap="innerHTML"
+    hx-trigger="load"></div>
+  <div class="flex flex-col items-center">
+    <div 
+      id="content" 
+      class="container flex flex-col items-center justify-start px-4"
+      hx-push-url="true"
+      hx-target="#content">
+      {{ content|safe }}
+    </div>
   </div>
   <div 
     id="modal" 

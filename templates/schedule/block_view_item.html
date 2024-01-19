@@ -1,7 +1,7 @@
 {% if !shifts.is_empty() %}
 	<div class="p-3 shadow border rounded-2xl bg-zinc-300" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
 		{% for (id, title) in shifts %}
-			<a hx-boost="true" href="/shift/{{ id }}">{{ title }}</a><br>
+			<a class="min-width-0 underline text-primary hover:text-zinc-500" href="/shift/{{ id }}">{{ title }}</a><br>
 		{% endfor %}
 	</div>
 {% else %}

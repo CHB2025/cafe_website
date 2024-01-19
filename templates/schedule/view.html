@@ -24,9 +24,11 @@
 <div class="flex lg:hidden relative flex-col h-full w-full min-h-[60rem]" hx-target="#modal">
   <dl>
     {% for group in grouped_shifts %}
-    <dt class="border-b mb-2 text-xl font-bold">{{ group.start_time|time_short }}:</dt>
+    <dt class="border-b first:mt-0 my-2 text-xl font-bold">{{ group.start_time|time_short }}:</dt>
     {% for shift in group.shifts %}
-    <dd class="pb-1 leading-5 text-lg"><a href="/shift/{{ shift.id }}">{{ shift.title }}</a> (until {{ shift.end_time|time_short }})</dd>
+    <dd class="ms-12 pb-1 leading-5 text-lg">
+      <a class="min-width-0 underline text-primary hover:text-zinc-500" href="/shift/{{ shift.id }}">{{ shift.title }}</a> (until {{ shift.end_time|time_short }})
+    </dd>
     {% endfor %}
     <br/>
     {% endfor %}
