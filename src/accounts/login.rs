@@ -6,7 +6,7 @@ use axum::{
     Form,
 };
 use axum_extra::extract::PrivateCookieJar;
-use cafe_website::AppError;
+use cafe_website::{AppError, Redirect};
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
     Scrypt,
@@ -69,23 +69,17 @@ pub async fn login(
     })
     .await??;
 
-    let name = user.name.clone();
-
     Ok((
-        // ["HX-Trigger", "auth-change"],
+        [("HX-Trigger", "auth-change".to_owned())],
         create_session(cookie_jar, user.id),
-        Html(format!(
-            r##"<span class="success" hx-get="{path}" hx-trigger="load delay:1s" hx-target="#content" hx-push-url="true">Welcome {name}</span>"##,
-            path = params.from.unwrap_or("/".to_string()),
-        )),
+        Redirect::to(params.from.unwrap_or("/".to_string())),
     ))
 }
 
 pub async fn logout(cookie_jar: PrivateCookieJar) -> impl IntoResponse {
     (
+        [("HX-Trigger", "auth-change")],
         destroy_session(cookie_jar),
-        Html(
-            r##"<span hx-get="/" hx-trigger="load" hx-target="#content" hx-push-url="true"></span>"##,
-        ),
+        Redirect::to("/".to_string()),
     )
 }

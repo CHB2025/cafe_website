@@ -1,19 +1,19 @@
+{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
+{% let lb_class = "font-semibold text-right" -%}
+{% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
 {% match worker %}
   {% when None %}
-  <label class="form-item" style="margin-top:1rem">
-    First Name:
-    <input type="text" name="first_name" required/>
-  </label>
-  <label class="form-item">
-    Last Name:
-    <input type="text" name="last_name" required/>
-  </label>
-  <label class="form-item">
-    Phone number:
-    <input type="tel" name="phone_number" pattern="{{ PHONE_REGEX }}" placeholder="999-999-9999"/>
-  </label>
+  <label for="first_name" class="{{ lb_class }}">First Name:</label>
+  <input id="first_name" class="{{ ip_class }}" type="text" name="first_name" required/>
+  <label for="last_name" class="{{ lb_class }}">Last Name:</label>
+  <input id="last_name" class="{{ ip_class }}" type="text" name="last_name" required/>
+  <label for="phone" class="{{ lb_class }}">Phone number:</label>
+  <input id="phone" class="{{ ip_class }}" type="tel" name="phone_number" pattern="{{ PHONE_REGEX }}" placeholder="999-999-9999"/>
   {% when Some with (worker) %}
-  <div class="form-item" style="margin-top:1rem">
+  <div class="{{ div_class }}">
     <p>Welcome, {{ worker.name_first }}</p>
   </div>
 {% endmatch %}
+<div class="{{ div_class }}">
+  <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Signup</button>
+</div>

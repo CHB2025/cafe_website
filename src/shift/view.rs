@@ -1,20 +1,19 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use cafe_website::AppError;
+use cafe_website::{filters, AppError};
 use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
-    filters,
     models::{Shift, User, Worker},
 };
 
 #[derive(Debug, Template, Clone)]
 #[template(path = "shift/view.html")]
 pub struct ShiftTemplate {
-    shift: Shift,
-    worker: Option<Worker>,
-    logged_in: bool,
+    pub(super) shift: Shift,
+    pub(super) worker: Option<Worker>,
+    pub(super) logged_in: bool,
 }
 
 #[derive(Debug, Template, Clone)]

@@ -1,28 +1,43 @@
-<form class="form card" method="post" action="/event/{{ event_id }}/{{ date }}/add_shift" hx-boost="true"
-  hx-target="#create_shift_results" hx-indicator="create_shift_submit" hx-disinherit="*">
-  <label class="form-item">
+{% extends "card.html" %}
+
+{% block title %}Add Shift{% endblock %}
+
+
+{% block content %}
+<!-- Bit of a hack. Card is relative -->
+<button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+
+{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
+{% let lb_class = "font-semibold text-right py-1" -%}
+{% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
+
+<form class="w-[30rem] grid grid-cols-3 gap-4" method="post" action="/event/{{ event_id }}/{{ date }}/add_shift" hx-boost="true"
+  hx-target="#error" hx-indicator="create_shift_submit" hx-disinherit="*" hx-push-url="false">
+  <label for="title" class="{{ lb_class }}" class="form-item">
     Title:
-    <input name="title" type="text" required></input>
   </label>
-  <label class="form-item">
+  <input id="title" class="{{ ip_class }}" name="title" type="text" required></input>
+  <label for="start_time" class="{{ lb_class }}" class="form-item">
     Start Time:
-    <input name="start_time" type="time" required></input>
   </label>
-  <label class="form-item">
+  <input id="start_time" class="{{ ip_class }}" name="start_time" type="time" required></input>
+  <label for="end_time" class="{{ lb_class }}" class="form-item">
     End Time:
-    <input name="end_time" type="time" required></input>
   </label>
-  <label class="form-item">
+  <input id="end_time" class="{{ ip_class }}" name="end_time" type="time" required></input>
+  <label for="description" class="{{ lb_class }}" class="form-item">
     Description:
-    <textarea name="description" rows="5"></textarea>
   </label>
-  <label class="form-item">
-    Allow public signups
-    <input name="public_signup" type="checkbox" checked></input>
-    <div class="spacer"></div>
+  <textarea id="description" class="{{ ip_class }}" name="description" rows="5"></textarea>
+  <label for="public_signups" class="{{ lb_class }}" class="form-item">
+    Allow public signups:
   </label>
-  <div class="form-controls">
-    <button id="create_shift_submit" type="submit">Submit</button>
+  <div class="col-span-2 flex justify-start">
+    <input id="public_signup" class="" name="public_signup" type="checkbox" checked></input>
   </div>
-  <div id="create_shift_results" class="form-item"></div>
+  <div class="{{ div_class }}">
+    <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Submit</button>
+  </div>
+  <div id="error" class="empty:hidden {{ div_class }}"></div>
 </form>
+{% endblock %}

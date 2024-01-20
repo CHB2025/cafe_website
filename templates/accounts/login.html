@@ -8,7 +8,7 @@
   action="/login?{{ query }}" 
   method="POST"
   hx-boost="true"
-  hx-target="#login_results"
+  hx-target="#error"
   hx-indicator="#login-submit"
   hx-push-url="false"
 >
@@ -28,7 +28,7 @@
       Submit
     </button>
   </div>
-  <div id="login_results" class="form-item"></div>
+  <div id="error" class="col-span-3 flex justify-center text-red-900"></div>
 </form>
 
 {% endblock %}

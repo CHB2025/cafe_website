@@ -1,12 +1,11 @@
 use askama::Template;
 use axum::extract::{Path, State};
-use cafe_website::AppError;
+use cafe_website::{filters, AppError};
 use chrono::{Duration, NaiveDate, NaiveTime, Timelike};
 use uuid::Uuid;
 
 use crate::{
     app_state::AppState,
-    filters,
     models::{Shift, User},
 };
 

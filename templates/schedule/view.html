@@ -1,7 +1,15 @@
 {% if !public %}
-<div class="schedule-controls" hx-target="#modal">
-  <button hx-get="/event/{{ event_id }}/{{ date }}/add_shift">Add Shift</button>
-  <button hx-get="/event/{{ event_id }}/{{ date }}/copy">Copy</button>
+<div class="flex gap-4 justify-center items-center pb-4" hx-target="#modal">
+  <button 
+    class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
+    hx-get="/event/{{ event_id }}/{{ date }}/add_shift">
+      Add Shift
+  </button>
+  <button 
+    class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
+    hx-get="/event/{{ event_id }}/{{ date }}/copy">
+    Copy
+  </button>
 </div>
 {% endif %}
 <div class="hidden lg:flex relative flex-row gap-4 pl-20 overflow-x-auto min-h-[60rem] h-screen w-full">

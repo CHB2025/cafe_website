@@ -1,28 +1,43 @@
-<form class="form card" hx-put="/shift/{{ shift.id }}" hx-target="#edit-shift-results" hx-push-url="false">
-  <label class="form-item">
+{% extends "card.html" %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+{% let button = "px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"-%}
+<!-- Bit of a hack. Card is relative -->
+<button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+
+{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
+{% let lb_class = "font-semibold text-right py-1" -%}
+{% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
+
+<form class="w-[30rem] grid grid-col-3 gap-4" hx-put="/shift/{{ shift.id }}" hx-target="#error" hx-push-url="false">
+  <label for="title" class="{{ lb_class }}">
     Title:
-    <input type="text" name="title" value="{{ shift.title }}"/>
   </label>
-  <label class="form-item">
+  <input id="title" class="{{ ip_class }}" type="text" name="title" value="{{ shift.title }}"/>
+  <label for="start_time" class="{{ lb_class }}">
     Start Time:
-    <input type="time" name="start_time" value="{{ shift.start_time }}"/>
   </label>
-  <label class="form-item">
+  <input id="start_time" class="{{ ip_class }}" type="time" name="start_time" value="{{ shift.start_time }}"/>
+  <label for="end_time" class="{{ lb_class }}">
     End Time:
-    <input type="time" name="end_time" value="{{ shift.end_time }}"/>
   </label>
-  <label class="form-item">
+  <input id="end_time" class="{{ ip_class }}" type="time" name="end_time" value="{{ shift.end_time }}"/>
+  <label for="description" class="{{ lb_class }}">
     Description:
-    <textarea name="description" rows="5">{% if let Some(d) = shift.description %}{{ d }}{% endif %}</textarea>
   </label>
-  <label class="form-item">
+  <textarea id="description" class="{{ip_class}}" name="description" rows="5">{% if let Some(d) = shift.description %}{{ d }}{% endif %}</textarea>
+  <label for="public_signup" class="{{ lb_class }}">
     Allow public signups:
-    <input name="public_signup" type="checkbox" {% if shift.public_signup %}checked{% endif %}/>
-    <div class="spacer"></div>
   </label>
-  <div class="form-controls">
-    <button class="primary" type="submit">Submit</button>
-    <button hx-indicator="this" hx-get="/shift/{{ shift.id }}" hx-target="closest form" hx-swap="outerHTML">Cancel</button>
+  <div class="col-span-2 flex justify-start">
+    <input id="public_signup" name="public_signup" type="checkbox" {% if shift.public_signup %}checked{% endif %}/>
   </div>
-  <div id="edit-shift-results" class="form-item"></div>
+  <div class="{{ div_class }}">
+    <button class="{{ button }}" type="submit">Submit</button>
+    <button class="{{ button }}" hx-indicator="this" hx-get="/shift/{{ shift.id }}" hx-target="#modal">Cancel</button>
+  </div>
+  <div id="error" class="form-item"></div>
 </form>
+{% endblock %}

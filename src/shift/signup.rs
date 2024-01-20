@@ -54,8 +54,6 @@ pub async fn signup(
     Path(id): Path<Uuid>,
     Form(body): Form<SignupBody>,
 ) -> Result<Html<String>, AppError> {
-    // TODO: validate email and phone
-
     let logged_in = user.is_some();
     let tran = app_state.pool().begin().await?;
     let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)

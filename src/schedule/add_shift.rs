@@ -4,7 +4,7 @@ use axum::{
     response::Html,
     Form,
 };
-use cafe_website::AppError;
+use cafe_website::{AppError, Redirect};
 use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -39,7 +39,7 @@ pub async fn add_shift(
     State(app_state): State<AppState>,
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
     Form(shift_input): Form<CreateShiftInput>,
-) -> Result<Html<String>, AppError> {
+) -> Result<Redirect, AppError> {
     let CreateShiftInput {
         title,
         start_time,
@@ -59,7 +59,11 @@ pub async fn add_shift(
         public_signup.is_some_and(|s| s == "on")
     ).fetch_one(app_state.pool()).await?;
 
-    Ok(Html(format!(
-        r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load"></span> "##
-    )))
+    // Ok(Html(format!(
+    //     r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load"></span> "##
+    // )))
+    Ok(Redirect::targeted(
+        format!("/event/{event_id}"),
+        "#content".to_owned(),
+    ))
 }

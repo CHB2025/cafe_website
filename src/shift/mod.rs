@@ -1,5 +1,5 @@
 use axum::{
-    routing::{get, put},
+    routing::{get, patch, put},
     Router,
 };
 
@@ -12,6 +12,8 @@ mod view;
 use crud::{delete_shift, update_shift};
 use view::{edit_form, view};
 
+use self::crud::remove_worker;
+
 pub fn public_router() -> Router<AppState> {
     Router::new().route("/:id", get(view)).route(
         "/:id/signup",
@@ -22,5 +24,6 @@ pub fn public_router() -> Router<AppState> {
 pub fn protected_router() -> Router<AppState> {
     Router::new()
         .route("/:id/edit", get(edit_form))
+        .route("/:id/remove_shift", patch(remove_worker))
         .route("/:id", put(update_shift).delete(delete_shift))
 }
