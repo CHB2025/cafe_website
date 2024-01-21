@@ -1,3 +1,5 @@
+{% extends "card.html" %}
+
 {% macro order_class(key) %}
 {% if query.order_by.to_string() == key %}
 ordered {{ query.order_dir }}
@@ -6,25 +8,28 @@ orderable
 {% endif %}
 {% endmacro %}
 
+{% block title %}Events{% endblock %}
 
-<div class="event-list card">
-  <table class="list" cellspacing="0">
-    <thead>
-      <th class='{% call order_class("name") %}' hx-get="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</th>
-      <th>Allow Signups</th>
-      <th>Modify</th>
-      <th>Delete</th>
-    </thead>
-    <tbody>
-      {% for event in events %}
-      {% include "list_row.html" %}
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="list-controls">
-    <button {% if prev_disabled %}disabled{% endif %} hx-get="/event/list?{{ prev_query }}">Previous</button>
-    <div class="current-page">{{ current_page }}/{{ page_count }}</div>
-    <button {% if next_disabled %}disabled{% endif %} hx-get="/event/list?{{ next_query }}">Next</button>
-  </div>
-  <button hx-get="/event/create" hx-push-url="false" hx-target="#modal">+</button>
+{% block content %}
+
+
+<table cellspacing="0">
+  <thead class="rounded-t-lg shadow">
+    <th class="border p-4"><a href="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</a></th>
+    <th class="border p-4">Allow Signups</th>
+    <th class="border p-4">Manage</th>
+  </thead>
+  <tbody>
+    {% for event in events %}
+    {% include "list_row.html" %}
+    {% endfor %}
+  </tbody>
+</table>
+<div class="flex gap-4 justify-center items-center mt-4">
+  <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:bg-zinc-300 disabled:shadow-none" {% if prev_disabled %}disabled{% endif %} hx-get="/event/list?{{ prev_query }}">Previous</button>
+  <span class="flex justify-center items-center">{{ current_page }}/{{ page_count }}</span>
+  <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:bg-zinc-300 disabled:shadow-none" {% if next_disabled %}disabled{% endif %} hx-get="/event/list?{{ next_query }}">Next</button>
 </div>
+<button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" hx-get="/event/create" hx-push-url="false" hx-target="#modal">+</button>
+
+{% endblock %}

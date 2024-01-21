@@ -1,26 +1,45 @@
+{% extends "card.html" %}
+
+{% block title %}Add Shift{% endblock %}
+
+
+{% block content %}
+<!-- Bit of a hack. Card is relative -->
+<button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+
+{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
+{% let lb_class = "font-semibold text-right py-1" -%}
+{% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
+
 <form
-  class="form card" 
+  class="w-[30rem] grid gird-cols-3 gap-4" 
   action="/event/create" 
   method="post" 
-  hx-indicator="#create_event_submit" 
   hx-push-url="false"
   hx-target="#create_event_results"
 >
-  <label class="form-item">
-    Name:<input name="name" type="text" required="true"></input>
+  <label for="name" class="{{ lb_class }}">
+    Name:
   </label>
-  <label class="form-item">
-    Start Date:<input name="start_date" type="date" required="true"></input>
+  <input id="name" class="{{ ip_class }}" name="name" type="text" required="true"></input>
+  <label for="start_date" class="{{ lb_class }}">
+    Start Date:
   </label>
-  <label class="form-item">
-    End Date:<input name="end_date" type="date" required="true"></input>
+  <input id="start_date" class="{{ ip_class }}" name="start_date" type="date" required="true"></input>
+  <label for="end_date" class="{{ lb_class }}">
+    End Date:
   </label>
-  <label class="form-item">
-    Allow Signups:<input name="allow_signups" type="checkbox"></input>
-    <div class="spacer"></div>
+  <input id="end_date" class="{{ ip_class }}" name="end_date" type="date" required="true"></input>
+  <label for="allow_signups" class="{{ lb_class }}">
+    Allow Signups:
   </label>
-  <div class="form-controls">
-    <button id="create_event_submit" type="submit">Submit</button>
+  <div>
+    <input id="allow_signups" name="allow_signups" type="checkbox"></input>
+  </div>
+  <div class="{{ div_class }}">
+    <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Submit</button>
   </div>
   <div id="create_event_results" class="form-item"></div>
 </form>
+
+{% endblock %}

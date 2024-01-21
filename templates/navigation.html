@@ -10,13 +10,13 @@
       <h1 class="font-serif text-3xl font-bold">Cornerstone Cafe</h1>
     </a>
     {% for (title, href) in left %}
-      <a class="flex justify-center items-center h-full p-3 whitespace-nowrap border-x hover:bg-zinc-400" href="{{ href }}">{{ title }}</a>
+      <a class="flex justify-center items-center h-full p-3 whitespace-nowrap border-l last:border-r hover:bg-zinc-400" href="{{ href }}">{{ title }}</a>
     {% endfor %}
   </div>
   <div class="flex-1"></div>
   <div class="grow-0 shrink-0 flex flex-row w-fit">
     {% for (title, href) in right %}
-      <a class="flex justify-center items-center h-full p-3 whitespace-nowrap border-x hover:bg-zinc-400" href="{{ href }}">{{ title }}</a>
+      <a class="flex justify-center items-center h-full p-3 whitespace-nowrap border-l last:border-r hover:bg-zinc-400" href="{{ href }}">{{ title }}</a>
     {% endfor %}
   </div>
 </div>
