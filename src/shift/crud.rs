@@ -1,12 +1,14 @@
-use axum::{extract::{Path, State, Query}, response::Html, Form};
+use askama_axum::IntoResponse;
+use axum::{extract::{Path, State, Query}, Form};
 use cafe_website::{AppError, Redirect};
-use chrono::NaiveTime;
+use chrono::{NaiveTime, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Shift};
+use crate::{app_state::AppState, models::{Shift, Worker}};
 
 use super::view::ShiftTemplate;
+
 
 #[derive(Serialize, Deserialize)]
 pub struct ShiftUpdate {
@@ -21,33 +23,40 @@ pub async fn update_shift(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Form(ShiftUpdate { title, start_time, end_time, description, public_signup }): Form<ShiftUpdate>
-) -> Result<Redirect, AppError> {
-    sqlx::query!(
-        "UPDATE shift SET title = $1, start_time = $2, end_time = $3, description = $4, public_signup = $5 WHERE id = $6",
+) -> Result<impl IntoResponse, AppError> {
+    let shift = sqlx::query_as!(
+        Shift,
+        "UPDATE shift SET title = $1, start_time = $2, end_time = $3, description = $4, public_signup = $5 WHERE id = $6 RETURNING *",
         title,
         start_time,
         end_time,
         description, 
         public_signup.is_some_and(|s| s == "on"),
         id
-    ).execute(app_state.pool()).await?;
+    ).fetch_one(app_state.pool()).await?;
+    let worker = match shift.worker_id {
+        Some(id) => Some(
+            sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
+                .fetch_one(app_state.pool())
+                .await?,
+        ),
+        None => None,
+    };
 
-    // Ok(ShiftTemplate { shift, worker, logged_in: true })
-    Ok(Redirect::targeted(format!("/shift/{}", id), "#modal".to_owned()))
+    Ok(([("HX-Retarget", "#modal")], ShiftTemplate { shift, worker, logged_in: true }))
 }
 
 pub async fn delete_shift(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
-) -> Result<Html<String>, AppError> {
-    let event_id = sqlx::query_scalar!(
-        "DELETE FROM shift WHERE id = $1 RETURNING event_id",
+) -> Result<Redirect, AppError> {
+    let shift = sqlx::query_as!(
+        Shift,
+        "DELETE FROM shift WHERE id = $1 RETURNING *",
         id
     ).fetch_one(app_state.pool()).await?;
 
-    Ok(Html(format!(
-        r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load delay:2s">Success</span>"##
-    )))
+    Ok(Redirect::to(format!("/event/{}?date={}", shift.event_id, shift.date)))
 }
 
 
@@ -60,10 +69,11 @@ pub async fn remove_worker(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Query(RmWorkerQuery { id: worker_id }): Query<RmWorkerQuery>,
-) -> Result<Redirect, AppError> {
-    sqlx::query!(
-        "UPDATE shift SET worker_id = NULL WHERE id = $1 AND worker_id = $2",
+) -> Result<impl IntoResponse, AppError> {
+    let shift = sqlx::query_as!(
+        Shift,
+        "UPDATE shift SET worker_id = NULL WHERE id = $1 AND worker_id = $2 RETURNING *",
         id, worker_id
-    ).execute(app_state.pool()).await?;
-    Ok(Redirect::targeted(format!("/shift/{}", id), "#modal".to_owned()))
+    ).fetch_one(app_state.pool()).await?;
+    Ok(([("HX-Retarget", "#modal")], ShiftTemplate { shift, worker: None, logged_in: true }))
 }

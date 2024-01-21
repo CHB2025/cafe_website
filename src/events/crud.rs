@@ -2,10 +2,9 @@ use askama::Template;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
-    response::Html,
     Form,
 };
-use cafe_website::AppError;
+use cafe_website::{AppError, Redirect};
 use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -39,7 +38,7 @@ pub async fn create_event_form() -> EventCreateTemplate {
 pub async fn create_event(
     State(app_state): State<AppState>,
     Form(event_input): Form<EventInput>,
-) -> Result<Html<String>, AppError> {
+) -> Result<Redirect, AppError> {
     if event_input.start_date > event_input.end_date {
         return Err(AppError::inline(
             StatusCode::BAD_REQUEST,
@@ -69,7 +68,7 @@ pub async fn create_event(
         .await?;
     }
     transaction.commit().await?;
-    Ok(Html(format!("<span class=\"success\" hx-get=\"/event/{}\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>", event.id)))
+    Ok(Redirect::to(format!("/event/{}", event.id)))
 }
 
 pub async fn patch_event(

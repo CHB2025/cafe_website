@@ -37,7 +37,11 @@
   </style>
 </head>
 
-<body hx-boost="true" class="box-border">
+<body 
+  hx-boost="true"
+  class="box-border"
+  hx-on::after-request="if (event.detail.target.id==='content') {document.getElementById('modal').innerHTML = ''}"
+  >
   <div 
     class="w-screen flex flex-col items-center justify-start shadow mb-6"
     hx-get="/nav"

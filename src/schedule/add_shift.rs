@@ -1,7 +1,6 @@
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    response::Html,
     Form,
 };
 use cafe_website::{AppError, Redirect};
@@ -59,11 +58,5 @@ pub async fn add_shift(
         public_signup.is_some_and(|s| s == "on")
     ).fetch_one(app_state.pool()).await?;
 
-    // Ok(Html(format!(
-    //     r##"<span class="success" hx-get="/event/{event_id}" hx-target="#content" hx-swap="innerHTML" hx-trigger="load"></span> "##
-    // )))
-    Ok(Redirect::targeted(
-        format!("/event/{event_id}"),
-        "#content".to_owned(),
-    ))
+    Ok(Redirect::to(format!("/event/{event_id}")))
 }

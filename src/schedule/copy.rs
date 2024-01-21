@@ -1,10 +1,9 @@
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    response::Html,
     Form,
 };
-use cafe_website::AppError;
+use cafe_website::{AppError, Redirect};
 use chrono::NaiveDate;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -37,7 +36,7 @@ pub async fn copy(
         event_id: event_to,
         date: date_to,
     }): Form<CopyBody>,
-) -> Result<Html<String>, AppError> {
+) -> Result<Redirect, AppError> {
     let tran = app_state.pool().begin().await?;
     let shifts = sqlx::query_as!(
         Shift,
@@ -67,7 +66,5 @@ pub async fn copy(
         ).execute(app_state.pool()).await?;
     }
     tran.commit().await?;
-    Ok(Html(format!(
-        r##"<span class="success" hx-get="/event/{event_to}" hx-trigger="load delay:1s" hx-target="#content">Copied the shifts successfully!</span>"##
-    )))
+    Ok(Redirect::to(format!("/event/{event_to}")))
 }

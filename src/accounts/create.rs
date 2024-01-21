@@ -1,8 +1,8 @@
 use askama::Template;
 use askama_axum::IntoResponse;
-use axum::{extract::State, http::StatusCode, response::Html, Form};
+use axum::{extract::State, http::StatusCode, Form};
 use axum_extra::extract::PrivateCookieJar;
-use cafe_website::AppError;
+use cafe_website::{AppError, Redirect};
 use scrypt::password_hash::rand_core::OsRng;
 use scrypt::password_hash::{self, PasswordHasher, SaltString};
 use scrypt::Scrypt;
@@ -59,6 +59,6 @@ pub async fn create_account(
 
     Ok((
         create_session(cookie_jar, new_user.id),
-        Html("<span class=\"success\" hx-get=\"/\" hx-trigger=\"load delay:2s\" hx-target=\"#content\" hx-push-url=\"true\">Success</span>")
+        Redirect::to("/".to_owned()),
     ))
 }

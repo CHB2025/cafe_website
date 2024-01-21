@@ -1,4 +1,5 @@
 use askama::Template;
+use askama_axum::IntoResponse;
 use axum::extract::{Path, State};
 use cafe_website::{filters, AppError};
 use uuid::Uuid;
@@ -26,7 +27,7 @@ pub async fn view(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     user: Option<User>,
-) -> Result<ShiftTemplate, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let logged_in = user.is_some();
     let shift = sqlx::query_as!(
         Shift,
@@ -47,17 +48,20 @@ pub async fn view(
         None => None,
     };
 
-    Ok(ShiftTemplate {
-        shift,
-        logged_in,
-        worker,
-    })
+    Ok((
+        [("HX-Replace-Url", "false")],
+        ShiftTemplate {
+            shift,
+            logged_in,
+            worker,
+        },
+    ))
 }
 
 pub async fn edit_form(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
-) -> Result<ShiftEditTemplate, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let shift = sqlx::query_as!(
         Shift,
         "SELECT s.*
@@ -69,5 +73,5 @@ pub async fn edit_form(
     .fetch_one(app_state.pool())
     .await?;
 
-    Ok(ShiftEditTemplate { shift })
+    Ok(([("HX-Replace-Url", "false")], ShiftEditTemplate { shift }))
 }

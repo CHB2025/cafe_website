@@ -2,7 +2,7 @@ use askama::Template;
 use axum::{
     extract::{Query, RawQuery, State},
     http::StatusCode,
-    response::{Html, IntoResponse},
+    response::IntoResponse,
     Form,
 };
 use axum_extra::extract::PrivateCookieJar;
