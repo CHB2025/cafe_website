@@ -1,4 +1,5 @@
 mod add_shift;
+mod admin;
 mod copy;
 mod view;
 
@@ -47,6 +48,7 @@ pub fn protected_router() -> Router<AppState> {
     Router::new()
         .route("/:date/add_shift", get(add_shift_form).post(add_shift))
         .route("/:date/copy", get(copy::copy_form).post(copy::copy))
+        .route("/:date/admin", get(admin::schedule_admin))
 }
 
 pub fn public_router() -> Router<AppState> {

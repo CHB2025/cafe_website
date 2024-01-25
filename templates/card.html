@@ -1,6 +1,9 @@
 <div 
-  class="relative w-fit p-4 pt-2 bg-white border rounded-2xl shadow">
-  <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">{% block title %}{% endblock %}</h3>
-  {% block content %}{% endblock %}
+  class="relative p-4 pt-2 bg-white border rounded-2xl shadow {{ class.unwrap_or("") }}">
+  {% if show_x %}
+    <button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+  {% endif %}
+  <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">{{ title }}</h3>
+  {{ child|safe }}
 
 </div>

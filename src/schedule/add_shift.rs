@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
     Form,
 };
-use cafe_website::{AppError, Redirect};
+use cafe_website::{templates::Card, AppError, Redirect};
 use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -19,8 +19,11 @@ pub struct CreateShiftTemplate {
 
 pub async fn add_shift_form(
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
-) -> CreateShiftTemplate {
-    CreateShiftTemplate { event_id, date }
+) -> Card<CreateShiftTemplate> {
+    Card::modal(
+        "Add Shift".to_owned(),
+        CreateShiftTemplate { event_id, date },
+    )
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -6,6 +6,9 @@ edition = "2021"
 [profile.dev.package.scrypt]
 opt-level = 3
 
+[profile.dev.package.askama_derive]
+opt-level = 3
+
 [dependencies]
 askama = { version = "0.12.0", features = ["with-axum", "markdown"] }
 askama_axum = "0.3.0"

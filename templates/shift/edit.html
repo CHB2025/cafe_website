@@ -1,12 +1,4 @@
-{% extends "card.html" %}
-
-{% block title %}Sign up{% endblock %}
-
-{% block content %}
 {% let button = "px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"-%}
-<!-- Bit of a hack. Card is relative -->
-<button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
-
 {% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
 {% let lb_class = "font-semibold text-right py-1" -%}
 {% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
@@ -40,4 +32,3 @@
   </div>
   <div id="error" class="form-item"></div>
 </form>
-{% endblock %}

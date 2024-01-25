@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::extract::{Query, State};
-use cafe_website::{AppError, PaginatedQuery};
+use cafe_website::{templates::Card, AppError, PaginatedQuery};
 use chrono::NaiveDate;
 use sqlx::{FromRow, Postgres};
 use uuid::Uuid;
@@ -34,7 +34,7 @@ pub struct EventListTemplate {
 pub async fn event_list(
     State(app_state): State<AppState>,
     Query(query): Query<PaginatedQuery<EventOrderBy>>,
-) -> Result<EventListTemplate, AppError> {
+) -> Result<Card<EventListTemplate>, AppError> {
     let pool = app_state.pool();
 
     let events = sqlx::query_as::<Postgres, Event>(&format!("SELECT * FROM event {}", query.sql()))
@@ -49,15 +49,20 @@ pub async fn event_list(
     let current_page = query.page();
     let page_count = query.page_count(event_count);
 
-    Ok(EventListTemplate {
-        events,
-        query,
+    Ok(Card {
+        class: Some("w-fit"),
+        child: EventListTemplate {
+            events,
+            query,
 
-        prev_disabled: current_page == 1,
-        prev_query: query.previous(),
-        current_page,
-        page_count,
-        next_disabled: current_page == page_count,
-        next_query: query.next(),
+            prev_disabled: current_page == 1,
+            prev_query: query.previous(),
+            current_page,
+            page_count,
+            next_disabled: current_page == page_count,
+            next_query: query.next(),
+        },
+        title: "Events".to_owned(),
+        show_x: false,
     })
 }

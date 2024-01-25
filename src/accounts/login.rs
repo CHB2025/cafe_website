@@ -6,7 +6,7 @@ use axum::{
     Form,
 };
 use axum_extra::extract::PrivateCookieJar;
-use cafe_website::{AppError, Redirect};
+use cafe_website::{templates::Card, AppError, Redirect};
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
     Scrypt,
@@ -42,8 +42,13 @@ struct LoginTemplate {
 }
 
 pub async fn login_form(RawQuery(query): RawQuery) -> impl IntoResponse {
-    LoginTemplate {
-        query: query.unwrap_or("".to_string()),
+    Card {
+        class: Some("w-fit"),
+        title: "Log In".to_owned(),
+        child: LoginTemplate {
+            query: query.unwrap_or("".to_string()),
+        },
+        show_x: false,
     }
 }
 

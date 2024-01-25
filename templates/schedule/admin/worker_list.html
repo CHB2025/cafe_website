@@ -1,0 +1,31 @@
+{% if shift_workers.is_empty() %}
+<span>Nobody here</span>
+{% else %}
+<ul class="list-disc list-inside w-full">
+  {% for sw in shift_workers %}
+    {% let time -%}
+    {% if future %}
+      {% set time = sw.shift.start_time -%}
+    {% else %}
+      {% set time = sw.shift.end_time -%}
+    {% endif %}
+    {% if let Some(worker) = sw.worker %}
+      <li class="pb-2">
+        <strong class="bold">{{ sw.shift.title }}</strong>: {{ worker.name_first }} {{ worker.name_last }} 
+        <ul class="list-disc list-inside pl-4">
+          <li>{% if future %}On{% else %}Done{% endif %} at {{ time|time_short }}</li>
+          {% if let Some(phone) = worker.phone %}<li>Phone: {{ phone }}</li>{% endif %}
+          <li>Email: {{ worker.email }}</li>
+        </ul>
+      </li>
+    {% else %}
+      <li class="pb-2">
+        <strong class="bold">{{ sw.shift.title }}</strong>: Empty
+        <ul class="list-disc list-inside pl-4">
+          <li>{% if future %}On{% else %}Done{% endif %} at {{ time|time_short }}</li>
+        </ul>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+{% endif %}

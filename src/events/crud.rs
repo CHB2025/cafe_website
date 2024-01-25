@@ -4,7 +4,7 @@ use axum::{
     http::StatusCode,
     Form,
 };
-use cafe_website::{AppError, Redirect};
+use cafe_website::{templates::Card, AppError, Redirect};
 use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -31,8 +31,8 @@ pub struct EditEventInput {
 #[template(path = "events/create.html")]
 pub struct EventCreateTemplate {}
 
-pub async fn create_event_form() -> EventCreateTemplate {
-    EventCreateTemplate {}
+pub async fn create_event_form() -> Card<EventCreateTemplate> {
+    Card::modal("Add Event".to_owned(), EventCreateTemplate {})
 }
 
 pub async fn create_event(

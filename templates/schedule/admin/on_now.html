@@ -1,0 +1,27 @@
+{% extends "card.html" %}
+
+{% block title %}On Now{% endblock %}
+
+{% block content %}
+<ul class="list-disc">
+  {% for sw in current %}
+    {% if let Some(worker) = sw.worker %}
+      <li>
+        <strong class="bold">{{ sw.shift.title }}</strong>: {{ worker.name_first }} {{ worker.name_last }} 
+        <ul class="list-disc pl-4">
+          <li>Done at {{ sw.shift.end_time|time_short }}
+          {% if let Some(phone) = worker.phone %}<li>Phone: {{ phone }}</li>{% endif %}
+          <li>Email: {{ worker.email }}</li>
+        </ul>
+      </li>
+    {% else %}
+      <li>
+        <strong class="bold">{{ sw.shift.title }}</strong>: Empty
+        <ul class="list-disc pl-4">
+          <li>Done at {{ sw.shift.end_time|time_short }}
+        </ul>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+{% endblock %}
