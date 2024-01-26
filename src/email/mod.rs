@@ -37,8 +37,8 @@ pub async fn send_signup(
     worker: Worker,
     shift: Shift,
 ) -> Result<Uuid, AppError> {
-    let (recipient, event_id) = (worker.id, shift.event_id);
-    let subject = format!("Thanks {}!", worker.name_first);
+    let (recipient, event_id, address) = (worker.id, shift.event_id, worker.email.clone());
+    let subject = format!("Thanks {}!", worker.name_first); // injection?
 
     let config = app_state.config();
     let mut base_url = config.website.base_url.clone();
@@ -55,9 +55,10 @@ pub async fn send_signup(
     .render()?;
 
     let id = sqlx::query_scalar!(
-        "INSERT INTO email (status, kind, recipient, subject, message, event_id) 
-        VALUES ('pending', 'html', $1, $2, $3, $4) RETURNING id",
+        "INSERT INTO email (status, kind, recipient, address, subject, message, event_id)
+        VALUES ('pending', 'html', $1, $2, $3, $4, $5) RETURNING id",
         recipient,
+        address,
         subject,
         message,
         event_id

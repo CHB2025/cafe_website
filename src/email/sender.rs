@@ -18,7 +18,6 @@ struct EmailToSend {
     kind: EmailKind,
     subject: String,
     message: String,
-    to_name: String,
     to: String,
 }
 
@@ -62,14 +61,13 @@ pub async fn send_all(
     let emails = sqlx::query_as!(
         EmailToSend,
         r#"SELECT 
-            e.id, 
-            e.kind AS "kind: _", 
-            e.subject, 
-            e.message, 
-            w.name_first as to_name, 
-            w.email as to
-        FROM email AS e JOIN worker as w ON e.recipient = w.id
-        WHERE e.status = 'pending'"#
+            id, 
+            kind AS "kind: _", 
+            subject, 
+            message, 
+            address as to
+        FROM email
+        WHERE status = 'pending'"#
     )
     .fetch_all(pool)
     .await?;
@@ -122,10 +120,7 @@ fn try_build(email: EmailToSend, mbox: Mailbox) -> Result<Message, EmailError> {
     Ok(Message::builder()
         .subject(email.subject)
         .from(mbox)
-        .to(Mailbox::new(
-            Some(email.to_name),
-            Address::try_from(email.to)?,
-        ))
+        .to(Mailbox::new(None, Address::try_from(email.to)?))
         .singlepart(body)?)
 }
 

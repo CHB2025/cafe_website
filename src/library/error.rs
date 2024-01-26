@@ -57,6 +57,7 @@ impl fmt::Display for AppError {
 
 impl From<sqlx::Error> for AppError {
     fn from(value: sqlx::Error) -> Self {
+        tracing::error!("{value}");
         match value {
             sqlx::Error::RowNotFound => NOT_FOUND,
             _ => ISE,
@@ -65,19 +66,22 @@ impl From<sqlx::Error> for AppError {
 }
 
 impl From<serde_urlencoded::ser::Error> for AppError {
-    fn from(_: serde_urlencoded::ser::Error) -> Self {
+    fn from(value: serde_urlencoded::ser::Error) -> Self {
+        tracing::error!("{value}");
         ISE
     }
 }
 
 impl From<tokio::task::JoinError> for AppError {
-    fn from(_: tokio::task::JoinError) -> Self {
+    fn from(value: tokio::task::JoinError) -> Self {
+        tracing::error!("{value}");
         ISE
     }
 }
 
 impl From<scrypt::password_hash::Error> for AppError {
     fn from(err: scrypt::password_hash::Error) -> Self {
+        tracing::error!("{err}");
         match err {
             scrypt::password_hash::Error::Password => {
                 Self::inline(StatusCode::BAD_REQUEST, "Invalid username or password")
@@ -88,7 +92,8 @@ impl From<scrypt::password_hash::Error> for AppError {
 }
 
 impl From<askama::Error> for AppError {
-    fn from(_: askama::Error) -> Self {
+    fn from(value: askama::Error) -> Self {
+        tracing::error!("{value}");
         ISE
     }
 }

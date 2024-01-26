@@ -1,7 +1,7 @@
 use askama_axum::IntoResponse;
 use axum::{extract::{Path, State, Query}, Form};
 use cafe_website::{AppError, Redirect};
-use chrono::{NaiveTime, NaiveDate};
+use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

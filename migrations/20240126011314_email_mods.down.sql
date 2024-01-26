@@ -1,0 +1,4 @@
+DELETE FROM email WHERE recipient IS NULL;
+
+ALTER TABLE email DROP COLUMN address;
+ALTER TABLE email ALTER COLUMN recipient SET NOT NULL;

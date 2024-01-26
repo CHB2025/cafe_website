@@ -2,10 +2,8 @@ use std::fmt;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, Pool, Postgres};
+use sqlx::FromRow;
 use uuid::Uuid;
-
-use crate::models::{Event, Worker};
 
 #[derive(
     Clone,
@@ -73,22 +71,9 @@ pub struct Email {
     pub sent_at: Option<DateTime<Utc>>,
     pub status: EmailStatus,
     pub kind: EmailKind,
-    pub recipient: Uuid,
+    pub recipient: Option<Uuid>,
+    pub address: String,
     pub subject: String,
     pub message: String,
     pub event_id: Uuid,
-}
-
-impl Email {
-    pub async fn get_recipient(self, pool: &Pool<Postgres>) -> sqlx::Result<Worker> {
-        sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", self.recipient)
-            .fetch_one(pool)
-            .await
-    }
-
-    pub async fn get_event(self, pool: &Pool<Postgres>) -> sqlx::Result<Event> {
-        sqlx::query_as!(Event, "SELECT * FROM event WHERE id = $1", self.event_id)
-            .fetch_one(pool)
-            .await
-    }
 }

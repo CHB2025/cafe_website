@@ -24,7 +24,7 @@ orderable
     <tbody>
       {% for email in emails %}
       <tr>
-        <td>{{ email.recipient }}</td>
+        <td>{{ email.address }}</td>
         <td>{{ email.subject }}</td>
         <td colspan="3">
           {% match email.kind %}
