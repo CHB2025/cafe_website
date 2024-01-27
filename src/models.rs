@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveTime};
+use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{types::Uuid, FromRow};
 
@@ -8,6 +8,14 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub name: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AdminInvite {
+    pub id: Uuid,
+    pub created_at: DateTime<Utc>,
+    pub accepted_at: Option<DateTime<Utc>>,
+    pub email: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

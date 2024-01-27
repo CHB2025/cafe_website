@@ -1,5 +1,7 @@
+{% let lb_class = "font-semibold text-right py-1" -%}
+{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
 <form
-  class="card form"
+  class="w-96 grid grid-cols-3 gap-4"
   action="/account/create"
   method="post"
   hx-boost="true" 
@@ -8,37 +10,40 @@
   hx-indicator="#signup-submit"
   hx-push-url="false"
 >
-  <label class="form-item">
+  <label class="{{ lb_class }}">
     Name:
-    <input type="text" name="name" required="true"></input>
   </label>
+  <input class="{{ ip_class }}" type="text" name="name" required="true"></input>
+  <!--
   <label class="form-item">
     Email:
     <input name="email" type="email" required="true"></input>
   </label>
-  <label class="form-item">
+  -->
+  <label class="{{ lb_class }}">
     Password:
-    <input 
-      _="
-        on htmx:validation:validate
-          if my.value != the value of the next <input/>
-            call me.setCustomValidity('Passwords must match')
-          else 
-            call me.setCustomValidity('')
-          end
+  </label>
+  <input 
+    class="{{ ip_class }}"
+    _="
+      on htmx:validation:validate
+        if my.value != the value of the next <input/>
+          call me.setCustomValidity('Passwords must match')
+        else 
+          call me.setCustomValidity('')
         end
-      " 
-      name="password" 
-      type="password" 
-      required="true">
-    </input>
-  </label>
-  <label class="form-item">
+      end
+    " 
+    name="password" 
+    type="password" 
+    required="true">
+  </input>
+  <label class="{{ lb_class }}">
     Password:
-    <input name="password_repeat" type="password" required="true"></input>
   </label>
-  <div class="form-controls">
+  <input class="{{ ip_class }}" name="password_repeat" type="password" required="true"></input>
+  <div class="col-span-3 flex align-center justify-center">
     <button id="signup-submit" type="submit">Submit</button>
   </div>
-  <div id="signup_results" class="form-item"></div>
+  <div id="signup_results" class="col-span-3 flex justify-center text-red-900"></div>
 </form>
