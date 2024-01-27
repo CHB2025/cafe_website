@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM shift WHERE event_id = $1 AND date = $2 ORDER BY start_time ASC",
+  "query": "UPDATE shift SET worker_id = NULL WHERE id = $1 AND worker_id = $2 RETURNING *",
   "describe": {
     "columns": [
       {
@@ -52,7 +52,7 @@
     "parameters": {
       "Left": [
         "Uuid",
-        "Date"
+        "Uuid"
       ]
     },
     "nullable": [
@@ -67,5 +67,5 @@
       false
     ]
   },
-  "hash": "3e79554e4ba2df46a3da47b1e37e3b13c58ef3897657f405104bc5e404e1ff98"
+  "hash": "feba696dee08b1f777bd412643365a8a251500ffa04baec0b6f6e9fa527112cc"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "DELETE FROM shift WHERE id = $1",
+  "query": "UPDATE email SET status = 'sent', sent_at = now() WHERE id = $1",
   "describe": {
     "columns": [],
     "parameters": {
@@ -10,5 +10,5 @@
     },
     "nullable": []
   },
-  "hash": "1cd00aab204368723a9bb83fa62d35b0da87c010e6d3c375e0d9546ddccf5ca0"
+  "hash": "fe50a12ea9495f57e5abf1c39cf7a02fdfc596a1313647f6f01644cb5041d1f4"
 }

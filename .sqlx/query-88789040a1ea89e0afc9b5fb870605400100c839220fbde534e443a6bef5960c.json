@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO email (status, kind, recipient, subject, message, event_id) \n        VALUES ('pending', 'html', $1, $2, $3, $4) RETURNING id",
+  "query": "INSERT INTO email (status, kind, recipient, address, subject, message, event_id)\n        VALUES ('pending', 'html', $1, $2, $3, $4, $5) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,7 @@
     "parameters": {
       "Left": [
         "Uuid",
+        "Varchar",
         "Text",
         "Text",
         "Uuid"
@@ -21,5 +22,5 @@
       false
     ]
   },
-  "hash": "3a726a2954102c4396fb17dcb886bc7b97257d57cc4450adbac29e38421b79d2"
+  "hash": "88789040a1ea89e0afc9b5fb870605400100c839220fbde534e443a6bef5960c"
 }
