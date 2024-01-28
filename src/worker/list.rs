@@ -2,8 +2,9 @@ use core::fmt;
 use std::fmt::Display;
 
 use askama::Template;
+use askama_axum::IntoResponse;
 use axum::extract::{Query, State};
-use cafe_website::{AppError, PaginatedQuery};
+use cafe_website::{pagination::PaginationControls, templates::Card, AppError, PaginatedQuery};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, QueryBuilder};
 use uuid::Uuid;
@@ -25,8 +26,8 @@ pub struct WorkerWithShiftAgg {
 pub struct WorkerListTemplate {
     workers: Vec<WorkerWithShiftAgg>,
     pagination: PaginatedQuery<WorkerOrderBy>,
-    page_count: i64,
-    event_name: String,
+    query: WorkerQuery,
+    controls: PaginationControls,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize, Default)]
@@ -53,16 +54,23 @@ impl Display for WorkerOrderBy {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Deserialize, Serialize, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize, Default)]
 pub struct WorkerQuery {
     event_id: Option<Uuid>,
+}
+
+impl Display for WorkerQuery {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = serde_urlencoded::to_string(self).unwrap_or_default();
+        write!(f, "{}", s)
+    }
 }
 
 pub async fn worker_list(
     State(app_state): State<AppState>,
     Query(pagination): Query<PaginatedQuery<WorkerOrderBy>>,
     Query(query): Query<WorkerQuery>,
-) -> Result<WorkerListTemplate, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let mut worker_builder = QueryBuilder::new(
         "SELECT w.*, COUNT(*) as shifts 
         FROM worker as w 
@@ -93,8 +101,6 @@ pub async fn worker_list(
             .fetch_one(app_state.pool())
     )?;
 
-    tracing::debug!("{} workers", count);
-
     let event_name = if let Some(event_id) = query.event_id {
         sqlx::query_scalar!("SELECT name FROM event where id = $1", event_id)
             .fetch_one(app_state.pool())
@@ -103,10 +109,16 @@ pub async fn worker_list(
         "all events".to_owned()
     };
 
-    Ok(WorkerListTemplate {
+    let list = WorkerListTemplate {
         workers,
         pagination,
-        page_count: pagination.page_count(count),
-        event_name,
+        query,
+        controls: pagination.controls(count, format!("/worker/list?{query}&")),
+    };
+    Ok(Card {
+        class: Some("w-fit"),
+        title: format!("Workers for {event_name}"),
+        child: list,
+        show_x: false,
     })
 }

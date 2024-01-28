@@ -6,36 +6,27 @@ orderable
 {% endif %}
 {% endmacro %}
 
-<div id="worker_list" class="worker-list card" hx-target="this" hx-swap="outerHTML">
-  <h3>Workers for {{ event_name }}</h3>
-  <table class="list" cellspacing="0">
-    <thead>
-      <tr>
-        <th class='{% call order_class("name_first") %}'
-          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameFirst) }}">First Name</th>
-        <th class='{% call order_class("name_last") %}'
-          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameLast )}}">Last Name</th>
-        <th class='{% call order_class("email") %}'
-          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}">
-          Email</th>
-        <th class='{% call order_class("phone") %}'
-          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}">
-          Phone Number</th>
-        <th class='{% call order_class("shift_count") %}'
-          hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}">Shifts</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for worker in workers %}
-      {% include "list_row.html" %}
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="list-controls">
-    <button {% if pagination.skip==0 %}disabled{% endif %}
-      hx-get="/worker/list?{{ pagination.previous() }}">Previous</button>
-    <div class="current-page">{{ pagination.page() }}/{{ page_count }}</div>
-    <button {% if pagination.page()==page_count %}disabled{% endif %}
-      hx-get="/worker/list?{{ pagination.next() }}">Next</button>
-  </div>
-</div>
+<table cellspacing="0">
+  <thead>
+    <tr>
+      <th class='border p-4 {% call order_class("name_first") %}'
+        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameFirst) }}&{{ query }}">First Name</th>
+      <th class='border p-4 {% call order_class("name_last") %}'
+        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameLast )}}&{{ query }}">Last Name</th>
+      <th class='border p-4 {% call order_class("email") %}'
+        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}&{{ query }}">
+        Email</th>
+      <th class='border p-4 {% call order_class("phone") %}'
+        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}&{{ query }}">
+        Phone Number</th>
+      <th class='border p-4 {% call order_class("shift_count") %}'
+        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}&{{ query }}">Shifts</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for worker in workers %}
+    {% include "list_row.html" %}
+    {% endfor %}
+  </tbody>
+</table>
+{{ controls|safe }}

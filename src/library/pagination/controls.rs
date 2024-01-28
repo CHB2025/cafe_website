@@ -1,6 +1,6 @@
 use askama::Template;
 
-#[derive(Template, Clone)]
+#[derive(Template, Clone, Hash)]
 #[template(path = "p_controls.html")]
 pub struct PaginationControls {
     pub(super) class: Option<String>,
