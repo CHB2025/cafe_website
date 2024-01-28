@@ -1,23 +1,28 @@
 use std::fmt;
 
 use askama::Template;
+use askama_axum::IntoResponse;
 use axum::extract::{Query, State};
-use cafe_website::{filters, AppError, PaginatedQuery};
+use cafe_website::{
+    filters, pagination::PaginationControls, templates::Card, AppError, PaginatedQuery,
+};
 use serde::{Deserialize, Serialize};
 use sqlx::QueryBuilder;
-use tracing::debug;
 use uuid::Uuid;
 
 use crate::app_state::AppState;
 
 use super::{Email, EmailKind, EmailStatus};
 
-#[derive(Template, Clone, PartialEq, Eq, Hash)]
+const DEFAULT_TAKE: i64 = 6;
+
+#[derive(Template, Clone)]
 #[template(path = "email/list.html")]
 pub struct EmailListTemplate {
     emails: Vec<Email>,
-    pagination: PaginatedQuery<EmailOrderBy>,
+    pagination: PaginatedQuery<EmailOrderBy, DEFAULT_TAKE, false>,
     query: EmailQuery,
+    controls: PaginationControls,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize, Default)]
@@ -43,7 +48,7 @@ impl fmt::Display for EmailOrderBy {
 #[derive(Clone, PartialEq, Eq, Hash, Deserialize, Serialize, Default, Debug)]
 pub struct EmailQuery {
     recipient: Option<Uuid>,
-    status: Option<EmailStatus>, // Will this work?
+    status: Option<EmailStatus>,
     event_id: Option<Uuid>,
 }
 
@@ -56,40 +61,42 @@ impl fmt::Display for EmailQuery {
 
 pub async fn email_list(
     State(app_state): State<AppState>,
-    Query(
-        pagination @ PaginatedQuery {
-            order_by,
-            order_dir,
-            take,
-            skip,
-        },
-    ): Query<PaginatedQuery<EmailOrderBy>>,
+    Query(pagination): Query<PaginatedQuery<EmailOrderBy, DEFAULT_TAKE, false>>,
     Query(query): Query<EmailQuery>,
-) -> Result<EmailListTemplate, AppError> {
-    let mut builder = QueryBuilder::new("SELECT * FROM email");
-    builder.push(" WHERE recipient IS NOT NULL ");
+) -> Result<impl IntoResponse, AppError> {
+    let mut builder = QueryBuilder::new("SELECT * FROM email WHERE recipient IS NOT NULL");
+    let mut count_builder =
+        QueryBuilder::new("SELECT Count(*) FROM email WHERE recipient IS NOT NULL");
 
     if let Some(recip) = query.recipient {
         builder.push(" AND recipient = ").push_bind(recip);
+        count_builder.push(" AND recipient = ").push_bind(recip);
     }
     if let Some(status) = query.status {
         builder.push(" AND status = ").push_bind(status);
+        count_builder.push(" AND status = ").push_bind(status);
     }
     if let Some(eid) = query.event_id {
         builder.push(" AND event_id = ").push_bind(eid);
+        count_builder.push(" AND event_id = ").push_bind(eid);
     }
-    builder
-        .push(format!(" ORDER BY {order_by} {order_dir} LIMIT "))
-        .push_bind(take)
-        .push(" OFFSET ")
-        .push_bind(skip);
+    builder.push(" ").push(pagination.sql());
 
-    debug!(query = builder.sql());
-
-    let emails = builder.build_query_as().fetch_all(app_state.pool()).await?;
-    Ok(EmailListTemplate {
-        emails,
-        pagination,
-        query,
+    let (emails, count) = tokio::try_join!(
+        builder.build_query_as().fetch_all(app_state.pool()),
+        count_builder
+            .build_query_scalar()
+            .fetch_one(app_state.pool())
+    )?;
+    Ok(Card {
+        class: None,
+        title: "Emails".to_owned(),
+        child: EmailListTemplate {
+            emails,
+            pagination,
+            query: query.clone(),
+            controls: pagination.controls(count, format!("/email/list?{query}&")),
+        },
+        show_x: false,
     })
 }

@@ -19,9 +19,5 @@ orderable
     {% endfor %}
   </tbody>
 </table>
-<div class="flex gap-4 justify-center items-center mt-4">
-  <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:bg-zinc-300 disabled:shadow-none" {% if prev_disabled %}disabled{% endif %} hx-get="/event/list?{{ prev_query }}">Previous</button>
-  <span class="flex justify-center items-center">{{ current_page }}/{{ page_count }}</span>
-  <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:bg-zinc-300 disabled:shadow-none" {% if next_disabled %}disabled{% endif %} hx-get="/event/list?{{ next_query }}">Next</button>
-</div>
+{{ controls|safe }}
 <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" hx-get="/event/create" hx-push-url="false" hx-target="#modal">+</button>

@@ -1,0 +1,15 @@
+<div class="flex gap-4 justify-center items-center mt-4{% if let Some(class) = class %} {{ class }}{% endif %}">
+  <button 
+    class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:bg-zinc-300 disabled:shadow-none" 
+    {% if prev_disabled %}disabled{% endif %}
+    hx-get="{{ prev_url }}">
+      Previous
+  </button>
+  <span class="flex justify-center items-center">{{ page }}/{{ page_count }}</span>
+  <button 
+    class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:bg-zinc-300 disabled:shadow-none" 
+    {% if next_disabled %}disabled{% endif %}
+    hx-get="{{ next_url }}">
+    Next
+  </button>
+</div>
