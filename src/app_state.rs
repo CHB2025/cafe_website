@@ -13,9 +13,16 @@ pub struct AppState {
 
 impl AppState {
     pub async fn init(config: Config) -> Self {
+        let session_key = config
+            .website
+            .session_key
+            .as_ref()
+            .and_then(|k| Key::try_from(k.as_bytes()).ok())
+            .unwrap_or_else(Key::generate);
+
         Self {
             db_pool: db_connection_pool(&config.database.database_url).await,
-            session_key: Key::generate(), // Need to store this somehow
+            session_key,
             config,
         }
     }

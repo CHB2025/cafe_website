@@ -23,6 +23,7 @@ pub struct Website {
     pub base_url: String,
     #[serde(default = "default_port")]
     pub port: u16,
+    pub session_key: Option<String>,
 }
 
 fn default_port() -> u16 {
