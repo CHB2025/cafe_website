@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::{
     app_state::AppState,
     email,
-    models::{Shift, User, Worker},
+    models::{Shift, Worker},
 };
 
 const PHONE_REGEX: &str = r#"^[2-9][0-9]{2}-[2-9][0-9]{2}-[0-9]{4}$"#;
@@ -50,20 +50,16 @@ pub async fn signup_form(
 
 pub async fn signup(
     State(app_state): State<AppState>,
-    user: Option<User>,
     Path(id): Path<Uuid>,
     Form(body): Form<SignupBody>,
 ) -> Result<Html<String>, AppError> {
-    let logged_in = user.is_some();
     let tran = app_state.pool().begin().await?;
     let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
         .fetch_one(app_state.pool())
         .await?;
 
-    // Prevent races (except when logged in. Hard to prevent without etags when logged in)
-    // Probably should create a separate method for replacing a worker on a shift which takes the old workers id and
-    // verifies that it is still the same before switching.
-    if !logged_in && shift.worker_id.is_some() {
+    // Prevent races
+    if shift.worker_id.is_some() {
         return Err(AppError::inline(
             StatusCode::BAD_REQUEST,
             "This shift is already filled",

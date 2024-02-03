@@ -1,0 +1,28 @@
+<div class="flex flex-wrap gap-4" hx-push-url="false">
+  <div 
+    class="flex flex-col gap-2 p-4 pt-2 bg-white border rounded-2xl shadow flex-auto"
+    hx-get="/account/users"
+    hx-swap="beforeend"
+    hx-trigger="load"
+    hx-target="this">
+    <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Users</h3>
+  </div>
+  <div 
+    class="flex flex-col gap-2 p-4 pt-2 bg-white border rounded-2xl shadow flex-auto"
+    hx-get="/account/invites"
+    hx-swap="beforeend"
+    hx-trigger="load"
+    hx-target="this">
+    <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Invited</h3>
+    <div class="flex gap-2 justify-center items-center w-full" hx-target="next div">
+      <input class="flex-auto border px-2 py-2 rounded-xl" type="email" name="email"></input>
+      <button 
+        class="flex-auto px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
+        hx-include="previous input"
+        hx-post="/account/invites">
+        Invite New User
+      </button>
+    </div>
+    <div class="flex justify-center items-center w-full empty:hidden"></div>
+  </div>
+</div>

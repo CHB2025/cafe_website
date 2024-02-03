@@ -4,3 +4,5 @@ CREATE TABLE admin_invite (
     accepted_at timestamp with time zone,
     email varchar not null
 );
+
+ALTER TABLE email ALTER COLUMN event_id DROP NOT NULL;

@@ -19,8 +19,8 @@
   name="date"
   hx-indicator="this">
   {% for day in days %}
-  {% let selected = day.date == selected_date %}
-  <option value="{{ day.date }}" {% if selected %}selected="selected"{% endif %}>{{ day.date|date_long }}</option>
+    {% let selected = day.date == selected_date %}
+    <option value="{{ day.date }}" {% if selected %}selected="selected"{% endif %}>{{ day.date|date_long }}</option>
   {% endfor %}
 </select>
 <div 

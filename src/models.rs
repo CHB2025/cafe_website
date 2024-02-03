@@ -20,7 +20,6 @@ pub struct AdminInvite {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateUser {
-    pub email: String,
     pub password: String,
     pub name: String,
 }

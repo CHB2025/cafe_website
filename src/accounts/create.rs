@@ -20,7 +20,9 @@ use crate::{
 
 #[derive(Template)]
 #[template(path = "accounts/create.html")]
-pub struct AccountCreateTemplate {}
+pub struct AccountCreateTemplate {
+    invite_id: Uuid,
+}
 
 pub async fn account_creation_form(
     State(app_state): State<AppState>,
@@ -35,7 +37,7 @@ pub async fn account_creation_form(
     .await?;
 
     Ok(Card {
-        child: AccountCreateTemplate {},
+        child: AccountCreateTemplate { invite_id },
         class: Some("w-fit"),
         title: "Create Account".to_owned(),
         show_x: false,
@@ -48,7 +50,6 @@ pub async fn create_account(
     Path(invite_id): Path<Uuid>,
     Form(mut user): Form<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
-    // TODO: add path wildcard and Hashmap/database table for invitations
     let transaction = app_state.pool().begin().await?;
 
     let invite = sqlx::query_as!(
@@ -65,7 +66,7 @@ pub async fn create_account(
         Ok(Scrypt.hash_password(pswd.as_bytes(), &salt)?.to_string())
     });
 
-    let already_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", user.email)
+    let already_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", invite.email)
         .fetch_optional(app_state.pool())
         .await?;
     if already_exists.is_some() {

@@ -14,7 +14,11 @@ pub async fn navigation(user: Option<User>) -> Nav {
         (vec![], vec![("Log In", "/login")])
     } else {
         (
-            vec![("Events", "/event/list"), ("Emails", "/email/list")],
+            vec![
+                ("Events", "/event/list"),
+                ("Emails", "/email/list"),
+                ("Users", "/account/manage"),
+            ],
             vec![("Log Out", "/logout")],
         )
     };

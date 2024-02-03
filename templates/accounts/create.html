@@ -2,7 +2,7 @@
 {% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
 <form
   class="w-96 grid grid-cols-3 gap-4"
-  action="/account/create"
+  action="/account/create/{{ invite_id }}"
   method="post"
   hx-boost="true" 
   hx-params="not password_repeat"

@@ -70,4 +70,23 @@ impl Config {
         cfg_file.read_to_string(&mut cfg_string).await?;
         Ok(toml::from_str::<Config>(&cfg_string)?)
     }
+
+    pub fn url(&self) -> String {
+        let mut url = String::new();
+
+        let add_port = if self.ssl.is_some() {
+            url += "https://";
+            self.website.port != 443
+        } else {
+            url += "http://";
+            self.website.port != 80
+        };
+
+        url += &self.website.base_url;
+        if add_port {
+            url.push(':');
+            url += &format!("{}", self.website.port);
+        }
+        url
+    }
 }
