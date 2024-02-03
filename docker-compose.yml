@@ -20,6 +20,8 @@ services:
     environment:
       DATABASE_URL: "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB"
       CARGO_MANIFEST_DIR: "/"
+    volumes:
+      - ./certs:/var/cafe_website/certs
     configs:
       - source: web_config
         target: /var/cafe_website/config.toml
