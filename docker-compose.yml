@@ -20,6 +20,14 @@ services:
     environment:
       DATABASE_URL: "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB"
       CARGO_MANIFEST_DIR: "/"
+    configs:
+      - source: web_config
+        target: /var/cafe_website/config.toml
+
+configs:
+  web_config:
+    file: ./docker.config.toml
+    
 
 volumes: 
   cafe-db:

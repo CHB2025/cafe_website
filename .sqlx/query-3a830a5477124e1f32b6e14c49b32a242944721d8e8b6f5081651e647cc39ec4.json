@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT name FROM event WHERE id = $1",
+  "query": "SELECT name FROM event where id = $1",
   "describe": {
     "columns": [
       {
@@ -18,5 +18,5 @@
       false
     ]
   },
-  "hash": "887f376bf80c75ab11501f515a95dde330d0f0f70ee8d707f8af7ab8a92fb16e"
+  "hash": "3a830a5477124e1f32b6e14c49b32a242944721d8e8b6f5081651e647cc39ec4"
 }

@@ -13,8 +13,8 @@ EXPOSE $PORT
 
 COPY --from=builder /usr/src/cafe_website/target/release/cafe_website /usr/local/bin/cafe_website
 
-ENV CERTS_DIR="/var/cafe_website/certs"
-COPY ./certs $CERTS_DIR
+# ENV CERTS_DIR="/var/cafe_website/certs"
+COPY ./certs ./certs
 
 COPY --from=builder /usr/src/cafe_website/public ./public
 
