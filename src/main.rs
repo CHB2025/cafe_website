@@ -9,6 +9,7 @@ use axum::{
     routing::get,
     Router,
 };
+use axum_extra::extract::Cached;
 use axum_server::tls_rustls::RustlsConfig;
 
 use cafe_website::AppError;
@@ -133,7 +134,7 @@ async fn main() {
 }
 
 async fn auth_layer<B>(
-    user_session: Option<User>,
+    user_session: Cached<Option<User>>,
     request: Request<B>,
     next: Next<B>,
 ) -> Result<Response<BoxBody>, AppError> {
@@ -147,7 +148,12 @@ async fn auth_layer<B>(
             ),
         ));
     }
-    Ok(next.run(request).await)
+    let mut res = next.run(request).await;
+    res.headers_mut().insert(
+        "Cache-Control",
+        "no-store".parse().expect("No-store is valid header value"),
+    );
+    Ok(res)
 }
 
 async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoResponse {
@@ -191,5 +197,13 @@ async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, AppError> {
         .oneshot(req)
         .await
         .map_err(|_| cafe_website::error::ISE)
-        .map(|res| res.map(boxed))
+        .map(|mut res| {
+            res.headers_mut().append(
+                "Cache-Control",
+                "max-age=31536000, immutable"
+                    .parse()
+                    .expect("Cache header is valid"),
+            );
+            res.map(boxed)
+        })
 }
