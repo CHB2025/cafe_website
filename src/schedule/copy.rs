@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
     Form,
 };
-use cafe_website::{AppError, Redirect};
+use cafe_website::{templates::Card, AppError, Redirect};
 use chrono::NaiveDate;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -19,8 +19,13 @@ pub struct CopyTemplate {
 
 pub async fn copy_form(
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
-) -> Result<CopyTemplate, AppError> {
-    Ok(CopyTemplate { event_id, date })
+) -> Result<Card<CopyTemplate>, AppError> {
+    Ok(Card {
+        class: Some("w-fit"),
+        title: "Copy".to_owned(),
+        child: CopyTemplate { event_id, date },
+        show_x: true,
+    })
 }
 
 #[derive(Deserialize)]

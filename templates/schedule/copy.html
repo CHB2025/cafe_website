@@ -1,23 +1,28 @@
-<form class="form card" method="POST" action="/event/{{ event_id }}/{{ date }}/copy" hx-target="#schedule-copy-results">
-  <h2>Copy to:</h2>
-  <label class="form-item">
+
+{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
+{% let lb_class = "font-semibold text-right py-1" -%}
+{% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
+
+<form class="w-[30rem] grid grid-cols-3 gap-4" method="POST" action="/event/{{ event_id }}/{{ date }}/copy" hx-target="#schedule-copy-results">
+  <label class="col-span-3 font-semibold text-center">Copy currently selected schedule to:</label>
+  <label class="{{ lb_class }}" for="event_id">
     Event:
-    <select name="event_id" value="{{ event_id }}" hx-get="/event/day/option_list" hx-trigger="change"
-      hx-target="next select">
-      <option disabled value="" hx-get="/event/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend">Select
-        an event</option>
-    </select>
   </label>
-  <label class="form-item">
+  <select class="{{ ip_class }}" id="event_id" name="event_id" value="{{ event_id }}" hx-get="/event/day/option_list" hx-trigger="change"
+    hx-target="next select">
+    <option disabled value="" hx-get="/event/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend">Select
+      an event</option>
+  </select>
+  <label class="{{ lb_class }}" for="date">
     Day:
-    <select name="date" value="">
-      <option disabled value="" hx-get="/event/day/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend"
-        hx-vals='{"event_id": "{{ event_id }}"}'>Select a day</option>
-    </select>
   </label>
-  <div class="form-controls">
+  <select class="{{ ip_class}}" id="date" name="date" value="">
+    <option disabled value="" hx-get="/event/day/option_list" hx-trigger="load" hx-target="this" hx-swap="afterend"
+      hx-vals='{"event_id": "{{ event_id }}"}'>Select a day</option>
+  </select>
+  <div class="{{ div_class }}">
     <button class="primary" type="submit"
       hx-confirm="Are you sure you want to copy this schedule to the selected day? This will remove any shifts you have scheduled for that day.">Copy</button>
   </div>
-  <div class="form-item" id="schedule-copy-results"></div>
+  <div class="empty:hidden {{ div_class }}" id="schedule-copy-results"></div>
 </form>

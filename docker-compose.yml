@@ -10,6 +10,7 @@ services:
         source: cafe-db
         target: /var/lib/postgresql/data
   website:
+    image: ghcr.io/chb2025/cafe_website:main
     build:
       context: .
       target: cafe_website
