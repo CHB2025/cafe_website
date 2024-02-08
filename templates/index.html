@@ -30,21 +30,21 @@
 </head>
 
 <body 
-  hx-boost="true"
   class="box-border"
+  hx-boost="true"
   hx-on::after-request="if (event.detail.target.id==='content') {document.getElementById('modal').innerHTML = ''}"
   >
   <div 
     class="w-screen flex flex-col items-center justify-start shadow mb-6"
     hx-get="/nav"
     hx-swap="innerHTML"
-    hx-trigger="load"></div>
+    hx-trigger="load,auth-change from:body"
+    hx-push-url="false"></div>
   <div class="flex flex-col items-center">
     <div 
       id="content" 
-      class="container flex flex-col items-center justify-start px-4"
-      hx-push-url="true"
-      hx-target="#content">
+      hx-target="#content"
+      class="container flex flex-col items-center justify-start px-4">
       {{ content|safe }}
     </div>
   </div>
