@@ -1,9 +1,9 @@
 <tr hx-target="this" hx-swap="outerHTML" hx-push-url="false">
-  <td class="border p-4">
+  <td class="border p-2 md:p-4">
     <a class="text-primary underline hover:text-zinc-500" href="/event/{{ event.id }}" hx-target="#content" hx-push-url="true" hx-swap="innerHTML">{{ event.name }}</a>
   </td>
-  <td class="border p-4">{{ event.allow_signups }}</td>
-  <td class="flex gap-2 border p-4">
+  <td class="border p-2 md:p-4">{% if event.allow_signups %}Yes{% else %}No{% endif %}</td>
+  <td class="flex gap-2 border p-2 md:p-4">
     <button 
       class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
       hx-get="/event/list/row/{{ event.id }}/edit">
@@ -15,4 +15,5 @@
       hx-delete="/event/{{ event.id }}">
       Delete
     </button>
+  </td>
 </tr>

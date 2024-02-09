@@ -22,15 +22,18 @@
   hx-target="#content"
   hx-push-url="true">
   <div class="grow-0 shrink-0 flex flex-row w-full h-12 justify-between items-center">
-    <a class="h-full whitespace-nowrap" href="/">
+    <a 
+      class="flex justify-center items-center h-full whitespace-nowrap pr-3"
+      href="/"
+    >
       <h1 class="font-serif text-3xl font-bold">Cornerstone Cafe</h1>
     </a>
     <button
       class="flex flex-col justify-between items-center h-full aspect-square p-3 hover:bg-zinc-400"
       _="on click toggle .h-12 on the closest <div.container/>">
-      <div class="h-0.5 w-full bg-zinc-200"></div>
-      <div class="h-0.5 w-full bg-zinc-200"></div>
-      <div class="h-0.5 w-full bg-zinc-200"></div>
+      <div class="h-0.5 w-full bg-zinc-900"></div>
+      <div class="h-0.5 w-full bg-zinc-900"></div>
+      <div class="h-0.5 w-full bg-zinc-900"></div>
     </button>
   </div>
   <div 
@@ -44,7 +47,7 @@
     {% endfor %}
     {% for (title, href) in right %}
       <a
-        class="border-b py-2 px-4 hover:bg-zinc-400" 
+        class="first:border-t border-b py-2 px-4 hover:bg-zinc-400" 
         href="{{ href }}"
         _="on click add .h-12 to the closest <div.container/>"
       >{{ title }}</a>

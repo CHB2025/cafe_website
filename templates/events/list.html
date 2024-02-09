@@ -9,14 +9,19 @@ orderable
 
 <table cellspacing="0">
   <thead class="rounded-t-lg shadow">
-    <th class="border p-4"><a href="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</a></th>
-    <th class="border p-4">Allow Signups</th>
-    <th class="border p-4">Manage</th>
+    <th class="border p-2 md:p-4"><a href="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</a></th>
+    <th class="border p-2 md:p-4">Allow Signups</th>
+    <th class="border p-2 md:p-4">Manage</th>
   </thead>
   <tbody>
     {% for event in events %}
-    {% include "list_row.html" %}
+      {% include "list_row.html" %}
     {% endfor %}
+    {% if events.len() == 0 %}
+      <tr>
+        <td colspan="3" class="border p-2 md:p-4 text-center">No events yet</td>
+      </tr>
+    {% endif %}
   </tbody>
 </table>
 {{ controls|safe }}
