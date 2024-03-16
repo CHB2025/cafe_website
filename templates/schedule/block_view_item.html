@@ -1,9 +1,18 @@
 {% if !shifts.is_empty() %}
-	<div class="p-3 shadow border rounded-2xl bg-zinc-300" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
-		{% for (id, title) in shifts %}
-			<a class="min-width-0 underline text-primary hover:text-zinc-500" href="/shift/{{ id }}">{{ title }}</a><br>
+	<ul class="p-3 shadow border rounded-2xl bg-zinc-300 overflow-y-auto" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0">
+		{% for shift in shifts %}
+			<li class="min-width-0">
+				<a class="underline text-primary hover:text-zinc-500" href="/shift/{{ shift.id }}">
+					{{ shift.title }}
+				</a>
+				{% if let Some((name_first, name_last)) = shift.name_first.as_ref().zip(shift.name_last.as_ref()) %}
+					<p class="text-sm ms-2">
+						({{ name_first }} {{ name_last }})
+					</p>
+				{% endif %}
+			</li>
 		{% endfor %}
-	</div>
+	</ul>
 {% else %}
 	<div class="filler" style="flex:{{ (end_time-start_time).num_minutes() }} 1 0"></div>
 {% endif %}

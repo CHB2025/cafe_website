@@ -35,7 +35,10 @@
     <dt class="border-b first:mt-0 my-2 text-xl font-bold">{{ group.start_time|time_short }}:</dt>
     {% for shift in group.shifts %}
     <dd class="ms-12 pb-1 leading-5 text-lg">
-      <a class="min-width-0 underline text-primary hover:text-zinc-500" href="/shift/{{ shift.id }}">{{ shift.title }}</a> (until {{ shift.end_time|time_short }})
+      <a class="underline text-primary hover:text-zinc-500" href="/shift/{{ shift.id }}">{{ shift.title }}</a> (until {{ shift.end_time|time_short }})
+      {% if let Some((name_first, name_last)) = shift.name_first.as_ref().zip(shift.name_last.as_ref()) %}
+        <p class="ms-2 text-sm">{{ name_first }} {{ name_last }}</p>
+      {% endif %}
     </dd>
     {% endfor %}
     <br/>

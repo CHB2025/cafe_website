@@ -2,12 +2,10 @@ use askama::Template;
 use axum::extract::{Path, State};
 use cafe_website::{filters, AppError};
 use chrono::{Duration, NaiveDate, NaiveTime, Timelike};
+use sqlx::QueryBuilder;
 use uuid::Uuid;
 
-use crate::{
-    app_state::AppState,
-    models::{Shift, User},
-};
+use crate::{app_state::AppState, models::User};
 
 #[derive(Template)]
 #[template(path = "schedule/view.html")]
@@ -22,16 +20,28 @@ pub struct ScheduleTemplate {
     /// For list view
     grouped_shifts: Vec<ShiftGroup>,
 }
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct ShiftWorker {
+    id: Uuid,
+    start_time: NaiveTime,
+    end_time: NaiveTime,
+    title: String,
+    // Worker name
+    name_first: Option<String>,
+    name_last: Option<String>,
+}
+
 #[derive(Debug)]
 struct ShiftGroup {
     start_time: NaiveTime,
-    shifts: Vec<Shift>,
+    shifts: Vec<ShiftWorker>,
 }
 
 #[derive(Template)]
 #[template(path = "schedule/block_view_item.html")]
 pub struct ScheduleItemTemplate {
-    shifts: Vec<(Uuid, String)>,
+    shifts: Vec<ShiftWorker>,
     start_time: NaiveTime,
     end_time: NaiveTime,
 }
@@ -43,25 +53,25 @@ pub async fn schedule(
 ) -> Result<ScheduleTemplate, AppError> {
     let logged_in = user.is_some();
 
-    let shifts = if logged_in {
-        sqlx::query_as!(
-            Shift,
-            "SELECT * FROM shift WHERE date = $1 AND event_id = $2 ORDER BY start_time, title ASC",
-            date,
-            event_id
-        )
+    let mut query = QueryBuilder::new(
+        "SELECT s.id, s.title, s.start_time, s.end_time, w.name_first, w.name_last 
+        FROM shift as s LEFT OUTER JOIN worker as w ON s.worker_id = w.id ",
+    );
+    query
+        .push("WHERE s.date = ")
+        .push_bind(date)
+        .push(" AND s.event_id = ")
+        .push_bind(event_id);
+
+    if !logged_in {
+        query.push(" AND s.public_signup = TRUE AND w IS NULL");
+    }
+
+    query.push(" ORDER BY s.start_time, s.title ASC");
+    let shifts = query
+        .build_query_as::<ShiftWorker>()
         .fetch_all(app_state.pool())
-        .await?
-    } else {
-        sqlx::query_as!(
-            Shift,
-            "SELECT * FROM shift WHERE date = $1 AND event_id = $2 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
-            date,
-            event_id
-        )
-        .fetch_all(app_state.pool())
-        .await?
-    };
+        .await?;
 
     let start_time = shifts
         .first()
@@ -103,7 +113,7 @@ pub async fn schedule(
             .last_mut()
             .expect("Never an empty vec");
         if prev.start_time == shift.start_time {
-            prev.shifts.push((shift.id, shift.title));
+            prev.shifts.push(shift);
         } else {
             let end_time = prev.end_time;
             if shift.start_time != end_time {
@@ -114,9 +124,9 @@ pub async fn schedule(
                 })
             }
             shift_columns[col_ind].push(ScheduleItemTemplate {
-                shifts: vec![(shift.id, shift.title)],
                 start_time: shift.start_time,
                 end_time: shift.end_time,
+                shifts: vec![shift],
             })
         }
     }
