@@ -2,7 +2,6 @@ use askama::Template;
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
-    response::Html,
     Form,
 };
 use cafe_website::AppError;
@@ -20,13 +19,26 @@ const PHONE_REGEX: &str = r#"^[2-9][0-9]{2}-[2-9][0-9]{2}-[0-9]{4}$"#;
 
 #[derive(Template)]
 #[template(path = "shift/signup.html")]
-pub struct SignupFormTemplate {
-    worker: Option<Worker>,
+pub enum SignupForm {
+    Empty(Shift),
+    Known(Shift, Worker, Option<&'static str>),
+    Unknown {
+        shift: Shift,
+        email: String,
+        first_name: Option<String>,
+        last_name: Option<String>,
+        phone: Option<String>,
+        error: Option<&'static str>,
+    },
+    Message(Shift, String),
 }
 
 #[derive(Deserialize)]
 pub struct SignupFormParams {
-    email: String,
+    email: Option<String>,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    phone: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -39,20 +51,39 @@ pub struct SignupBody {
 
 pub async fn signup_form(
     State(app_state): State<AppState>,
-    Query(SignupFormParams { email }): Query<SignupFormParams>,
-) -> Result<SignupFormTemplate, AppError> {
-    let worker = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE email = $1", email)
-        .fetch_optional(app_state.pool())
+    Path(id): Path<Uuid>,
+    Query(params): Query<SignupFormParams>,
+) -> Result<SignupForm, AppError> {
+    let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
+        .fetch_one(app_state.pool())
         .await?;
+    let worker = sqlx::query_as!(
+        Worker,
+        "SELECT * FROM worker WHERE email = $1",
+        params.email
+    )
+    .fetch_optional(app_state.pool())
+    .await?;
 
-    Ok(SignupFormTemplate { worker })
+    Ok(match (params.email, worker) {
+        (_, Some(worker)) => SignupForm::Known(shift, worker, None),
+        (None, None) => SignupForm::Empty(shift),
+        (Some(email), None) => SignupForm::Unknown {
+            shift,
+            email,
+            first_name: params.first_name,
+            last_name: params.last_name,
+            phone: params.phone,
+            error: None,
+        },
+    })
 }
 
 pub async fn signup(
     State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Form(body): Form<SignupBody>,
-) -> Result<Html<String>, AppError> {
+) -> Result<SignupForm, AppError> {
     let tran = app_state.pool().begin().await?;
     let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
         .fetch_one(app_state.pool())
@@ -102,7 +133,14 @@ pub async fn signup(
             let em_rx = Regex::new(r#"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"#).expect("Email regex should be valid");
             let email_match = em_rx.is_match(&body.email);
             if !email_match {
-                return Err(AppError::inline(StatusCode::BAD_REQUEST, "Invalid email"));
+                return Ok(SignupForm::Unknown {
+                    shift,
+                    email: body.email,
+                    first_name: body.first_name,
+                    last_name: body.last_name,
+                    phone: body.phone,
+                    error: Some("Invalid email"),
+                });
             }
             let phone_match = match body.phone.as_ref() {
                 Some(ph) => {
@@ -112,10 +150,14 @@ pub async fn signup(
                 None => true,
             };
             if !phone_match {
-                return Err(AppError::inline(
-                    StatusCode::BAD_REQUEST,
-                    "Invalid phone number",
-                ));
+                return Ok(SignupForm::Unknown {
+                    shift,
+                    email: body.email,
+                    first_name: body.first_name,
+                    last_name: body.last_name,
+                    phone: body.phone,
+                    error: Some("Invalid phone number"),
+                });
             }
 
             sqlx::query_as!(
@@ -132,7 +174,7 @@ pub async fn signup(
     let (worker_name, worker_id) = (worker.name_first.clone(), worker.id);
 
     // Send email
-    let _ = email::send_signup(&app_state, worker, shift).await?;
+    let _ = email::send_signup(&app_state, worker, shift.clone()).await?;
 
     sqlx::query!(
         "UPDATE shift SET worker_id = $1 WHERE id = $2",
@@ -144,8 +186,8 @@ pub async fn signup(
 
     tran.commit().await?;
 
-    Ok(Html(format!(
-        r##"<span class="Success" hx-get="/" hx-trigger="load:delay 2s" hx-target="#content">Thanks for signing up {}!</span>"##,
-        worker_name
-    )))
+    Ok(SignupForm::Message(
+        shift,
+        format!("Thanks for signing up, {}", worker_name),
+    ))
 }

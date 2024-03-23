@@ -1,19 +1,111 @@
 {% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
 {% let lb_class = "font-semibold text-right" -%}
 {% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
-{% match worker %}
-  {% when None %}
-  <label for="first_name" class="{{ lb_class }}">First Name:</label>
-  <input id="first_name" class="{{ ip_class }}" type="text" name="first_name" required/>
-  <label for="last_name" class="{{ lb_class }}">Last Name:</label>
-  <input id="last_name" class="{{ ip_class }}" type="text" name="last_name" required/>
-  <label for="phone" class="{{ lb_class }}">Phone number:</label>
-  <input id="phone" class="{{ ip_class }}" type="tel" name="phone_number" pattern="{{ PHONE_REGEX }}" placeholder="999-999-9999"/>
-  {% when Some with (worker) %}
-  <div class="{{ div_class }}">
-    <p>Welcome, {{ worker.name_first }}</p>
-  </div>
+
+{% match self %}
+  {% when Self::Empty(shift) %}
+    <form class="grid grid-cols-3 gap-4">
+      <label for="email" class="{{ lb_class }}">Email:</label>
+      <input 
+        id="email" 
+        type="email" 
+        name="email" 
+        class="{{ ip_class }}" 
+        hx-get="/shift/{{ shift.id }}/signup"
+        hx-trigger="change"
+      />
+    </form>
+
+  {% when Self::Known(shift, worker, error) %}
+    <form 
+      class="grid grid-cols-3 gap-4"
+      hx-patch="/shift/{{ shift.id }}/signup"
+    >
+      <label for="email" class="{{ lb_class }}">Email:</label>
+      <input 
+        id="email" 
+        type="email" 
+        name="email" 
+        value="{{ worker.email }}"
+        class="{{ ip_class }}" 
+        hx-get="/shift/{{ shift.id }}/signup"
+        hx-trigger="change"
+        hx-sync="closest form:replace"
+      />
+      <div class="{{ div_class }}">
+        <p>Welcome, {{ worker.name_first }}</p>
+      </div>
+      {% if let Some(error) = error %}
+        <div class="{{ div_class }}">
+          <p class="text-red-400">{{error}}</p>
+        </div>
+      {% endif %}
+      <div class="{{ div_class }}">
+        <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Signup</button>
+      </div>
+    </form>
+
+  {% when Self::Unknown{shift, email, first_name, last_name, phone, error} %}
+    <form 
+      class="grid grid-cols-3 gap-4"
+      hx-patch="/shift/{{ shift.id }}/signup"
+    >
+      <label for="email" class="{{ lb_class }}">Email:</label>
+      <input 
+        id="email" 
+        type="email" 
+        name="email" 
+        value="{{ email }}"
+        class="{{ ip_class }}" 
+        hx-get="/shift/{{ shift.id }}/signup"
+        hx-trigger="change"
+        hx-sync="closest form:replace"
+        hx-include="closest form"
+      />
+      <label for="first_name" class="{{ lb_class }}">First Name:</label>
+      <input 
+        id="first_name" 
+        class="{{ ip_class }}" 
+        type="text" 
+        name="first_name"
+        {% if let Some(first_name) = first_name %}value="{{ first_name }}"{% endif %}
+        required/>
+      <label for="last_name" class="{{ lb_class }}">Last Name:</label>
+      <input 
+        id="last_name" 
+        class="{{ ip_class }}" 
+        type="text" 
+        name="last_name" 
+        {% if let Some(last_name) = last_name %}value="{{ last_name }}"{% endif %}
+        required/>
+      <label for="phone" class="{{ lb_class }}">Phone number:</label>
+      <input 
+        id="phone" 
+        class="{{ ip_class }}" 
+        type="tel" 
+        name="phone_number" 
+        pattern="{{ PHONE_REGEX }}" 
+        {% if let Some(phone) = phone %}value="{{ phone }}"{% endif %}
+        placeholder="999-999-9999"/>
+      {% if let Some(error) = error %}
+        <div class="{{ div_class }}">
+          <p class="text-red-400">{{error}}</p>
+        </div>
+      {% endif %}
+      <div class="{{ div_class }}">
+        <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Signup</button>
+      </div>
+    </form>
+
+  {% when Self::Message(shift, message) %}
+    <form class="grid grid-cols-3 gap-4">
+      <div 
+        class="{{ div_class }}" 
+        hx-target="#content" 
+        hx-get="/event/{{ shift.event_id }}"
+        hx-trigger="load delay:2s"
+      >
+        <p>{{ message }}</div>
+      </div>
+    </form>
 {% endmatch %}
-<div class="{{ div_class }}">
-  <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Signup</button>
-</div>

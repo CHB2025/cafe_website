@@ -29,18 +29,12 @@
   {% endif %}
 
   {% if shift.worker_id.is_none() && (shift.public_signup || logged_in) %}
-  <form class="grid grid-cols-3 gap-4 mt-4" hx-patch="/shift/{{ shift.id }}/signup" hx-target="this" hx-swap="outerHTML">
-    <label class="font-semibold text-right">Email:</label>
-    <input 
-      class="col-span-2 border px-2 py-1 rounded-xl"
-      type="email"
-      name="email"
-      hx-target="next span"
-      hx-swap="innerHTML"
-      hx-get="/shift/{{ shift.id }}/signup"
-      hx-trigger="change"
-      hx-indicator="closest div" hx-sync="closest form:replace" />
-    <span class="contents empty:hidden"></span>
-  </form>
+  <div
+    class="mt-4" 
+    hx-get="/shift/{{ shift.id }}/signup"
+    hx-target="this"
+    hx-trigger="load">
+    <span class="">Loading ...</span>
+  </div>
   {% endif %}
 </div>
