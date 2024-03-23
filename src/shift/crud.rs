@@ -75,5 +75,5 @@ pub async fn remove_worker(
         "UPDATE shift SET worker_id = NULL WHERE id = $1 AND worker_id = $2 RETURNING *",
         id, worker_id
     ).fetch_one(app_state.pool()).await?;
-    Ok(([("HX-Retarget", "#modal")], ShiftTemplate { shift, worker: None, logged_in: true }))
+    Ok(ShiftTemplate { shift, worker: None, logged_in: true })
 }
