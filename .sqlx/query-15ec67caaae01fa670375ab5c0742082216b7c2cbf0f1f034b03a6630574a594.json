@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.* FROM event e JOIN shift s ON e.id = s.event_id\n        WHERE s.worker_id = $1\n        GROUP BY e.id\n        ORDER BY MIN(s.date) ASC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "allow_signups",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "15ec67caaae01fa670375ab5c0742082216b7c2cbf0f1f034b03a6630574a594"
+}

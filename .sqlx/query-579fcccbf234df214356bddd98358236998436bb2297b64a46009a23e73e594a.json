@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM shift WHERE date = $1 AND event_id = $2 AND public_signup = TRUE AND worker_id IS NULL ORDER BY start_time, title ASC",
+  "query": "SELECT * FROM shift WHERE event_id = $1 AND worker_id = $2 ORDER BY date, start_time",
   "describe": {
     "columns": [
       {
@@ -51,7 +51,7 @@
     ],
     "parameters": {
       "Left": [
-        "Date",
+        "Uuid",
         "Uuid"
       ]
     },
@@ -67,5 +67,5 @@
       false
     ]
   },
-  "hash": "73a05e1cd3629185217ba9f73bc15d8b623872078164260c66ed7cc25f4b61d5"
+  "hash": "579fcccbf234df214356bddd98358236998436bb2297b64a46009a23e73e594a"
 }
