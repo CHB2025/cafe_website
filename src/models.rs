@@ -39,15 +39,6 @@ pub struct Day {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Worker {
-    pub id: Uuid,
-    pub email: String,
-    pub phone: Option<String>,
-    pub name_first: String,
-    pub name_last: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Shift {
     pub id: Uuid,
     pub event_id: Uuid,

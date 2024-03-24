@@ -13,7 +13,7 @@
   <div class="pb-4 px-4">
     {% match worker %}
       {% when Some with (worker) %}
-      <p>Filled by {{ worker.name_first }} {{ worker.name_last }}</p>
+      <p>Filled by <a class="text-primary underline hover:text-zinc-500" hx-target="#content" hx-push-url="true" href="/worker/{{ worker.id }}">{{ worker.name_first }} {{ worker.name_last }}</a></p>
       {% when None %}
       <p>Unfilled</p>
     {% endmatch %}

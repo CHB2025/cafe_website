@@ -4,10 +4,8 @@ use cafe_website::{filters, templates::Card, AppError};
 use chrono::{Local, NaiveDate, NaiveTime};
 use uuid::Uuid;
 
-use crate::{
-    app_state::AppState,
-    models::{Shift, Worker},
-};
+use crate::worker::Worker;
+use crate::{app_state::AppState, models::Shift};
 
 struct ShiftWorker {
     shift: Shift,

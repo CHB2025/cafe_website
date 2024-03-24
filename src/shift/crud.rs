@@ -5,7 +5,8 @@ use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::{Shift, Worker}};
+use crate::{app_state::AppState, models::Shift};
+use crate::worker::Worker;
 
 use super::view::ShiftTemplate;
 

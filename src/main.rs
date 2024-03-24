@@ -96,6 +96,7 @@ async fn main() {
         .nest("/event", events::public_router())
         .nest("/account", accounts::public_router())
         .nest("/shift", shift::public_router())
+        .nest("/worker", worker::public_router())
         .nest("/email", email::public_router());
 
     // App

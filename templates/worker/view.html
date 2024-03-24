@@ -1,0 +1,7 @@
+<div class="w-full">
+  <h1 class="font-serif text-3xl font-bold">{{ name_first }} {{ name_last }}</h1>
+  <p>Email: {{ email }} <button class="button">Edit</button></p>
+  <p>Phone: {{ phone.clone().unwrap_or(String::new()) }} <button class="button">Edit</button></p>
+  <div hx-get="/worker/{{ id }}/shifts" hx-trigger="load" hx-target="this" hx-swap="outerHTML"></div>
+</div>
+

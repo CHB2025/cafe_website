@@ -3,10 +3,8 @@ use axum::{routing::get, Router};
 use cafe_website::{filters, AppError};
 use uuid::Uuid;
 
-use crate::{
-    app_state::AppState,
-    models::{Shift, Worker},
-};
+use crate::worker::Worker;
+use crate::{app_state::AppState, models::Shift};
 
 mod list;
 mod model;

@@ -1,0 +1,32 @@
+<div class="w-full" hx-target="this">
+  <select 
+    class="px-4 py-2 mb-2 border rounded-xl"
+    name="event_id"
+    value="{{ event_id }}" 
+    hx-get="/worker/{{ worker_id }}/shifts"
+  >
+    {% for event in events %}
+      <option value="{{ event.id }}" {% if event.id == event_id %}selected{% endif %}>{{ event.name }}</option>
+    {% endfor %}
+  </select>
+  <table cellspacing="0">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Cancel</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for shift in shifts %}
+        <tr>
+          <td>{{ shift.title }}</td>
+          <td>{{ shift.date|date_long }}</td>
+          <td>{{ shift.start_time|time_short }} - {{ shift.end_time|time_short }}</td>
+          <td>{% if may_cancel %}<button class="button">Cancel</button>{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

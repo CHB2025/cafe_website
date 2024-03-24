@@ -9,11 +9,8 @@ use regex::Regex;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{
-    app_state::AppState,
-    email,
-    models::{Shift, Worker},
-};
+use crate::worker::Worker;
+use crate::{app_state::AppState, email, models::Shift};
 
 const PHONE_REGEX: &str = r#"^[2-9][0-9]{2}-[2-9][0-9]{2}-[0-9]{4}$"#;
 

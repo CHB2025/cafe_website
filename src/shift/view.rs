@@ -4,9 +4,10 @@ use axum::extract::{Path, State};
 use cafe_website::{filters, templates::Card, AppError};
 use uuid::Uuid;
 
+use crate::worker::Worker;
 use crate::{
     app_state::AppState,
-    models::{Shift, User, Worker},
+    models::{Shift, User},
 };
 
 #[derive(Debug, Template, Clone)]

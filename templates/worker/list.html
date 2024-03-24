@@ -9,17 +9,17 @@ orderable
 <table cellspacing="0">
   <thead>
     <tr>
-      <th class='border p-4 {% call order_class("name_first") %}'
+      <th class='{% call order_class("name_first") %}'
         hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameFirst) }}&{{ query }}">First Name</th>
-      <th class='border p-4 {% call order_class("name_last") %}'
+      <th class='{% call order_class("name_last") %}'
         hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameLast )}}&{{ query }}">Last Name</th>
-      <th class='border p-4 {% call order_class("email") %}'
+      <th class='{% call order_class("email") %}'
         hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}&{{ query }}">
         Email</th>
-      <th class='border p-4 {% call order_class("phone") %}'
+      <th class='{% call order_class("phone") %}'
         hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}&{{ query }}">
         Phone Number</th>
-      <th class='border p-4 {% call order_class("shift_count") %}'
+      <th class='{% call order_class("shift_count") %}'
         hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}&{{ query }}">Shifts</th>
     </tr>
   </thead>
