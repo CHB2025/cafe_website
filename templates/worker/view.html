@@ -1,7 +1,18 @@
-<div class="w-full">
-  <h1 class="font-serif text-3xl font-bold">{{ name_first }} {{ name_last }}</h1>
-  <p>Email: {{ email }} <button class="button">Edit</button></p>
-  <p>Phone: {{ phone.clone().unwrap_or(String::new()) }} <button class="button">Edit</button></p>
-  <div hx-get="/worker/{{ id }}/shifts" hx-trigger="load" hx-target="this" hx-swap="outerHTML"></div>
+<div class="flex flex-wrap gap-4" hx-push-url="false">
+  <div class="flex flex-col gap-2 p-4 pt-2 bg-white border rounded-2xl shadow flex-auto">
+    <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Details</h3>
+    <p>Name: {{ name_first }} {{ name_last }} <button class="button">Edit</button></h1>
+    <p>Email: {{ email }} <button class="button">Edit</button></p>
+    <p>Phone: {{ phone.clone().unwrap_or(String::new()) }} <button class="button">Edit</button></p>
+  </div>
+  <div 
+    class="flex flex-col gap-2 p-4 pt-2 bg-white border rounded-2xl shadow flex-auto"
+    hx-get="/worker/{{ id }}/shifts" 
+    hx-trigger="load" 
+    hx-target="this"
+    hx-swap="beforeend"
+  >
+    <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Shifts</h3>
+  </div>
 </div>
 
