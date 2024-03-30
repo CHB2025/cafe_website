@@ -1,19 +1,19 @@
 <table cellspacing="0" hx-target="this" hx-push-url="false">
   <thead>
     <tr>
-      <th class='border p-4'>Name</th>
-      <th class='border p-4'>Email</th>
-      <th class='border p-4'>Role</th>
-      <th class="border p-4">Remove</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Remove</th>
     </tr>
   </thead>
   <tbody>
     {% for user in users %}
       <tr>
-        <td class="border p-4">{{ user.name }}</td>
-        <td class="border p-4">{{ user.email }}</td>
-        <td class="border p-4">TODO</td>
-        <td class="border p-4">
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+        <td>TODO</td>
+        <td>
           <button 
             class="px-4 py-2 border rounded-xl shadow text-white bg-red-600 hover:bg-red-900 hover:shadow-none disabled:bg-zinc-300"
             {% if current.id == user.id %}disabled{% endif %}

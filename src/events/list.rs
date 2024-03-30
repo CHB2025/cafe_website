@@ -1,6 +1,10 @@
 use askama::Template;
 use axum::extract::{Query, State};
-use cafe_website::{pagination::PaginationControls, templates::Card, AppError, PaginatedQuery};
+use cafe_website::{
+    pagination::{OrderDirection, PaginationControls},
+    templates::Card,
+    AppError, PaginatedQuery,
+};
 use chrono::NaiveDate;
 use sqlx::{FromRow, Postgres};
 use uuid::Uuid;

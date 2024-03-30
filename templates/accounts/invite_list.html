@@ -1,17 +1,17 @@
 <table cellspacing="0">
   <thead>
     <tr>
-      <th class='border p-4'>Email</th>
-      <th class='border p-4'>Created At</th>
-      <th class="border p-4">Cancel</th>
+      <th>Email</th>
+      <th>Created At</th>
+      <th>Cancel</th>
     </tr>
   </thead>
   <tbody>
     {% for invite in invites %}
       <tr>
-        <td class="border p-4">{{ invite.email }}</td>
-        <td class="border p-4">{{ invite.created_at|date_short }} {{ invite.created_at|time_short }}</td>
-        <td class="border p-4">
+        <td>{{ invite.email }}</td>
+        <td>{{ invite.created_at|date_short }} {{ invite.created_at|time_short }}</td>
+        <td>
           <button 
             class="px-4 py-2 border rounded-xl shadow text-white bg-red-600 hover:bg-red-900 hover:shadow-none disabled:bg-zinc-300"
             hx-delete="/account/invites/{{ invite.id }}">

@@ -1,13 +1,14 @@
 {% macro order_class(key) %}
 {% if pagination.order_by.to_string() == key %}
+{# these are broken #}
 {% match pagination.order_dir %}
   {% when OrderDirection::Asc %}
-  nf-fa-sort_asc
+  nf nf-fa-sort_asc
   {% when OrderDirection::Desc %}
-  nf-fa-sort_desc
+  nf nf-fa-sort_desc
 {% endmatch %}
 {% else %}
-nf-fa-sort
+nf nf-fa-sort
 {% endif %}
 {% endmacro %}
 <div class="p-4 pt-2 bg-white border rounded-2xl shadow" hx-target="this" hx-swap="outerHTML" hx-push-url="true">
@@ -39,7 +40,7 @@ nf-fa-sort
         </th>
         <th hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}&{{ query }}">
           Shifts
-          <i class='{% call order_class("shift_count") %}'/>
+          <i class='{% call order_class("shifts") %}'/>
         </th>
       </tr>
     </thead>

@@ -4,7 +4,10 @@ use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::{Query, State};
 use cafe_website::{
-    filters, pagination::PaginationControls, templates::Card, AppError, PaginatedQuery,
+    filters,
+    pagination::{OrderDirection, PaginationControls},
+    templates::Card,
+    AppError, PaginatedQuery,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::QueryBuilder;

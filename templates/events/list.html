@@ -1,17 +1,22 @@
-
 {% macro order_class(key) %}
 {% if query.order_by.to_string() == key %}
-ordered {{ query.order_dir }}
+{# these are broken #}
+{% match query.order_dir %}
+  {% when OrderDirection::Asc %}
+  nf nf-fa-sort_asc
+  {% when OrderDirection::Desc %}
+  nf nf-fa-sort_desc
+{% endmatch %}
 {% else %}
-orderable
+nf nf-fa-sort
 {% endif %}
 {% endmacro %}
 
 <table cellspacing="0">
   <thead class="rounded-t-lg shadow">
-    <th class="border p-2 md:p-4"><a href="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</a></th>
-    <th class="border p-2 md:p-4">Allow Signups</th>
-    <th class="border p-2 md:p-4">Manage</th>
+    <th><a href="/event/list?{{ query.with_order(EventOrderBy::Name) }}">Name</a><i class='{% call order_class("name") %}'/></th>
+    <th>Allow Signups</th>
+    <th>Manage</th>
   </thead>
   <tbody>
     {% for event in events %}
@@ -19,7 +24,7 @@ orderable
     {% endfor %}
     {% if events.len() == 0 %}
       <tr>
-        <td colspan="3" class="border p-2 md:p-4 text-center">No events yet</td>
+        <td colspan="3" class="text-center">No events yet</td>
       </tr>
     {% endif %}
   </tbody>

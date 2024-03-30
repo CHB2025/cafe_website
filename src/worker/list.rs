@@ -10,6 +10,7 @@ use cafe_website::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, QueryBuilder};
+use tracing::debug;
 use uuid::Uuid;
 
 use crate::{app_state::AppState, models::Event};
@@ -30,7 +31,7 @@ pub struct WorkerListTemplate {
     event_id: Option<Uuid>,
     events: Vec<Event>,
     workers: Vec<WorkerWithShiftAgg>,
-    pagination: PaginatedQuery<WorkerOrderBy>,
+    pagination: PaginatedQuery<WorkerOrderBy, 10, false>,
     query: WorkerQuery,
     controls: PaginationControls,
 }
@@ -71,7 +72,7 @@ impl Display for WorkerQuery {
 
 pub async fn worker_list(
     State(app_state): State<AppState>,
-    Query(pagination): Query<PaginatedQuery<WorkerOrderBy>>,
+    Query(pagination): Query<PaginatedQuery<WorkerOrderBy, 10, false>>,
     Query(query): Query<WorkerQuery>,
 ) -> Result<impl IntoResponse, AppError> {
     let event_id = match query.event_id.as_deref() {
@@ -91,27 +92,27 @@ pub async fn worker_list(
     );
     if let Some(event_id) = event_id {
         worker_builder
-            .push(" INNER JOIN day as d ON (d.event_id, d.date) = (s.event_id, s.date) WHERE d.event_id = ")
+            .push("WHERE s.event_id = ")
             .push_bind(event_id);
         count_builder
-            .push(" INNER JOIN day as d ON (d.event_id, d.date) = (s.event_id, s.date) WHERE d.event_id = ")
+            .push("WHERE s.event_id = ")
             .push_bind(event_id);
     };
     // Add other where clauses here
-    worker_builder.push(" GROUP BY w.id");
-    count_builder.push(" GROUP BY w.id");
-    worker_builder.push(" ").push(pagination.sql());
+    worker_builder
+        .push(" GROUP BY w.id")
+        .push(" ")
+        .push(pagination.sql());
 
-    let (workers, count): (Vec<WorkerWithShiftAgg>, i64) = tokio::try_join!(
+    let (workers, count, events): (Vec<WorkerWithShiftAgg>, i64, Vec<Event>) = tokio::try_join!(
         worker_builder.build_query_as().fetch_all(app_state.pool()),
         count_builder
             .build_query_scalar()
-            .fetch_one(app_state.pool())
+            .fetch_one(app_state.pool()),
+        sqlx::query_as!(Event, "SELECT * from event ORDER BY name").fetch_all(app_state.pool())
     )?;
 
-    let events = sqlx::query_as!(Event, "SELECT * from event ORDER BY name")
-        .fetch_all(app_state.pool())
-        .await?;
+    debug!(?count, "workers:");
 
     let list = WorkerListTemplate {
         event_id,

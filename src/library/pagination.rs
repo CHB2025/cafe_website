@@ -72,7 +72,7 @@ impl<O, const DS: i64, const ASC: bool> PaginatedQuery<O, DS, ASC> {
     }
 
     pub fn previous(mut self) -> Self {
-        self.skip = (self.skip - self.take).min(0);
+        self.skip = (self.skip - self.take).max(0);
         self
     }
 
@@ -82,6 +82,11 @@ impl<O, const DS: i64, const ASC: bool> PaginatedQuery<O, DS, ASC> {
 
     pub fn page_count(&self, total_count: i64) -> i64 {
         total_count / self.take + (total_count % self.take > 0) as i64
+    }
+
+    pub fn take(mut self, take: i64) -> Self {
+        self.take = take;
+        self
     }
 
     fn default_take() -> i64 {
