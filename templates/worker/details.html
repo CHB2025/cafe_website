@@ -1,0 +1,59 @@
+{% if !edit %}
+<div 
+  class="grid grid-cols-3 gap-3 items-center"
+  hx-target="this"
+  hx-swap="outerHTML"
+>
+  <label class="font-semibold text-right">Name:</label> 
+  <span class="col-span-2">{{ name_first }} {{ name_last }}</span>
+  <label class="font-semibold text-right">Email:</label>
+  <span class="col-span-2">{{ email }}</span>
+  <label class="font-semibold text-right">Phone:</label>
+  <span class="col-span-2">{{ phone.clone().unwrap_or(" - ".to_owned()) }}</span>
+  <div class="col-span-3 flex items-center justify-center">
+    <button class="button" hx-get="/worker/{{ id }}/edit"=>Edit</button>
+  </div>
+</div>
+{% else %}
+<form
+  class="grid grid-cols-3 gap-3 items-center"
+  hx-target="this"
+  hx-swap="outerHTML"
+  hx-patch="/worker/{{ id }}"
+>
+  <label for="name" class="font-semibold text-right">Name:</label> 
+  <span id="name" class="col-span-2">
+    <input class="inline-block input" name="name_first" value="{{ name_first }}" required/>
+    <input class="inline-block input" name="name_last" value="{{ name_last }}" required/>
+  </span>
+  <label for="email" class="font-semibold text-right">Email:</label>
+  <input 
+    class="input col-span-2" 
+    id="email" 
+    name="email"
+    type="email"
+    value="{{ email }}"
+    required
+    {% if !is_admin %}disabled{% endif %}
+  />
+  <label for="phone" class="font-semibold text-right">Phone:</label>
+  <input 
+    id="phone" 
+    class="input col-span-2" 
+    name="phone"
+    type="tel"
+    {% if let Some(ph) = phone %}
+    value="{{ ph }}"
+    {% endif %}
+  />
+  {% if let Some(msg) = error %}
+  <div class="col-span-3 flex items-center justify-center text-red-600">
+   {{ msg }}
+  </div>
+  {% endif %}
+  <div class="col-span-3 flex gap-2 items-center justify-center">
+    <button class="button bg-red-600 hover:bg-red-400 text-white" hx-get="/worker/{{ id }}/details">Cancel</button>
+    <button class="button" type="submit">Save</button>
+  </div>
+</form>
+{% endif %}

@@ -46,7 +46,7 @@ pub async fn shift_list(
 
     let selected_event = match query.event_id {
         Some(id) => events.iter().find(|e| e.id == id).ok_or(error::NOT_FOUND)?,
-        None => events.first().expect("Checked above"),
+        None => events.last().expect("Checked above"),
     };
     let event_id = selected_event.id;
 

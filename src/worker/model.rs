@@ -1,9 +1,7 @@
-use askama::Template;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Deserialize, Serialize, Clone, Template)]
-#[template(path = "worker/view.html")]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Worker {
     pub id: Uuid,
     pub email: String,

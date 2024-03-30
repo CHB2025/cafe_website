@@ -6,7 +6,7 @@ use axum::{
 };
 use cafe_website::AppError;
 use regex::Regex;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use uuid::Uuid;
 
 use crate::worker::Worker;
@@ -32,17 +32,29 @@ pub enum SignupForm {
 
 #[derive(Deserialize)]
 pub struct SignupFormParams {
+    #[serde(deserialize_with = "non_empty_str")]
     email: Option<String>,
+    #[serde(deserialize_with = "non_empty_str")]
     first_name: Option<String>,
+    #[serde(deserialize_with = "non_empty_str")]
     last_name: Option<String>,
+    #[serde(deserialize_with = "non_empty_str")]
     phone: Option<String>,
+}
+
+fn non_empty_str<'de, D: Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
+    let o: Option<String> = Option::deserialize(d)?;
+    Ok(o.filter(|s| !s.is_empty()))
 }
 
 #[derive(Deserialize)]
 pub struct SignupBody {
     email: String,
+    #[serde(deserialize_with = "non_empty_str")]
     first_name: Option<String>,
+    #[serde(deserialize_with = "non_empty_str")]
     last_name: Option<String>,
+    #[serde(deserialize_with = "non_empty_str")]
     phone: Option<String>,
 }
 
