@@ -5,7 +5,7 @@ use axum::{
 };
 use cafe_website::AppError;
 use regex::Regex;
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -95,17 +95,11 @@ pub async fn edit(
     })
 }
 
-fn non_empty_str<'de, D: Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
-    let o: Option<String> = Option::deserialize(d)?;
-    Ok(o.filter(|s| !s.is_empty()))
-}
-
 #[derive(Deserialize)]
 pub struct WorkerEdit {
     name_first: String,
     name_last: String,
     email: String,
-    #[serde(deserialize_with = "non_empty_str")]
     phone: Option<String>,
 }
 
@@ -153,13 +147,13 @@ pub async fn save(
             is_admin: user.is_some(),
         });
     }
-    let phone_match = match req.phone.as_ref() {
+    let phone_match = match req.phone.as_deref() {
+        None | Some("") => true,
         Some(ph) => {
             debug!(?ph);
             let ph_rx = Regex::new(PHONE_REGEX).expect("Phone regex should be valid");
             ph_rx.is_match(ph)
         }
-        None => true,
     };
     if !phone_match {
         return Ok(WorkerDetails {
@@ -189,7 +183,7 @@ pub async fn save(
         req.name_first,
         req.name_last,
         req.email,
-        req.phone,
+        req.phone.filter(|ph| !ph.is_empty()),
         id
     )
     .fetch_one(app_state.pool())

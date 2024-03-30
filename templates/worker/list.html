@@ -1,32 +1,58 @@
 {% macro order_class(key) %}
 {% if pagination.order_by.to_string() == key %}
-ordered {{ pagination.order_dir }}
+{% match pagination.order_dir %}
+  {% when OrderDirection::Asc %}
+  nf-fa-sort_asc
+  {% when OrderDirection::Desc %}
+  nf-fa-sort_desc
+{% endmatch %}
 {% else %}
-orderable
+nf-fa-sort
 {% endif %}
 {% endmacro %}
-
-<table cellspacing="0">
-  <thead>
-    <tr>
-      <th class='{% call order_class("name_first") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameFirst) }}&{{ query }}">First Name</th>
-      <th class='{% call order_class("name_last") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::NameLast )}}&{{ query }}">Last Name</th>
-      <th class='{% call order_class("email") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}&{{ query }}">
-        Email</th>
-      <th class='{% call order_class("phone") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}&{{ query }}">
-        Phone Number</th>
-      <th class='{% call order_class("shift_count") %}'
-        hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}&{{ query }}">Shifts</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for worker in workers %}
-    {% include "list_row.html" %}
+<div class="p-4 pt-2 bg-white border rounded-2xl shadow" hx-target="this" hx-swap="outerHTML" hx-push-url="true">
+  <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Workers</h3>
+  <select 
+    class="px-4 py-2 mb-2 border rounded-xl"
+    name="event_id"
+    hx-get="/worker/list"
+  >
+    <option value="" {% if event_id.is_none() %}selected{% endif %}>All Events</option>
+    {% for event in events %}
+      <option value="{{ event.id }}" {% if event_id == Some(event.id.clone()) %}selected{% endif %}>{{ event.name }}</option>
     {% endfor %}
-  </tbody>
-</table>
-{{ controls|safe }}
+  </select>
+  <table cellspacing="0">
+    <thead>
+      <tr>
+        <th hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Name) }}&{{ query }}">
+          Name
+          <i class='{% call order_class("name_last") %}'/>
+        </th>
+        <th hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Email )}}&{{ query }}">
+          Email
+          <i class='{% call order_class("email") %}'/>
+        </th>
+        <th hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Phone )}}&{{ query }}">
+          Phone Number
+          <i class='{% call order_class("phone") %}'/>
+        </th>
+        <th hx-get="/worker/list?{{ pagination.with_order(WorkerOrderBy::Shifts )}}&{{ query }}">
+          Shifts
+          <i class='{% call order_class("shift_count") %}'/>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for worker in workers %}
+        <tr>
+          <td><a class="underline text-primary" href="/worker/{{ worker.id }}">{{ worker.name_first }} {{ worker.name_last }}</a></td>
+          <td>{{ worker.email }}</td>
+          <td>{{ worker.phone.clone().unwrap_or("".to_owned()) }}</td>
+          <td>{{ worker.shifts.unwrap_or(0) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ controls|safe }}
+</div>

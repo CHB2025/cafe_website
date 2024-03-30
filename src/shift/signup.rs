@@ -6,7 +6,7 @@ use axum::{
 };
 use cafe_website::AppError;
 use regex::Regex;
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::worker::Worker;
@@ -32,29 +32,17 @@ pub enum SignupForm {
 
 #[derive(Deserialize)]
 pub struct SignupFormParams {
-    #[serde(deserialize_with = "non_empty_str")]
     email: Option<String>,
-    #[serde(deserialize_with = "non_empty_str")]
     first_name: Option<String>,
-    #[serde(deserialize_with = "non_empty_str")]
     last_name: Option<String>,
-    #[serde(deserialize_with = "non_empty_str")]
     phone: Option<String>,
-}
-
-fn non_empty_str<'de, D: Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
-    let o: Option<String> = Option::deserialize(d)?;
-    Ok(o.filter(|s| !s.is_empty()))
 }
 
 #[derive(Deserialize)]
 pub struct SignupBody {
     email: String,
-    #[serde(deserialize_with = "non_empty_str")]
     first_name: Option<String>,
-    #[serde(deserialize_with = "non_empty_str")]
     last_name: Option<String>,
-    #[serde(deserialize_with = "non_empty_str")]
     phone: Option<String>,
 }
 
@@ -151,12 +139,12 @@ pub async fn signup(
                     error: Some("Invalid email"),
                 });
             }
-            let phone_match = match body.phone.as_ref() {
+            let phone_match = match body.phone.as_deref() {
+                None | Some("") => true,
                 Some(ph) => {
                     let ph_rx = Regex::new(PHONE_REGEX).expect("Phone regex should be valid");
                     ph_rx.is_match(ph)
                 }
-                None => true,
             };
             if !phone_match {
                 return Ok(SignupForm::Unknown {
@@ -175,7 +163,7 @@ pub async fn signup(
                 body.email,
                 body.first_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a first name"))?, 
                 body.last_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a last name"))?, 
-                body.phone
+                body.phone.filter(|s| !s.is_empty())
             ).fetch_one(app_state.pool()).await?
         }
     };

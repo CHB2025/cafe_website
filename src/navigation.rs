@@ -16,6 +16,7 @@ pub async fn navigation(user: Option<User>) -> Nav {
         (
             vec![
                 ("Events", "/event/list"),
+                ("Workers", "/worker/list"),
                 ("Emails", "/email/list"),
                 ("Users", "/account/manage"),
             ],

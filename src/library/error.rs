@@ -98,6 +98,17 @@ impl From<askama::Error> for AppError {
     }
 }
 
+impl From<uuid::Error> for AppError {
+    fn from(value: uuid::Error) -> Self {
+        tracing::error!("{value}");
+        Self(
+            StatusCode::BAD_REQUEST,
+            "Invalid UUID provided",
+            DisplayKind::Inline,
+        )
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> askama_axum::Response {
         let AppError(code, message, kind) = self;
