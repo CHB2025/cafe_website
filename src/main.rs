@@ -3,9 +3,9 @@ use std::{env, net::SocketAddr, time::Duration};
 use app_state::AppState;
 use axum::{
     body::{boxed, Body, BoxBody, Bytes, HttpBody},
-    http::{Request, Response, StatusCode, Uri},
+    http::{Request, StatusCode, Uri},
     middleware::{self, Next},
-    response::{Html, IntoResponse},
+    response::{Html, IntoResponse, Response},
     routing::get,
     Router,
 };
@@ -17,7 +17,6 @@ use models::User;
 
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
-use tracing_subscriber::prelude::*;
 
 mod accounts;
 mod app_state;
@@ -28,6 +27,7 @@ mod home;
 mod index;
 pub mod models;
 mod navigation;
+mod otel;
 mod schedule;
 mod session;
 mod shift;
@@ -47,16 +47,7 @@ async fn main() {
         }
     };
 
-    // Tracing
-    // TODO: put tracing configuration in the config file
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "cafe_website=debug,tower_http=debug,axum::rejection=trace".into()
-            }),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    otel::init_tracing_subscriber(&config);
 
     // State
     let app_state = AppState::init(config).await;
@@ -100,16 +91,16 @@ async fn main() {
         .nest("/email", email::public_router());
 
     // App
+    let mid = ServiceBuilder::new()
+        .layer(middleware::from_fn(html_wrapper))
+        .layer(TraceLayer::new_for_http());
+
     let app = Router::new()
         .merge(public_routes)
         .merge(auth_routes)
         .with_state(app_state.clone())
         .fallback(get_static_files)
-        .layer(
-            ServiceBuilder::new()
-                .layer(middleware::from_fn(html_wrapper))
-                .layer(TraceLayer::new_for_http()),
-        );
+        .layer(mid);
 
     let port = app_state.config().website.port;
     let addr = SocketAddr::from(([0, 0, 0, 0], port));

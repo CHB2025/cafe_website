@@ -9,6 +9,7 @@ services:
       - type: volume
         source: cafe-db
         target: /var/lib/postgresql/data
+
   website:
     image: ghcr.io/chb2025/cafe_website:main
     build:
@@ -26,6 +27,36 @@ services:
     configs:
       - source: web_config
         target: /var/cafe_website/config.toml
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+      - 16687:16687
+    restart: always
+    environment: 
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+      - PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR=true
+      - PROMETHEUS_QUERY_NORMALIZE_CALLS=true
+      - PROMETHEUS_QUERY_NORMALIZE_DURATION=true
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    volumes: 
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    restart: always
+    depends_on:
+      - jaeger
+    ports: 
+      - 4317:4317
+      - 4318:4318
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
 
 configs:
   web_config:
