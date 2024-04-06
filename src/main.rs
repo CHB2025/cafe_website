@@ -31,6 +31,7 @@ mod otel;
 mod schedule;
 mod session;
 mod shift;
+mod style;
 mod time_ext;
 mod worker;
 
@@ -84,6 +85,7 @@ async fn main() {
         .route("/nav", get(navigation::navigation))
         .route("/login", get(accounts::login_form).post(accounts::login))
         .route("/logout", get(accounts::logout))
+        .route("/style.css", get(style::style))
         .nest("/event", events::public_router())
         .nest("/account", accounts::public_router())
         .nest("/shift", shift::public_router())

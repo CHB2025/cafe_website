@@ -6,11 +6,6 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
 
-  jaeger:
-    protocols:
-      thrift_http:
-        endpoint: 0.0.0.0:14278
-
 processors:
   batch:
 

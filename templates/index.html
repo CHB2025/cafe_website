@@ -6,40 +6,11 @@
   <meta name="viewport"
     content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
   <title>Cornerstone Cafe</title>
-  {#  TODO: setup sass pre-processor for nerdfonts and tailwind #}
-  <link rel="stylesheet" href="https://www.nerdfonts.com/assets/css/webfont.css">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css"></script>
   <script src="https://unpkg.com/htmx.org@1.9.5"
     integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
     crossorigin="anonymous"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#420303'
-          }
-        }
-      }
-    }
-  </script>
-  <style type="text/tailwindcss">
-    @layer base {
-      th, td {
-        @apply border p-2 md:p-4
-      }
-    }
-    @layer components {
-      .button {
-        @apply px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none disabled:shadow-none disabled:bg-zinc-300
-      }
-      .input {
-        @apply px-2 py-1 border rounded-xl disabled:text-zinc-300 invalid:border-red-400 invalid:text-red-600
-      }
-      
-    }
-  </style>
 </head>
 
 <body 
