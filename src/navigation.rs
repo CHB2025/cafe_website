@@ -1,6 +1,7 @@
 use askama::Template;
+use axum_extra::extract::Cached;
 
-use crate::models::User;
+use crate::session::Session;
 
 #[derive(Template)]
 #[template(path = "navigation.html")]
@@ -9,8 +10,8 @@ pub struct Nav {
     right: Vec<(&'static str, &'static str)>,
 }
 
-pub async fn navigation(user: Option<User>) -> Nav {
-    let (left, right) = if user.is_none() {
+pub async fn navigation(Cached(session): Cached<Session>) -> Nav {
+    let (left, right) = if !session.is_authenticated() {
         (vec![], vec![("Log In", "/login")])
     } else {
         (

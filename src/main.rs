@@ -1,6 +1,5 @@
 use std::{env, net::SocketAddr, time::Duration};
 
-use app_state::AppState;
 use axum::{
     body::{boxed, Body, BoxBody, Bytes, HttpBody},
     http::{Request, StatusCode, Uri},
@@ -10,16 +9,15 @@ use axum::{
     Router,
 };
 use axum_extra::extract::Cached;
-use axum_server::tls_rustls::RustlsConfig;
-
-use cafe_website::AppError;
-use models::User;
-
+use session::Session;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
+use cafe_website::AppError;
+pub use config::config;
+use tracing::debug;
+
 mod accounts;
-mod app_state;
 mod config;
 mod email;
 mod events;
@@ -36,29 +34,21 @@ mod time_ext;
 mod worker;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config_path = env::current_dir()
         .expect("Couldn't load current dir")
         .join("config.toml");
-    let config = match config::Config::load(config_path).await {
-        Ok(config) => config,
-        Err(e) => {
-            eprintln!("Failed to parse config: {}", e);
-            return;
-        }
-    };
+    config::Config::init(config_path).await?;
+    debug!("Config Loaded!");
 
-    otel::init_tracing_subscriber(&config);
-
-    // State
-    let app_state = AppState::init(config).await;
+    otel::init_tracing_subscriber();
 
     // Emailing!
-    let email_state = app_state.clone();
     tokio::spawn(async move {
-        if let Some(cfg) = &email_state.config().email {
+        let config = config::config();
+        if config.mailer().is_some() {
             loop {
-                if let Err(e) = email::send_all(email_state.pool(), cfg).await {
+                if let Err(e) = email::send_all().await {
                     tracing::error!("Email error: {}", e);
                 }
                 tokio::time::sleep(Duration::from_secs(30)).await;
@@ -75,10 +65,7 @@ async fn main() {
         .nest("/shift", shift::protected_router())
         .nest("/worker", worker::protected_router())
         .nest("/email", email::protected_router())
-        .layer(middleware::from_fn_with_state(
-            app_state.clone(),
-            auth_layer,
-        ));
+        .layer(middleware::from_fn_with_state((), auth_layer));
 
     let public_routes = Router::new()
         .route("/", get(home::view))
@@ -100,22 +87,17 @@ async fn main() {
     let app = Router::new()
         .merge(public_routes)
         .merge(auth_routes)
-        .with_state(app_state.clone())
         .fallback(get_static_files)
         .layer(mid);
 
-    let port = app_state.config().website.port;
+    let port = config().website.port;
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     tracing::debug!("listening on {}", addr);
 
-    match &app_state.config().ssl {
+    match config().tls_config().cloned() {
         Some(cfg) => {
-            let rustls_config = RustlsConfig::from_pem_file(cfg.cert.clone(), cfg.key.clone())
-                .await
-                .expect("Invalid Certs");
-
-            axum_server::bind_rustls(addr, rustls_config)
+            axum_server::bind_rustls(addr, cfg)
                 .serve(app.into_make_service())
                 .await
                 .unwrap();
@@ -125,14 +107,15 @@ async fn main() {
             .await
             .unwrap(),
     };
+    Ok(())
 }
 
 async fn auth_layer<B>(
-    user_session: Cached<Option<User>>,
+    session: Cached<Session>,
     request: Request<B>,
     next: Next<B>,
 ) -> Result<Response<BoxBody>, AppError> {
-    if user_session.is_none() {
+    if !session.is_authenticated() {
         return Err(AppError::redirect(
             StatusCode::UNAUTHORIZED,
             "Restricted",

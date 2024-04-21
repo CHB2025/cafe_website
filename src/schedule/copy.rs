@@ -1,14 +1,11 @@
 use askama::Template;
-use axum::{
-    extract::{Path, State},
-    Form,
-};
+use axum::{extract::Path, Form};
 use cafe_website::{templates::Card, AppError, Redirect};
 use chrono::NaiveDate;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Shift};
+use crate::{config, models::Shift};
 
 #[derive(Template, Debug, Clone)]
 #[template(path = "schedule/copy.html")]
@@ -35,28 +32,27 @@ pub struct CopyBody {
 }
 
 pub async fn copy(
-    State(app_state): State<AppState>,
     Path((event_from, date_from)): Path<(Uuid, NaiveDate)>,
     Form(CopyBody {
         event_id: event_to,
         date: date_to,
     }): Form<CopyBody>,
 ) -> Result<Redirect, AppError> {
-    let tran = app_state.pool().begin().await?;
+    let tran = config().pool().begin().await?;
     let shifts = sqlx::query_as!(
         Shift,
         "SELECT * FROM shift WHERE event_id = $1 AND date = $2",
         event_from,
         date_from
     )
-    .fetch_all(app_state.pool())
+    .fetch_all(config().pool())
     .await?;
     sqlx::query!(
         "DELETE FROM shift WHERE event_id = $1 AND date = $2",
         event_to,
         date_to
     )
-    .execute(app_state.pool())
+    .execute(config().pool())
     .await?;
     for shift in shifts {
         sqlx::query!(
@@ -68,7 +64,7 @@ pub async fn copy(
             shift.title,
             shift.description,
             shift.public_signup,
-        ).execute(app_state.pool()).await?;
+        ).execute(config().pool()).await?;
     }
     tran.commit().await?;
     Ok(Redirect::to(format!("/event/{event_to}")))

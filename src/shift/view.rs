@@ -1,14 +1,14 @@
 use askama::Template;
 use askama_axum::IntoResponse;
-use axum::extract::{Path, State};
+use axum::extract::Path;
+use axum_extra::extract::Cached;
 use cafe_website::{filters, templates::Card, AppError};
 use uuid::Uuid;
 
+use crate::config;
+use crate::models::Shift;
+use crate::session::Session;
 use crate::worker::Worker;
-use crate::{
-    app_state::AppState,
-    models::{Shift, User},
-};
 
 #[derive(Debug, Template, Clone)]
 #[template(path = "shift/view.html")]
@@ -25,11 +25,9 @@ pub struct ShiftEditTemplate {
 }
 
 pub async fn view(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
-    user: Option<User>,
+    session: Cached<Session>,
 ) -> Result<impl IntoResponse, AppError> {
-    let logged_in = user.is_some();
     let shift = sqlx::query_as!(
         Shift,
         "SELECT s.* 
@@ -38,12 +36,12 @@ pub async fn view(
         ",
         id
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
     let worker = match shift.worker_id {
         Some(id) => Some(
             sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
-                .fetch_one(app_state.pool())
+                .fetch_one(config().pool())
                 .await?,
         ),
         None => None,
@@ -57,17 +55,14 @@ pub async fn view(
             show_x: true,
             child: ShiftTemplate {
                 shift,
-                logged_in,
+                logged_in: session.is_authenticated(),
                 worker,
             },
         },
     ))
 }
 
-pub async fn edit_form(
-    State(app_state): State<AppState>,
-    Path(id): Path<Uuid>,
-) -> Result<impl IntoResponse, AppError> {
+pub async fn edit_form(Path(id): Path<Uuid>) -> Result<impl IntoResponse, AppError> {
     let shift = sqlx::query_as!(
         Shift,
         "SELECT s.*
@@ -76,7 +71,7 @@ pub async fn edit_form(
         ",
         id
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
 
     Ok((

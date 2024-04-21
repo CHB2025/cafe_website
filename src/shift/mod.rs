@@ -3,8 +3,6 @@ use axum::{
     Router,
 };
 
-use crate::app_state::AppState;
-
 mod crud;
 mod signup;
 mod view;
@@ -14,14 +12,14 @@ use view::{edit_form, view};
 
 use self::crud::remove_worker;
 
-pub fn public_router() -> Router<AppState> {
+pub fn public_router() -> Router {
     Router::new().route("/:id", get(view)).route(
         "/:id/signup",
         get(signup::signup_form).patch(signup::signup),
     )
 }
 
-pub fn protected_router() -> Router<AppState> {
+pub fn protected_router() -> Router {
     Router::new()
         .route("/:id/edit", get(edit_form))
         .route("/:id/remove_worker", patch(remove_worker))

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Query, State},
+    extract::Query,
     response::Html,
     routing::{get, patch},
     Router,
@@ -18,7 +18,7 @@ use list_row::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event, schedule};
+use crate::{config, models::Event, schedule};
 
 use self::view::view;
 
@@ -28,13 +28,12 @@ pub struct EventOptionQuery {
 }
 
 pub async fn event_option_list(
-    State(app_state): State<AppState>,
     Query(query): Query<EventOptionQuery>,
 ) -> Result<Html<String>, AppError> {
     use std::fmt::Write;
 
     let events = sqlx::query_as!(Event, "SELECT * from event ORDER BY id ASC")
-        .fetch_all(app_state.pool())
+        .fetch_all(config().pool())
         .await?;
 
     let result: String = events.iter().fold(String::new(), |mut output, e| {
@@ -54,7 +53,7 @@ pub async fn event_option_list(
     Ok(Html(result))
 }
 
-pub fn protected_router() -> Router<AppState> {
+pub fn protected_router() -> Router {
     Router::new()
         .route("/:id", patch(patch_event).delete(delete_event))
         .route("/create", get(create_event_form).post(create_event))
@@ -66,7 +65,7 @@ pub fn protected_router() -> Router<AppState> {
         .nest("/:id", schedule::protected_router())
 }
 
-pub fn public_router() -> Router<AppState> {
+pub fn public_router() -> Router {
     Router::new()
         .route("/:id", get(view))
         .nest("/:id", schedule::public_router())

@@ -1,15 +1,13 @@
 use askama::Template;
-use axum::{
-    extract::{Path, State},
-    Form,
-};
+use axum::{extract::Path, Form};
+use axum_extra::extract::Cached;
 use cafe_website::AppError;
 use regex::Regex;
 use serde::Deserialize;
 use tracing::debug;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::User, worker::Worker};
+use crate::{config, session::Session, worker::Worker};
 
 #[derive(Template)]
 #[template(path = "worker/view.html")]
@@ -30,20 +28,16 @@ pub struct WorkerDetails {
     is_admin: bool,
 }
 
-pub async fn view(
-    State(app_state): State<AppState>,
-    Path(id): Path<Uuid>,
-) -> Result<WorkerView, AppError> {
+pub async fn view(Path(id): Path<Uuid>) -> Result<WorkerView, AppError> {
     let _ = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
 
     Ok(WorkerView { id })
 }
 
 pub async fn details(
-    State(app_state): State<AppState>,
-    user: Option<User>,
+    session: Cached<Session>,
     Path(id): Path<Uuid>,
 ) -> Result<WorkerDetails, AppError> {
     let Worker {
@@ -53,7 +47,7 @@ pub async fn details(
         name_first,
         name_last,
     } = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
 
     Ok(WorkerDetails {
@@ -63,14 +57,13 @@ pub async fn details(
         email,
         phone,
         error: None,
-        is_admin: user.is_some(),
+        is_admin: session.is_authenticated(),
         edit: false,
     })
 }
 
 pub async fn edit(
-    State(app_state): State<AppState>,
-    user: Option<User>,
+    session: Cached<Session>,
     Path(id): Path<Uuid>,
 ) -> Result<WorkerDetails, AppError> {
     let Worker {
@@ -80,7 +73,7 @@ pub async fn edit(
         name_first,
         name_last,
     } = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
 
     Ok(WorkerDetails {
@@ -89,7 +82,7 @@ pub async fn edit(
         name_last,
         email,
         phone,
-        is_admin: user.is_some(),
+        is_admin: session.is_authenticated(),
         error: None,
         edit: true,
     })
@@ -104,8 +97,7 @@ pub struct WorkerEdit {
 }
 
 pub async fn save(
-    State(app_state): State<AppState>,
-    user: Option<User>,
+    session: Cached<Session>,
     Path(id): Path<Uuid>,
     Form(req): Form<WorkerEdit>,
 ) -> Result<WorkerDetails, AppError> {
@@ -116,9 +108,9 @@ pub async fn save(
         name_first,
         name_last,
     } = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
-    if user.is_none() && email != req.email {
+    if !session.is_authenticated() && email != req.email {
         return Ok(WorkerDetails {
             id,
             name_first,
@@ -126,7 +118,7 @@ pub async fn save(
             email,
             phone,
             error: Some("Unable to change email address. Contact an admin to change."),
-            is_admin: user.is_some(),
+            is_admin: session.is_authenticated(),
             edit: false,
         });
     }
@@ -144,7 +136,7 @@ pub async fn save(
             phone,
             error: Some("Invalid email"),
             edit: true,
-            is_admin: user.is_some(),
+            is_admin: session.is_authenticated(),
         });
     }
     let phone_match = match req.phone.as_deref() {
@@ -164,7 +156,7 @@ pub async fn save(
             phone,
             error: Some("Invalid phone number"),
             edit: true,
-            is_admin: user.is_some(),
+            is_admin: session.is_authenticated(),
         });
     }
 
@@ -186,7 +178,7 @@ pub async fn save(
         req.phone.filter(|ph| !ph.is_empty()),
         id
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
 
     Ok(WorkerDetails {
@@ -195,7 +187,7 @@ pub async fn save(
         name_last,
         email,
         phone,
-        is_admin: user.is_some(),
+        is_admin: session.is_authenticated(),
         error: None,
         edit: false,
     })

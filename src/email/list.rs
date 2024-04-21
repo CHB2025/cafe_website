@@ -2,7 +2,7 @@ use std::fmt;
 
 use askama::Template;
 use askama_axum::IntoResponse;
-use axum::extract::{Query, State};
+use axum::extract::Query;
 use cafe_website::{
     filters,
     pagination::{OrderDirection, PaginationControls},
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::QueryBuilder;
 use uuid::Uuid;
 
-use crate::app_state::AppState;
+use crate::config;
 
 use super::{Email, EmailKind, EmailStatus};
 
@@ -63,7 +63,6 @@ impl fmt::Display for EmailQuery {
 }
 
 pub async fn email_list(
-    State(app_state): State<AppState>,
     Query(pagination): Query<PaginatedQuery<EmailOrderBy, DEFAULT_TAKE, false>>,
     Query(query): Query<EmailQuery>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -86,10 +85,10 @@ pub async fn email_list(
     builder.push(" ").push(pagination.sql());
 
     let (emails, count) = tokio::try_join!(
-        builder.build_query_as().fetch_all(app_state.pool()),
+        builder.build_query_as().fetch_all(config().pool()),
         count_builder
             .build_query_scalar()
-            .fetch_one(app_state.pool())
+            .fetch_one(config().pool())
     )?;
     Ok(Card {
         class: None,

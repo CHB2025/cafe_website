@@ -1,11 +1,12 @@
 use askama::Template;
-use axum::extract::{Path, State};
+use axum::extract::Path;
+use axum_extra::extract::Cached;
 use cafe_website::{filters, AppError};
 use chrono::{Duration, NaiveDate, NaiveTime, Timelike};
 use sqlx::QueryBuilder;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::User};
+use crate::{config, session::Session};
 
 #[derive(Template)]
 #[template(path = "schedule/view.html")]
@@ -47,12 +48,9 @@ pub struct ScheduleItemTemplate {
 }
 
 pub async fn schedule(
-    State(app_state): State<AppState>,
-    user: Option<User>, // wasteful db request. Should just validate session without getting user
+    session: Cached<Session>, // wasteful db request. Should just validate session without getting user
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
 ) -> Result<ScheduleTemplate, AppError> {
-    let logged_in = user.is_some();
-
     let mut query = QueryBuilder::new(
         "SELECT s.id, s.title, s.start_time, s.end_time, w.name_first, w.name_last 
         FROM shift as s LEFT OUTER JOIN worker as w ON s.worker_id = w.id ",
@@ -63,14 +61,14 @@ pub async fn schedule(
         .push(" AND s.event_id = ")
         .push_bind(event_id);
 
-    if !logged_in {
+    if !session.is_authenticated() {
         query.push(" AND s.public_signup = TRUE AND w IS NULL");
     }
 
     query.push(" ORDER BY s.start_time, s.title ASC");
     let shifts = query
         .build_query_as::<ShiftWorker>()
-        .fetch_all(app_state.pool())
+        .fetch_all(config().pool())
         .await?;
 
     let start_time = shifts
@@ -172,7 +170,7 @@ pub async fn schedule(
         date,
         start_time,
         end_time,
-        public: !logged_in,
+        public: !session.is_authenticated(),
 
         grouped_shifts,
     })

@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     http::StatusCode,
     Form,
 };
@@ -9,8 +9,8 @@ use regex::Regex;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::worker::Worker;
-use crate::{app_state::AppState, email, models::Shift};
+use crate::{config, worker::Worker};
+use crate::{email, models::Shift};
 
 const PHONE_REGEX: &str = r#"^[2-9][0-9]{2}-[2-9][0-9]{2}-[0-9]{4}$"#;
 
@@ -47,19 +47,18 @@ pub struct SignupBody {
 }
 
 pub async fn signup_form(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Query(params): Query<SignupFormParams>,
 ) -> Result<SignupForm, AppError> {
     let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
     let worker = sqlx::query_as!(
         Worker,
         "SELECT * FROM worker WHERE email = $1",
         params.email
     )
-    .fetch_optional(app_state.pool())
+    .fetch_optional(config().pool())
     .await?;
 
     Ok(match (params.email, worker) {
@@ -77,13 +76,12 @@ pub async fn signup_form(
 }
 
 pub async fn signup(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Form(body): Form<SignupBody>,
 ) -> Result<SignupForm, AppError> {
-    let tran = app_state.pool().begin().await?;
+    let tran = config().pool().begin().await?;
     let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
 
     // Prevent races
@@ -95,7 +93,7 @@ pub async fn signup(
     }
 
     let worker = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE email = $1", body.email)
-        .fetch_optional(app_state.pool())
+        .fetch_optional(config().pool())
         .await?;
     let worker = match worker {
         Some(w) => {
@@ -115,7 +113,7 @@ pub async fn signup(
                 shift.end_time,
                 shift.start_time,
             )
-            .fetch_one(app_state.pool())
+            .fetch_one(config().pool())
             .await?;
             if overlaps.is_some_and(|c| c != 0) {
                 return Err(AppError::inline(
@@ -164,21 +162,21 @@ pub async fn signup(
                 body.first_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a first name"))?, 
                 body.last_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a last name"))?, 
                 body.phone.filter(|s| !s.is_empty())
-            ).fetch_one(app_state.pool()).await?
+            ).fetch_one(config().pool()).await?
         }
     };
 
     let (worker_name, worker_id) = (worker.name_first.clone(), worker.id);
 
     // Send email
-    let _ = email::send_signup(&app_state, worker, shift.clone()).await?;
+    let _ = email::send_signup(worker, shift.clone()).await?;
 
     sqlx::query!(
         "UPDATE shift SET worker_id = $1 WHERE id = $2",
         worker_id,
         id
     )
-    .execute(app_state.pool())
+    .execute(config().pool())
     .await?;
 
     tran.commit().await?;

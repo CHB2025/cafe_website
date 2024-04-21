@@ -1,14 +1,12 @@
 use askama::Template;
 
 use askama_axum::IntoResponse;
-use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-};
+use axum::{extract::Path, http::StatusCode};
+use axum_extra::extract::Cached;
 use cafe_website::{AppError, Redirect};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::User};
+use crate::{config, models::User, session::Session};
 
 #[derive(Template)]
 #[template(path = "accounts/admin.html")]
@@ -25,13 +23,12 @@ pub async fn admin() -> UserAdminTempl {
     UserAdminTempl {}
 }
 
-pub async fn user_list(
-    State(app_state): State<AppState>,
-    user: Option<User>,
-) -> Result<UserListTempl, AppError> {
-    let Some(user) = user else { unreachable!() };
+pub async fn user_list(session: Cached<Session>) -> Result<UserListTempl, AppError> {
+    let Some(user) = session.user().cloned() else {
+        unreachable!()
+    };
     let users = sqlx::query_as!(User, "SELECT * FROM users")
-        .fetch_all(app_state.pool())
+        .fetch_all(config().pool())
         .await?;
     Ok(UserListTempl {
         users,
@@ -40,11 +37,12 @@ pub async fn user_list(
 }
 
 pub async fn remove_user(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
-    user: Option<User>,
+    session: Cached<Session>,
 ) -> Result<impl IntoResponse, AppError> {
-    let Some(user) = user else { unreachable!() };
+    let Some(user) = session.user() else {
+        unreachable!()
+    };
     if id == user.id {
         return Err(AppError::inline(
             StatusCode::BAD_REQUEST,
@@ -52,7 +50,7 @@ pub async fn remove_user(
         ));
     }
     sqlx::query!("DELETE FROM users WHERE id = $1", id)
-        .execute(app_state.pool())
+        .execute(config().pool())
         .await?;
     Ok(Redirect::to("/account/manage".to_owned()))
 }

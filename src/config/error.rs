@@ -22,3 +22,21 @@ impl From<io::Error> for ConfigError {
         Self(format!("Unable to read config file: {}", value.kind()))
     }
 }
+
+impl From<sqlx::Error> for ConfigError {
+    fn from(value: sqlx::Error) -> Self {
+        Self(format!("Unable to connect to the database: {}", value))
+    }
+}
+
+impl From<sqlx::migrate::MigrateError> for ConfigError {
+    fn from(value: sqlx::migrate::MigrateError) -> Self {
+        Self(format!("Unable to run database migrations: {}", value))
+    }
+}
+
+impl From<lettre::transport::smtp::Error> for ConfigError {
+    fn from(value: lettre::transport::smtp::Error) -> Self {
+        Self(format!("Unable to set up mailer: {}", value))
+    }
+}

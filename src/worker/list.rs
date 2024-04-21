@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use askama::Template;
 use askama_axum::IntoResponse;
-use axum::extract::{Query, State};
+use axum::extract::Query;
 use cafe_website::{
     pagination::{OrderDirection, PaginationControls},
     AppError, PaginatedQuery,
@@ -13,7 +13,7 @@ use sqlx::{FromRow, QueryBuilder};
 use tracing::debug;
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event};
+use crate::{config, models::Event};
 
 #[derive(Hash, Deserialize, Serialize, Debug, FromRow)]
 pub struct WorkerWithShiftAgg {
@@ -71,7 +71,6 @@ impl Display for WorkerQuery {
 }
 
 pub async fn worker_list(
-    State(app_state): State<AppState>,
     Query(pagination): Query<PaginatedQuery<WorkerOrderBy, 10, false>>,
     Query(query): Query<WorkerQuery>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -105,11 +104,11 @@ pub async fn worker_list(
         .push(pagination.sql());
 
     let (workers, count, events): (Vec<WorkerWithShiftAgg>, i64, Vec<Event>) = tokio::try_join!(
-        worker_builder.build_query_as().fetch_all(app_state.pool()),
+        worker_builder.build_query_as().fetch_all(config().pool()),
         count_builder
             .build_query_scalar()
-            .fetch_one(app_state.pool()),
-        sqlx::query_as!(Event, "SELECT * from event ORDER BY name").fetch_all(app_state.pool())
+            .fetch_one(config().pool()),
+        sqlx::query_as!(Event, "SELECT * from event ORDER BY name").fetch_all(config().pool())
     )?;
 
     debug!(?count, "workers:");

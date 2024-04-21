@@ -1,5 +1,5 @@
 use askama::Template;
-use axum::extract::{Query, State};
+use axum::extract::Query;
 use cafe_website::{
     pagination::{OrderDirection, PaginationControls},
     templates::Card,
@@ -9,7 +9,7 @@ use chrono::NaiveDate;
 use sqlx::{FromRow, Postgres};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Event};
+use crate::{config, models::Event};
 
 use super::pagination::EventOrderBy;
 
@@ -31,10 +31,9 @@ pub struct EventListTemplate {
 }
 
 pub async fn event_list(
-    State(app_state): State<AppState>,
     Query(query): Query<PaginatedQuery<EventOrderBy>>,
 ) -> Result<Card<EventListTemplate>, AppError> {
-    let pool = app_state.pool();
+    let pool = config().pool();
 
     let events = sqlx::query_as::<Postgres, Event>(&format!("SELECT * FROM event {}", query.sql()))
         .fetch_all(pool)

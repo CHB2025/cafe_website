@@ -1,11 +1,10 @@
 use askama::Template;
 use axum::{
-    extract::{Query, RawQuery, State},
+    extract::{Query, RawQuery},
     http::StatusCode,
     response::IntoResponse,
     Form,
 };
-use axum_extra::extract::PrivateCookieJar;
 use cafe_website::{templates::Card, AppError, Redirect};
 use scrypt::{
     password_hash::{PasswordHash, PasswordVerifier},
@@ -14,11 +13,7 @@ use scrypt::{
 use serde::{Deserialize, Serialize};
 use tokio::task::spawn_blocking;
 
-use crate::{
-    app_state::AppState,
-    models::User,
-    session::{create_session, destroy_session},
-};
+use crate::{config, models::User, session::Session};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginParams {
@@ -53,12 +48,19 @@ pub async fn login_form(RawQuery(query): RawQuery) -> impl IntoResponse {
 }
 
 pub async fn login(
-    State(app_state): State<AppState>,
-    cookie_jar: PrivateCookieJar,
+    mut session: Session,
     Query(params): Query<LoginParams>,
     Form(login): Form<LoginRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    let con = app_state.pool();
+    let con = config().pool();
+
+    if session.is_authenticated() {
+        return Err(AppError::inline(
+            StatusCode::BAD_REQUEST,
+            "Already authenticated",
+        ));
+    }
+
     let user = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", login.email)
         .fetch_one(con)
         .await
@@ -74,17 +76,20 @@ pub async fn login(
     })
     .await??;
 
+    session.set_auth_user(user);
+
     Ok((
         [("HX-Trigger", "auth-change".to_owned())],
-        create_session(cookie_jar, user.id),
+        session,
         Redirect::to(params.from.unwrap_or("/".to_string())),
     ))
 }
 
-pub async fn logout(cookie_jar: PrivateCookieJar) -> impl IntoResponse {
+pub async fn logout(mut session: Session) -> impl IntoResponse {
+    session.remove_auth_user();
     (
         [("HX-Trigger", "auth-change")],
-        destroy_session(cookie_jar),
+        session,
         Redirect::to("/".to_string()),
     )
 }

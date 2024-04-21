@@ -1,8 +1,7 @@
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::Path;
-use axum::{extract::State, http::StatusCode, Form};
-use axum_extra::extract::PrivateCookieJar;
+use axum::{http::StatusCode, Form};
 use cafe_website::templates::Card;
 use cafe_website::{AppError, Redirect};
 use scrypt::password_hash::rand_core::OsRng;
@@ -11,12 +10,10 @@ use scrypt::Scrypt;
 use tokio::task::spawn_blocking;
 use uuid::Uuid;
 
+use crate::config;
 use crate::models::User;
-use crate::session::create_session;
-use crate::{
-    app_state::AppState,
-    models::{AdminInvite, CreateUser},
-};
+use crate::models::{AdminInvite, CreateUser};
+use crate::session::Session;
 
 #[derive(Template)]
 #[template(path = "accounts/create.html")]
@@ -25,7 +22,6 @@ pub struct AccountCreateTemplate {
 }
 
 pub async fn account_creation_form(
-    State(app_state): State<AppState>,
     Path(invite_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     let _ = sqlx::query_as!(
@@ -33,7 +29,7 @@ pub async fn account_creation_form(
         "SELECT * FROM admin_invite WHERE accepted_at IS NULL AND id = $1",
         invite_id
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
 
     Ok(Card {
@@ -45,19 +41,18 @@ pub async fn account_creation_form(
 }
 
 pub async fn create_account(
-    State(app_state): State<AppState>,
-    cookie_jar: PrivateCookieJar,
+    mut session: Session,
     Path(invite_id): Path<Uuid>,
     Form(mut user): Form<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
-    let transaction = app_state.pool().begin().await?;
+    let transaction = config().pool().begin().await?;
 
     let invite = sqlx::query_as!(
         AdminInvite,
         "UPDATE admin_invite SET accepted_at = now() WHERE accepted_at IS NULL AND id = $1 RETURNING *",
         invite_id
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
 
     let pswd = user.password.clone();
@@ -67,7 +62,7 @@ pub async fn create_account(
     });
 
     let already_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", invite.email)
-        .fetch_optional(app_state.pool())
+        .fetch_optional(config().pool())
         .await?;
     if already_exists.is_some() {
         pwd_fut.abort();
@@ -86,13 +81,17 @@ pub async fn create_account(
         invite.email,
         user.password
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
+
+    session.set_auth_user(new_user);
 
     transaction.commit().await?;
 
     Ok((
-        create_session(cookie_jar, new_user.id),
+        // create_session(cookie_jar, new_user.id),
+        [("HX-Tritter", "auth-change")],
+        session,
         Redirect::to("/".to_owned()),
     ))
 }

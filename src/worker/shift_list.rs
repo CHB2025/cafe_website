@@ -1,12 +1,14 @@
 use askama::Template;
-use axum::extract::{Path, Query, State};
+use axum::extract::{Path, Query};
+use axum_extra::extract::Cached;
 use cafe_website::{error, filters, AppError};
 use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    app_state::AppState,
-    models::{Event, Shift, User},
+    config,
+    models::{Event, Shift},
+    session::Session,
 };
 
 #[derive(Template)]
@@ -25,8 +27,7 @@ pub struct ShiftListQuery {
 }
 
 pub async fn shift_list(
-    State(app_state): State<AppState>,
-    user: Option<User>,
+    session: Cached<Session>,
     Path(worker_id): Path<Uuid>,
     Query(query): Query<ShiftListQuery>,
 ) -> Result<ShiftList, AppError> {
@@ -38,7 +39,7 @@ pub async fn shift_list(
         ORDER BY MIN(s.date) ASC",
         worker_id
     )
-    .fetch_all(app_state.pool())
+    .fetch_all(config().pool())
     .await?;
     if events.is_empty() {
         return Err(error::NOT_FOUND);
@@ -56,7 +57,7 @@ pub async fn shift_list(
         event_id,
         worker_id
     )
-    .fetch_all(app_state.pool())
+    .fetch_all(config().pool())
     .await?;
 
     let in_future = shifts.first().expect("Must have 1+ shift to be here").date
@@ -65,7 +66,7 @@ pub async fn shift_list(
     Ok(ShiftList {
         worker_id,
         event_id,
-        may_cancel: in_future && (user.is_some() || selected_event.allow_signups),
+        may_cancel: in_future && (session.is_authenticated() || selected_event.allow_signups),
         events,
         shifts,
     })

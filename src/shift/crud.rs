@@ -1,11 +1,11 @@
 use askama_axum::IntoResponse;
-use axum::{extract::{Path, State, Query}, Form};
+use axum::{extract::{Path, Query}, Form};
 use cafe_website::{AppError, Redirect};
 use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{app_state::AppState, models::Shift};
+use crate::{config, models::Shift};
 use crate::worker::Worker;
 
 use super::view::ShiftTemplate;
@@ -21,7 +21,6 @@ pub struct ShiftUpdate {
 }
 
 pub async fn update_shift(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Form(ShiftUpdate { title, start_time, end_time, description, public_signup }): Form<ShiftUpdate>
 ) -> Result<impl IntoResponse, AppError> {
@@ -34,11 +33,11 @@ pub async fn update_shift(
         description, 
         public_signup.is_some_and(|s| s == "on"),
         id
-    ).fetch_one(app_state.pool()).await?;
+    ).fetch_one(config().pool()).await?;
     let worker = match shift.worker_id {
         Some(id) => Some(
             sqlx::query_as!(Worker, "SELECT * FROM worker WHERE id = $1", id)
-                .fetch_one(app_state.pool())
+                .fetch_one(config().pool())
                 .await?,
         ),
         None => None,
@@ -48,14 +47,13 @@ pub async fn update_shift(
 }
 
 pub async fn delete_shift(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Redirect, AppError> {
     let shift = sqlx::query_as!(
         Shift,
         "DELETE FROM shift WHERE id = $1 RETURNING *",
         id
-    ).fetch_one(app_state.pool()).await?;
+    ).fetch_one(config().pool()).await?;
 
     Ok(Redirect::to(format!("/event/{}?date={}", shift.event_id, shift.date)))
 }
@@ -67,7 +65,6 @@ pub struct RmWorkerQuery {
 }
 
 pub async fn remove_worker(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Query(RmWorkerQuery { id: worker_id }): Query<RmWorkerQuery>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -75,6 +72,6 @@ pub async fn remove_worker(
         Shift,
         "UPDATE shift SET worker_id = NULL WHERE id = $1 AND worker_id = $2 RETURNING *",
         id, worker_id
-    ).fetch_one(app_state.pool()).await?;
+    ).fetch_one(config().pool()).await?;
     Ok(ShiftTemplate { shift, worker: None, logged_in: true })
 }

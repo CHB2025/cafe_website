@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-use crate::config;
+use crate::config::config;
 
 use super::EmailKind;
 use lettre::{
@@ -8,7 +8,7 @@ use lettre::{
     message::{Mailbox, SinglePart},
     Address, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
 };
-use sqlx::{FromRow, Pool, Postgres};
+use sqlx::FromRow;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -54,10 +54,7 @@ impl From<lettre::transport::smtp::Error> for EmailError {
     }
 }
 
-pub async fn send_all(
-    pool: &Pool<Postgres>,
-    email_config: &config::Email,
-) -> Result<(), Box<dyn Error>> {
+pub async fn send_all() -> Result<(), Box<dyn Error>> {
     let emails = sqlx::query_as!(
         EmailToSend,
         r#"SELECT 
@@ -69,26 +66,28 @@ pub async fn send_all(
         FROM email
         WHERE status = 'pending'"#
     )
-    .fetch_all(pool)
+    .fetch_all(config().pool())
     .await?;
     if emails.is_empty() {
         return Ok(());
     }
     debug!("Sending {} Emails", emails.len());
-    let mailbox = Mailbox::new(None, email_config.address());
-    let transport = email_config.mailer()?;
+
+    let transport = config().mailer().expect("Email system not set up");
+    let address = config().mailing_address().expect("Emailing not set up");
+    let mailbox = Mailbox::new(None, address.clone());
     for email in emails {
         let this_id = email.id;
         let res = try_build(email, mailbox.clone());
         if let Ok(msg) = res {
-            if let Err(e) = try_send(msg, &transport).await {
+            if let Err(e) = try_send(msg, transport).await {
                 // Mark email as failed
                 tracing::error!("Failed to send email: {}", e);
                 sqlx::query!(
                     "UPDATE email SET status = 'failed', sent_at = now() WHERE id = $1",
                     this_id
                 )
-                .execute(pool)
+                .execute(config().pool())
                 .await?; // Should probably not exit out at this point?
             } else {
                 // Mark email as sent
@@ -96,7 +95,7 @@ pub async fn send_all(
                     "UPDATE email SET status = 'sent', sent_at = now() WHERE id = $1",
                     this_id
                 )
-                .execute(pool)
+                .execute(config().pool())
                 .await?; // Should probably not exit out at this point?
             };
         } else {
@@ -105,7 +104,7 @@ pub async fn send_all(
                 "UPDATE email SET status = 'failed', sent_at = now() WHERE id = $1",
                 this_id
             )
-            .execute(pool)
+            .execute(config().pool())
             .await?; // Should probably not exit out at this point?
         }
     }

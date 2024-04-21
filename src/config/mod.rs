@@ -1,81 +1,84 @@
-use std::path::{Path, PathBuf};
+use std::{path::Path, sync::OnceLock};
 
-use lettre::{
-    transport::smtp::authentication::Credentials, Address, AsyncSmtpTransport, Tokio1Executor,
-};
-use serde::Deserialize;
+use axum::extract::FromRef;
+use axum_extra::extract::cookie::Key;
+use axum_server::tls_rustls::RustlsConfig;
+use lettre::{Address, AsyncSmtpTransport, Tokio1Executor};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tokio::{fs::File, io::AsyncReadExt};
 
 pub use error::ConfigError;
 
+use self::text::{TextConfig, Website};
+
 mod error;
+mod text;
 
-#[derive(Debug, Deserialize, Clone)]
+static CONFIG: OnceLock<Config> = OnceLock::new();
+
+#[derive(Clone)]
 pub struct Config {
+    db_pool: Pool<Postgres>,
+    mailer: Option<AsyncSmtpTransport<Tokio1Executor>>,
+    address: Option<Address>,
+    session_key: Key,
+    tls_config: Option<RustlsConfig>,
+
     pub website: Website,
-    pub database: Database,
-    pub ssl: Option<Ssl>,
-    pub email: Option<Email>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct Website {
-    pub base_url: String,
-    #[serde(default = "default_port")]
-    pub port: u16,
-    pub session_key: Option<String>,
-    pub otel_endpoint: Option<String>,
-}
-
-fn default_port() -> u16 {
-    3000
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct Database {
-    pub database_url: String,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct Ssl {
-    pub cert: PathBuf,
-    pub key: PathBuf,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct Email {
-    server: String,
-    address: Address,
-    password: String,
-}
-
-impl Email {
-    pub fn mailer(
-        &self,
-    ) -> Result<AsyncSmtpTransport<Tokio1Executor>, lettre::transport::smtp::Error> {
-        let builder = AsyncSmtpTransport::<Tokio1Executor>::relay(&self.server)?.credentials(
-            Credentials::new(self.address.user().to_owned(), self.password.clone()),
-        );
-        Ok(builder.build())
-    }
-
-    pub fn address(&self) -> Address {
-        self.address.clone()
-    }
+pub fn config() -> &'static Config {
+    CONFIG.get().expect("Config is not configured")
 }
 
 impl Config {
-    pub async fn load(path: impl AsRef<Path>) -> Result<Self, ConfigError> {
+    pub async fn init(path: impl AsRef<Path>) -> Result<(), ConfigError> {
         let mut cfg_file = File::open(path).await?;
         let mut cfg_string = String::new();
         cfg_file.read_to_string(&mut cfg_string).await?;
-        Ok(toml::from_str::<Config>(&cfg_string)?)
+        let text = toml::from_str::<TextConfig>(&cfg_string)?;
+
+        // Initialize db pool
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect(&text.database.database_url)
+            .await?;
+
+        sqlx::migrate!().run(&pool).await?;
+
+        let session_key = text
+            .website
+            .session_key
+            .as_ref()
+            .and_then(|k| Key::try_from(k.as_bytes()).ok())
+            .unwrap_or_else(Key::generate);
+
+        let tls_config = if let Some(cfg) = text.ssl {
+            Some(RustlsConfig::from_pem_file(cfg.cert.clone(), cfg.key.clone()).await?)
+        } else {
+            None
+        };
+
+        let config = Config {
+            db_pool: pool,
+            mailer: text
+                .email
+                .as_ref()
+                .map_or(Ok(None), |em| em.mailer().map(Some))?,
+            address: text.email.map(|em| em.address()),
+            session_key,
+            tls_config,
+
+            website: text.website,
+        };
+        _ = CONFIG.set(config);
+        Ok(())
     }
 
     pub fn url(&self) -> String {
         let mut url = String::new();
 
-        let add_port = if self.ssl.is_some() {
+        let add_port = if self.tls_config.is_some() {
             url += "https://";
             self.website.port != 443
         } else {
@@ -89,5 +92,26 @@ impl Config {
             url += &format!("{}", self.website.port);
         }
         url
+    }
+
+    pub fn mailer(&self) -> Option<&AsyncSmtpTransport<Tokio1Executor>> {
+        self.mailer.as_ref()
+    }
+    pub fn mailing_address(&self) -> Option<&Address> {
+        self.address.as_ref()
+    }
+
+    pub fn pool(&self) -> &Pool<Postgres> {
+        &self.db_pool
+    }
+
+    pub fn tls_config(&self) -> Option<&RustlsConfig> {
+        self.tls_config.as_ref()
+    }
+}
+
+impl FromRef<Config> for Key {
+    fn from_ref(state: &Config) -> Self {
+        state.session_key.clone()
     }
 }

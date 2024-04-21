@@ -11,16 +11,14 @@ mod manage;
 use create::{account_creation_form, create_account};
 pub use login::{login, login_form, logout};
 
-use crate::app_state::AppState;
-
-pub fn public_router() -> Router<AppState> {
+pub fn public_router() -> Router {
     Router::new().route(
         "/create/:id",
         get(account_creation_form).post(create_account),
     )
 }
 
-pub fn protected_router() -> Router<AppState> {
+pub fn protected_router() -> Router {
     Router::new()
         .route("/manage", get(manage::admin))
         .route("/users", get(manage::user_list))

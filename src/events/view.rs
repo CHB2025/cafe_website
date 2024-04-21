@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     http::StatusCode,
 };
 use cafe_website::{filters, AppError};
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    app_state::AppState,
+    config,
     models::{Day, Event},
 };
 
@@ -27,19 +27,18 @@ pub struct EventViewTemplate {
 }
 
 pub async fn view(
-    State(app_state): State<AppState>,
     Path(id): Path<Uuid>,
     Query(query): Query<EventParams>,
 ) -> Result<EventViewTemplate, AppError> {
     let event = sqlx::query_as!(Event, "SELECT * FROM event WHERE id = $1", id)
-        .fetch_one(app_state.pool())
+        .fetch_one(config().pool())
         .await?;
     let days = sqlx::query_as!(
         Day,
         "SELECT * FROM day WHERE event_id = $1 ORDER BY date ASC",
         id
     )
-    .fetch_all(app_state.pool())
+    .fetch_all(config().pool())
     .await?;
 
     let selected_date = query.date.unwrap_or(

@@ -1,14 +1,11 @@
 use askama::Template;
-use axum::{
-    extract::{Path, State},
-    Form,
-};
+use axum::{extract::Path, Form};
 use cafe_website::{templates::Card, AppError, Redirect};
 use chrono::{NaiveDate, NaiveTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::app_state::AppState;
+use crate::config;
 
 #[derive(Template)]
 #[template(path = "schedule/add_shift.html")]
@@ -38,7 +35,6 @@ pub struct CreateShiftInput {
 }
 
 pub async fn add_shift(
-    State(app_state): State<AppState>,
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
     Form(shift_input): Form<CreateShiftInput>,
 ) -> Result<Redirect, AppError> {
@@ -59,7 +55,7 @@ pub async fn add_shift(
         end_time,
         description,
         public_signup.is_some_and(|s| s == "on")
-    ).fetch_one(app_state.pool()).await?;
+    ).fetch_one(config().pool()).await?;
 
     Ok(Redirect::to(format!("/event/{event_id}")))
 }

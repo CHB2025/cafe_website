@@ -1,11 +1,12 @@
 use askama::Template;
-use axum::extract::{Path, State};
+use axum::extract::Path;
 use cafe_website::{filters, templates::Card, AppError};
 use chrono::{Local, NaiveDate, NaiveTime};
 use uuid::Uuid;
 
+use crate::config;
+use crate::models::Shift;
 use crate::worker::Worker;
-use crate::{app_state::AppState, models::Shift};
 
 struct ShiftWorker {
     shift: Shift,
@@ -27,7 +28,6 @@ pub struct ShiftAdminTemplate {
 }
 
 pub async fn schedule_admin(
-    State(app_state): State<AppState>,
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
 ) -> Result<ShiftAdminTemplate, AppError> {
     // Pretty bad. Should get all current and next n (2 distinct times? or all?)
@@ -38,12 +38,12 @@ pub async fn schedule_admin(
         event_id,
         date
     )
-    .fetch_all(app_state.pool())
+    .fetch_all(config().pool())
     .await?;
     let w_handles: Vec<tokio::task::JoinHandle<Result<Option<Worker>, sqlx::Error>>> = shifts
         .iter()
         .map(|s| {
-            let state = app_state.clone();
+            let state = config().clone();
             let w_id = s.worker_id;
             tokio::spawn(async move {
                 match w_id {

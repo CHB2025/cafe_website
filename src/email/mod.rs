@@ -4,7 +4,7 @@ use cafe_website::{filters, AppError};
 use uuid::Uuid;
 
 use crate::worker::Worker;
-use crate::{app_state::AppState, models::Shift};
+use crate::{config, models::Shift};
 
 mod list;
 mod model;
@@ -14,11 +14,11 @@ pub use model::{Email, EmailKind, EmailStatus};
 pub use sender::send_all;
 
 // Verify emails? anything else?
-pub fn public_router() -> Router<AppState> {
+pub fn public_router() -> Router {
     Router::new()
 }
 
-pub fn protected_router() -> Router<AppState> {
+pub fn protected_router() -> Router {
     Router::new().route("/list", get(list::email_list))
 }
 
@@ -30,19 +30,14 @@ pub struct SignupEmail {
     domain: String,
 }
 
-pub async fn send_signup(
-    app_state: &AppState,
-    worker: Worker,
-    shift: Shift,
-) -> Result<Uuid, AppError> {
+pub async fn send_signup(worker: Worker, shift: Shift) -> Result<Uuid, AppError> {
     let (recipient, event_id, address) = (worker.id, shift.event_id, worker.email.clone());
     let subject = format!("Thanks {}!", worker.name_first); // injection?
 
-    let config = app_state.config();
-    let mut base_url = config.website.base_url.clone();
-    if config.website.port != 443 {
+    let mut base_url = config().website.base_url.clone();
+    if config().website.port != 443 {
         base_url += ":";
-        base_url += &config.website.port.to_string();
+        base_url += &config().website.port.to_string();
     };
 
     let message = SignupEmail {
@@ -61,7 +56,7 @@ pub async fn send_signup(
         message,
         event_id
     )
-    .fetch_one(app_state.pool())
+    .fetch_one(config().pool())
     .await?;
     Ok(id)
 }

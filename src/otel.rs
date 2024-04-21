@@ -8,6 +8,8 @@ use opentelemetry_sdk::{
 use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::prelude::*;
 
+use crate::config;
+
 fn resource() -> Resource {
     Resource::new([
         KeyValue::new("service.name", env!("CARGO_PKG_NAME")),
@@ -35,7 +37,7 @@ fn init_tracer(endpoint: String) -> Tracer {
         .unwrap()
 }
 
-pub fn init_tracing_subscriber(config: &crate::config::Config) {
+pub fn init_tracing_subscriber() {
     let registry = tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
@@ -43,7 +45,7 @@ pub fn init_tracing_subscriber(config: &crate::config::Config) {
             }),
         )
         .with(tracing_subscriber::fmt::layer());
-    if let Some(endpoint) = config.website.otel_endpoint.clone() {
+    if let Some(endpoint) = config::config().website.otel_endpoint.clone() {
         registry
             .with(OpenTelemetryLayer::new(init_tracer(endpoint)))
             .init();

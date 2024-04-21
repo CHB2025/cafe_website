@@ -1,7 +1,5 @@
 use axum::{routing::get, Router};
 
-use crate::app_state::AppState;
-
 use list::worker_list;
 pub use model::Worker;
 
@@ -10,7 +8,7 @@ mod model;
 mod shift_list;
 mod view;
 
-pub fn public_router() -> Router<AppState> {
+pub fn public_router() -> Router {
     Router::new()
         .route("/:id", get(view::view).patch(view::save))
         .route("/:id/details", get(view::details))
@@ -18,6 +16,6 @@ pub fn public_router() -> Router<AppState> {
         .route("/:id/shifts", get(shift_list::shift_list))
 }
 
-pub fn protected_router() -> Router<AppState> {
+pub fn protected_router() -> Router {
     Router::new().route("/list", get(worker_list))
 }
