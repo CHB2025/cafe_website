@@ -1,5 +1,7 @@
 {% let button = "px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"-%}
-<div class="w-[30rem]">
+<div class="w-full max-w-[30rem] relative p-4 pt-2 bg-white border rounded-2xl shadow">
+  <button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+  <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Sign Up</h3>
   <div class="mb-4">
     <h1 class="font-serif text-3xl font-bold">{{ shift.title }}</h1>
     <h2 class="font-serif text-xl font-medium text-zinc-400">{{ shift.start_time|time_short }} - {{ shift.end_time|time_short }}</h2>

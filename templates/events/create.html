@@ -2,33 +2,38 @@
 {% let lb_class = "font-semibold text-right py-1" -%}
 {% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
 
-<form
-  class="w-[30rem] grid gird-cols-3 gap-4" 
-  action="/event/create" 
-  method="post" 
-  hx-push-url="false"
-  hx-target="#create_event_results"
->
-  <label for="name" class="{{ lb_class }}">
-    Name:
-  </label>
-  <input id="name" class="{{ ip_class }}" name="name" type="text" required="true"></input>
-  <label for="start_date" class="{{ lb_class }}">
-    Start Date:
-  </label>
-  <input id="start_date" class="{{ ip_class }}" name="start_date" type="date" required="true"></input>
-  <label for="end_date" class="{{ lb_class }}">
-    End Date:
-  </label>
-  <input id="end_date" class="{{ ip_class }}" name="end_date" type="date" required="true"></input>
-  <label for="allow_signups" class="{{ lb_class }}">
-    Allow Signups:
-  </label>
-  <div>
-    <input id="allow_signups" name="allow_signups" type="checkbox"></input>
-  </div>
-  <div class="{{ div_class }}">
-    <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Submit</button>
-  </div>
-  <div id="create_event_results" class="form-item"></div>
-</form>
+<div class="w-full max-w-[30rem] relative p-4 pt-2 bg-white border rounded-2xl shadow">
+  <button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+  <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Add Event</h3>
+  
+  <form
+    class="grid gird-cols-3 gap-4" 
+    action="/event/create" 
+    method="post" 
+    hx-push-url="false"
+    hx-target="#create_event_results"
+  >
+    <label for="name" class="{{ lb_class }}">
+      Name:
+    </label>
+    <input id="name" class="{{ ip_class }}" name="name" type="text" required="true"></input>
+    <label for="start_date" class="{{ lb_class }}">
+      Start Date:
+    </label>
+    <input id="start_date" class="{{ ip_class }}" name="start_date" type="date" required="true"></input>
+    <label for="end_date" class="{{ lb_class }}">
+      End Date:
+    </label>
+    <input id="end_date" class="{{ ip_class }}" name="end_date" type="date" required="true"></input>
+    <label for="allow_signups" class="{{ lb_class }}">
+      Allow Signups:
+    </label>
+    <div>
+      <input id="allow_signups" name="allow_signups" type="checkbox"></input>
+    </div>
+    <div class="{{ div_class }}">
+      <button class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none" type="submit">Submit</button>
+    </div>
+    <div id="create_event_results" class="form-item"></div>
+  </form>
+</div>

@@ -1,34 +1,38 @@
 {% let button = "px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"-%}
-{% let ip_class = "col-span-2 border px-2 py-1 rounded-xl" -%}
 {% let lb_class = "font-semibold text-right py-1" -%}
 {% let div_class = "col-span-3 flex flex-row gap-4 justify-center items-center" -%}
 
-<form class="w-[30rem] grid grid-col-3 gap-4" hx-put="/shift/{{ shift.id }}" hx-target="#error" hx-push-url="false">
-  <label for="title" class="{{ lb_class }}">
-    Title:
-  </label>
-  <input id="title" class="{{ ip_class }}" type="text" name="title" value="{{ shift.title }}"/>
-  <label for="start_time" class="{{ lb_class }}">
-    Start Time:
-  </label>
-  <input id="start_time" class="{{ ip_class }}" type="time" name="start_time" value="{{ shift.start_time }}"/>
-  <label for="end_time" class="{{ lb_class }}">
-    End Time:
-  </label>
-  <input id="end_time" class="{{ ip_class }}" type="time" name="end_time" value="{{ shift.end_time }}"/>
-  <label for="description" class="{{ lb_class }}">
-    Description:
-  </label>
-  <textarea id="description" class="{{ip_class}}" name="description" rows="5">{% if let Some(d) = shift.description %}{{ d }}{% endif %}</textarea>
-  <label for="public_signup" class="{{ lb_class }}">
-    Allow public signups:
-  </label>
-  <div class="col-span-2 flex justify-start">
-    <input id="public_signup" name="public_signup" type="checkbox" {% if shift.public_signup %}checked{% endif %}/>
-  </div>
-  <div class="{{ div_class }}">
-    <button class="{{ button }}" type="submit">Submit</button>
-    <button class="{{ button }}" hx-indicator="this" hx-get="/shift/{{ shift.id }}" hx-target="#modal">Cancel</button>
-  </div>
-  <div id="error" class="form-item"></div>
-</form>
+<div class="w-full max-w-[30rem] relative p-4 pt-2 bg-white border rounded-2xl shadow">
+  <button class="absolute right-2 top-2 p-2 hover:text-zinc-400 nf nf-fa-close" hx-on:click="document.getElementById('modal').innerHTML = ''"></button>
+  <h3 class="mb-4 font-serif text-xl font-medium text-zinc-400">Sign Up</h3>
+
+  <form class="grid grid-col-3 gap-4" hx-put="/shift/{{ shift.id }}" hx-target="#error" hx-push-url="false">
+    <label for="title" class="{{ lb_class }}">
+      Title:
+    </label>
+    <input id="title" class="input col-span-2" type="text" name="title" value="{{ shift.title }}"/>
+    <label for="start_time" class="{{ lb_class }}">
+      Start Time:
+    </label>
+    <input id="start_time" class="input col-span-2" type="time" name="start_time" value="{{ shift.start_time }}"/>
+    <label for="end_time" class="{{ lb_class }}">
+      End Time:
+    </label>
+    <input id="end_time" class="input col-span-2" type="time" name="end_time" value="{{ shift.end_time }}"/>
+    <label for="description" class="{{ lb_class }}">
+      Description:
+    </label>
+    <textarea id="description" class="input col-span-2" name="description" rows="5">{% if let Some(d) = shift.description %}{{ d }}{% endif %}</textarea>
+    <label for="public_signup" class="{{ lb_class }}">
+      Allow public signups:
+    </label>
+    <div class="col-span-2 flex justify-start">
+      <input id="public_signup" name="public_signup" type="checkbox" {% if shift.public_signup %}checked{% endif %}/>
+    </div>
+    <div class="{{ div_class }}">
+      <button class="button" type="submit">Submit</button>
+      <button class="button" hx-indicator="this" hx-get="/shift/{{ shift.id }}" hx-target="#modal">Cancel</button>
+    </div>
+    <div id="error" class=""></div>
+  </form>
+</div>

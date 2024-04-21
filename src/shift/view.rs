@@ -2,7 +2,7 @@ use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::Path;
 use axum_extra::extract::Cached;
-use cafe_website::{filters, templates::Card, AppError};
+use cafe_website::{filters, AppError};
 use uuid::Uuid;
 
 use crate::config;
@@ -49,15 +49,10 @@ pub async fn view(
 
     Ok((
         [("HX-Replace-Url", "false")],
-        Card {
-            class: Some("w-fit"),
-            title: "Sign Up".to_owned(),
-            show_x: true,
-            child: ShiftTemplate {
-                shift,
-                logged_in: session.is_authenticated(),
-                worker,
-            },
+        ShiftTemplate {
+            shift,
+            logged_in: session.is_authenticated(),
+            worker,
         },
     ))
 }
@@ -74,13 +69,5 @@ pub async fn edit_form(Path(id): Path<Uuid>) -> Result<impl IntoResponse, AppErr
     .fetch_one(config().pool())
     .await?;
 
-    Ok((
-        [("HX-Replace-Url", "false")],
-        Card {
-            class: Some("w-fit"),
-            title: "Sign Up".to_owned(),
-            child: ShiftEditTemplate { shift },
-            show_x: true,
-        },
-    ))
+    Ok(([("HX-Replace-Url", "false")], ShiftEditTemplate { shift }))
 }

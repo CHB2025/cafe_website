@@ -3,17 +3,19 @@
     <a class="text-primary underline hover:text-zinc-500" href="/event/{{ event.id }}" hx-target="#content" hx-push-url="true" hx-swap="innerHTML">{{ event.name }}</a>
   </td>
   <td>{% if event.allow_signups %}Yes{% else %}No{% endif %}</td>
-  <td class="flex gap-2">
-    <button 
-      class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
-      hx-get="/event/list/row/{{ event.id }}/edit">
-      Modify
-    </button>
-    <button 
-      class="px-4 py-2 border rounded-xl shadow text-white bg-red-600 hover:bg-red-900 hover:shadow-none"
-      hx-confirm="Are you sure you want to delete this event and all related schedules?"
-      hx-delete="/event/{{ event.id }}">
-      Delete
-    </button>
+  <td>
+    <div class="flex gap-2">
+      <button 
+        class="px-4 py-2 border rounded-xl shadow hover:bg-zinc-400 hover:shadow-none"
+        hx-get="/event/list/row/{{ event.id }}/edit">
+        Modify
+      </button>
+      <button 
+        class="px-4 py-2 border rounded-xl shadow text-white bg-red-600 hover:bg-red-900 hover:shadow-none"
+        hx-confirm="Are you sure you want to delete this event and all related schedules?"
+        hx-delete="/event/{{ event.id }}">
+        Delete
+      </button>
+    </div>
   </td>
 </tr>
