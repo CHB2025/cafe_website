@@ -47,7 +47,11 @@ pub fn init_tracing_subscriber() {
         .with(tracing_subscriber::fmt::layer());
     if let Some(endpoint) = config::config().website.otel_endpoint.clone() {
         registry
-            .with(OpenTelemetryLayer::new(init_tracer(endpoint)))
+            .with(
+                OpenTelemetryLayer::new(init_tracer(endpoint))
+                    .with_location(false)
+                    .with_threads(false),
+            )
             .init();
     } else {
         registry.init()

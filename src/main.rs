@@ -2,6 +2,7 @@ use std::{env, net::SocketAddr, time::Duration};
 
 use axum::{
     body::{boxed, Body, BoxBody, Bytes, HttpBody},
+    extract::MatchedPath,
     http::{Request, StatusCode, Uri},
     middleware::{self, Next},
     response::{Html, IntoResponse, Response},
@@ -15,7 +16,7 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 use cafe_website::AppError;
 pub use config::config;
-use tracing::debug;
+use tracing::{debug, info_span};
 
 mod accounts;
 mod config;
@@ -82,7 +83,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // App
     let mid = ServiceBuilder::new()
         .layer(middleware::from_fn(html_wrapper))
-        .layer(TraceLayer::new_for_http());
+        .layer(
+            TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
+                let matched_path = request
+                    .extensions()
+                    .get::<MatchedPath>()
+                    .map(MatchedPath::as_str);
+                let uri = request.uri();
+
+                info_span!(
+                    "http_request",
+                    method = ?request.method(),
+                    otel.name = matched_path,
+                    otel.kind = "server",
+                    %uri,
+                )
+            }),
+        );
 
     let app = Router::new()
         .merge(public_routes)
