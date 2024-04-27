@@ -91,10 +91,10 @@ pub async fn worker_list(
     );
     if let Some(event_id) = event_id {
         worker_builder
-            .push("WHERE s.event_id = ")
+            .push(" WHERE s.event_id = ")
             .push_bind(event_id);
         count_builder
-            .push("WHERE s.event_id = ")
+            .push(" WHERE s.event_id = ")
             .push_bind(event_id);
     };
     // Add other where clauses here
