@@ -1,7 +1,6 @@
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::{extract::Path, http::StatusCode, Form};
-use axum_extra::extract::Cached;
 use cafe_website::{filters, AppError, Redirect};
 use regex::Regex;
 use serde::Deserialize;
@@ -42,13 +41,18 @@ pub struct InviteForm {
 }
 
 pub async fn invite_user(
-    session: Cached<Session>,
+    session: Session,
     Form(invite): Form<InviteForm>,
 ) -> Result<impl IntoResponse, AppError> {
-    let Some(user) = session.user() else {
+    let Some(user_id) = session.user_id() else {
         unreachable!()
     };
 
+    let user = sqlx::query!("SELECT * FROM users WHERE id = $1", user_id)
+        .fetch_one(config().pool())
+        .await?;
+
+    // Set up regexes
     let em_rx = Regex::new(r#"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"#).expect("Email regex should be valid");
     if !em_rx.is_match(&invite.email) {
         return Err(AppError::inline(StatusCode::BAD_REQUEST, "Invalid email"));

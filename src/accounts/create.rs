@@ -41,7 +41,7 @@ pub async fn account_creation_form(
 }
 
 pub async fn create_account(
-    mut session: Session,
+    session: Session,
     Path(invite_id): Path<Uuid>,
     Form(mut user): Form<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -84,14 +84,13 @@ pub async fn create_account(
     .fetch_one(config().pool())
     .await?;
 
-    session.set_auth_user(new_user);
+    session.set_auth_user(new_user).await?;
 
     transaction.commit().await?;
 
     Ok((
         // create_session(cookie_jar, new_user.id),
-        [("HX-Tritter", "auth-change")],
-        session,
+        [("HX-Trigger", "auth-change")],
         Redirect::to("/".to_owned()),
     ))
 }

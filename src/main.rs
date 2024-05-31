@@ -9,7 +9,6 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_extra::extract::Cached;
 use session::Session;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
@@ -83,19 +82,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // App
     let mid = ServiceBuilder::new()
         .layer(middleware::from_fn(html_wrapper))
+        .layer(middleware::from_fn(session::session_provider))
         .layer(
             TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
+                // debug!(?request);
                 let matched_path = request
                     .extensions()
                     .get::<MatchedPath>()
                     .map(MatchedPath::as_str);
                 let uri = request.uri();
 
+                let session = request.extensions().get::<Session>();
+                let session_id = session.as_ref().map(|s| s.id()).map(|i| i.to_string());
+                let user_id = session
+                    .as_ref()
+                    .and_then(|s| s.user_id())
+                    .map(|u| u.to_string());
+
                 info_span!(
                     "http_request",
                     method = ?request.method(),
                     otel.name = matched_path,
                     otel.kind = "server",
+                    session.id = session_id,
+                    user.id = user_id,
                     %uri,
                 )
             }),
@@ -128,7 +138,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn auth_layer<B>(
-    session: Cached<Session>,
+    session: Session,
     request: Request<B>,
     next: Next<B>,
 ) -> Result<Response<BoxBody>, AppError> {

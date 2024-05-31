@@ -2,7 +2,6 @@ use askama::Template;
 
 use askama_axum::IntoResponse;
 use axum::{extract::Path, http::StatusCode};
-use axum_extra::extract::Cached;
 use cafe_website::{AppError, Redirect};
 use uuid::Uuid;
 
@@ -16,15 +15,15 @@ pub struct UserAdminTempl {}
 #[template(path = "accounts/user_list.html")]
 pub struct UserListTempl {
     users: Vec<User>,
-    current: User,
+    current: Uuid,
 }
 
 pub async fn admin() -> UserAdminTempl {
     UserAdminTempl {}
 }
 
-pub async fn user_list(session: Cached<Session>) -> Result<UserListTempl, AppError> {
-    let Some(user) = session.user().cloned() else {
+pub async fn user_list(session: Session) -> Result<UserListTempl, AppError> {
+    let Some(user) = session.user_id() else {
         unreachable!()
     };
     let users = sqlx::query_as!(User, "SELECT * FROM users")
@@ -38,12 +37,12 @@ pub async fn user_list(session: Cached<Session>) -> Result<UserListTempl, AppErr
 
 pub async fn remove_user(
     Path(id): Path<Uuid>,
-    session: Cached<Session>,
+    session: Session,
 ) -> Result<impl IntoResponse, AppError> {
-    let Some(user) = session.user() else {
+    let Some(user_id) = session.user_id() else {
         unreachable!()
     };
-    if id == user.id {
+    if id == user_id {
         return Err(AppError::inline(
             StatusCode::BAD_REQUEST,
             "You may not remove yourself",

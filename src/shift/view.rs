@@ -1,7 +1,6 @@
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::Path;
-use axum_extra::extract::Cached;
 use cafe_website::{filters, AppError};
 use uuid::Uuid;
 
@@ -24,10 +23,7 @@ pub struct ShiftEditTemplate {
     shift: Shift,
 }
 
-pub async fn view(
-    Path(id): Path<Uuid>,
-    session: Cached<Session>,
-) -> Result<impl IntoResponse, AppError> {
+pub async fn view(Path(id): Path<Uuid>, session: Session) -> Result<impl IntoResponse, AppError> {
     let shift = sqlx::query_as!(
         Shift,
         "SELECT s.* 

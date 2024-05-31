@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::{extract::Path, Form};
-use axum_extra::extract::Cached;
 use cafe_website::AppError;
 use regex::Regex;
 use serde::Deserialize;
@@ -36,10 +35,7 @@ pub async fn view(Path(id): Path<Uuid>) -> Result<WorkerView, AppError> {
     Ok(WorkerView { id })
 }
 
-pub async fn details(
-    session: Cached<Session>,
-    Path(id): Path<Uuid>,
-) -> Result<WorkerDetails, AppError> {
+pub async fn details(session: Session, Path(id): Path<Uuid>) -> Result<WorkerDetails, AppError> {
     let Worker {
         id,
         email,
@@ -62,10 +58,7 @@ pub async fn details(
     })
 }
 
-pub async fn edit(
-    session: Cached<Session>,
-    Path(id): Path<Uuid>,
-) -> Result<WorkerDetails, AppError> {
+pub async fn edit(session: Session, Path(id): Path<Uuid>) -> Result<WorkerDetails, AppError> {
     let Worker {
         id,
         email,
@@ -97,7 +90,7 @@ pub struct WorkerEdit {
 }
 
 pub async fn save(
-    session: Cached<Session>,
+    session: Session,
     Path(id): Path<Uuid>,
     Form(req): Form<WorkerEdit>,
 ) -> Result<WorkerDetails, AppError> {

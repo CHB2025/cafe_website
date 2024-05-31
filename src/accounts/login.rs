@@ -48,7 +48,7 @@ pub async fn login_form(RawQuery(query): RawQuery) -> impl IntoResponse {
 }
 
 pub async fn login(
-    mut session: Session,
+    session: Session,
     Query(params): Query<LoginParams>,
     Form(login): Form<LoginRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -76,20 +76,18 @@ pub async fn login(
     })
     .await??;
 
-    session.set_auth_user(user);
+    session.set_auth_user(user).await?;
 
     Ok((
         [("HX-Trigger", "auth-change".to_owned())],
-        session,
         Redirect::to(params.from.unwrap_or("/".to_string())),
     ))
 }
 
-pub async fn logout(mut session: Session) -> impl IntoResponse {
-    session.remove_auth_user();
-    (
+pub async fn logout(session: Session) -> Result<impl IntoResponse, AppError> {
+    session.remove_auth_user().await?;
+    Ok((
         [("HX-Trigger", "auth-change")],
-        session,
         Redirect::to("/".to_string()),
-    )
+    ))
 }

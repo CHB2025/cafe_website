@@ -1,53 +1,93 @@
-use std::convert::Infallible;
+use std::sync::{Arc, Mutex};
 
 use crate::{config::config, models::User};
-use axum::{
-    async_trait, extract::FromRequestParts, http::request::Parts, response::IntoResponseParts,
-};
-use axum_extra::extract::{
-    cookie::{Cookie, Key, SameSite},
-    PrivateCookieJar,
-};
+use axum::{async_trait, extract::FromRequestParts, http::request::Parts, Extension};
 use cafe_website::AppError;
+use chrono::NaiveDateTime;
+use tracing::error;
 use uuid::Uuid;
 
-#[derive(Clone)]
-pub struct Session {
-    jar: PrivateCookieJar,
-    user: Option<User>,
+mod provider;
+pub use provider::session_provider;
+
+/// Struct representing the current user session When used as an extractor, the
+/// session is cached in the request extensions so other extractors can run with
+/// little cost
+#[derive(Clone, Debug)]
+pub struct Session(Arc<Mutex<DbSession>>);
+
+// what if another call simultaneously changes the session?
+#[derive(PartialEq, Eq, Debug)]
+struct DbSession {
+    id: Uuid,
+    created_at: NaiveDateTime,
+    expires_at: Option<NaiveDateTime>,
+    user_id: Option<Uuid>,
 }
 
 impl Session {
-    /// Returns true if a user is authenticated on the current session
-    ///
-    /// Shorthand for Session.user().is_some()
-    pub fn is_authenticated(&self) -> bool {
-        self.user.is_some()
+    /// Returns the id of the session
+    pub fn id(&self) -> Uuid {
+        self.0.lock().unwrap().id
     }
 
-    /// Returns the currently authenticated user if there is one
-    pub fn user(&self) -> Option<&User> {
-        self.user.as_ref()
+    /// Returns true if a user is authenticated on the current session
+    ///
+    /// Shorthand for Session.user_id().is_some()
+    pub fn is_authenticated(&self) -> bool {
+        self.user_id().is_some()
+    }
+
+    pub fn created_at(&self) -> NaiveDateTime {
+        self.0.lock().unwrap().created_at
+    }
+
+    pub fn expires_at(&self) -> Option<NaiveDateTime> {
+        self.0.lock().unwrap().expires_at
+    }
+
+    /// Returns the id of the currently authenticated user if there is one
+    pub fn user_id(&self) -> Option<Uuid> {
+        self.0.lock().unwrap().user_id
     }
 
     /// Set the currently authenticated user
-    pub fn set_auth_user(&mut self, user: User) {
-        let mut cookie = Cookie::new("session", user.id.to_string());
-        cookie.set_secure(true);
-        cookie.set_http_only(true);
-        cookie.set_expires(None);
-        cookie.set_same_site(SameSite::Strict);
-        // This clone is annoying, but not sure how else to do it
-        self.jar = self.jar.clone().add(cookie);
+    pub async fn set_auth_user(&self, user: User) -> Result<(), sqlx::Error> {
+        let session_id = self.0.lock().unwrap().id;
 
-        self.user = Some(user);
+        let session = sqlx::query_as!(
+            DbSession,
+            "UPDATE session SET user_id = $1 
+            WHERE id = $2
+            RETURNING *",
+            user.id,
+            session_id,
+        )
+        .fetch_one(config().pool())
+        .await?;
+
+        *self.0.lock().unwrap() = session;
+        Ok(())
     }
 
-    /// remove the currently authenticated user
-    pub fn remove_auth_user(&mut self) {
-        // This clone is annoying, but not sure how else to do it
-        self.jar = self.jar.clone().remove(Cookie::named("session"));
-        self.user = None;
+    /// Creates a new session and invalidates the existing one
+    pub async fn remove_auth_user(&self) -> Result<(), sqlx::Error> {
+        let session_id = self.0.lock().unwrap().id;
+        let tran = config().pool().begin().await?;
+        sqlx::query_as!(
+            DbSession,
+            "UPDATE session SET expires_at = now() WHERE id = $1",
+            session_id
+        )
+        .execute(config().pool())
+        .await?;
+        let new_session =
+            sqlx::query_as!(DbSession, "INSERT INTO session DEFAULT VALUES RETURNING *")
+                .fetch_one(config().pool())
+                .await?;
+        tran.commit().await?;
+        *self.0.lock().unwrap() = new_session;
+        Ok(())
     }
 }
 
@@ -58,36 +98,16 @@ where
 {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
-        let jar: PrivateCookieJar<Key> = PrivateCookieJar::from_request_parts(parts, config())
-            .await
-            .expect("Infallible");
-        let Some(session) = jar.get("session") else {
-            return Ok(Session { jar, user: None });
-        };
-
-        let Some(user_id): Option<Uuid> = session.value().parse().ok() else {
-            return Ok(Session { jar, user: None });
-        };
-
-        let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", user_id)
-            .fetch_one(config().pool())
-            .await?;
-
-        Ok(Session {
-            jar,
-            user: Some(user),
-        })
-    }
-}
-
-impl IntoResponseParts for Session {
-    type Error = Infallible;
-
-    fn into_response_parts(
-        self,
-        res: axum::response::ResponseParts,
-    ) -> Result<axum::response::ResponseParts, Self::Error> {
-        self.jar.into_response_parts(res)
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let Extension(session) =
+            Extension::from_request_parts(parts, state)
+                .await
+                .map_err(|_| {
+                    error!(
+                    "Unable to find session in request extensions. Is the session provider set up?"
+                );
+                    cafe_website::error::ISE
+                })?;
+        Ok(session)
     }
 }

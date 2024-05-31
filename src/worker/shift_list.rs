@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::extract::{Path, Query};
-use axum_extra::extract::Cached;
 use cafe_website::{error, filters, AppError};
 use serde::Deserialize;
 use uuid::Uuid;
@@ -27,7 +26,7 @@ pub struct ShiftListQuery {
 }
 
 pub async fn shift_list(
-    session: Cached<Session>,
+    session: Session,
     Path(worker_id): Path<Uuid>,
     Query(query): Query<ShiftListQuery>,
 ) -> Result<ShiftList, AppError> {

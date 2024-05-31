@@ -94,6 +94,10 @@ impl Config {
         url
     }
 
+    pub fn domain(&self) -> String {
+        self.website.base_url.clone()
+    }
+
     pub fn mailer(&self) -> Option<&AsyncSmtpTransport<Tokio1Executor>> {
         self.mailer.as_ref()
     }

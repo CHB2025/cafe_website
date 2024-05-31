@@ -1,5 +1,4 @@
 use askama::Template;
-use axum_extra::extract::Cached;
 
 use crate::session::Session;
 
@@ -10,7 +9,7 @@ pub struct Nav {
     right: Vec<(&'static str, &'static str)>,
 }
 
-pub async fn navigation(Cached(session): Cached<Session>) -> Nav {
+pub async fn navigation(session: Session) -> Nav {
     let (left, right) = if !session.is_authenticated() {
         (vec![], vec![("Log In", "/login")])
     } else {

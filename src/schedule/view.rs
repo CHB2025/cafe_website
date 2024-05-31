@@ -1,6 +1,5 @@
 use askama::Template;
 use axum::extract::Path;
-use axum_extra::extract::Cached;
 use cafe_website::{filters, AppError};
 use chrono::{Duration, NaiveDate, NaiveTime, Timelike};
 use sqlx::QueryBuilder;
@@ -48,7 +47,7 @@ pub struct ScheduleItemTemplate {
 }
 
 pub async fn schedule(
-    session: Cached<Session>, // wasteful db request. Should just validate session without getting user
+    session: Session,
     Path((event_id, date)): Path<(Uuid, NaiveDate)>,
 ) -> Result<ScheduleTemplate, AppError> {
     let mut query = QueryBuilder::new(
