@@ -1,0 +1,33 @@
+{% set plural = shifts.len() > 1 %}
+<div>
+  <p>Dear {{ worker.name_first }},<br/></p>
+  <p>Thank you for for volunteering at the Cornerstone Café at the Northwest Washington Fair.</p>
+  <p>We will count on you for the following shift{% if plural %}s{%- endif %}:</p>
+
+  <ul>
+    {% for shift in shifts %}
+      <li>{{ shift.title }}
+        <ul>
+        <li>{{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}</li>
+        {% if let Some(d) = shift.description %}<li>{{ d }}</li>{% endif %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <p>
+    If you are a member of the ARC, your fair entry pass{% if plural %}es{% endif %} will be put into
+    your church mailbox this coming Sunday, August 4th. If you are NOT going to
+    be at church, please make alternate arrangements with me to get your entry
+    ticket{% if plural %}s{% endif %}). I will be in touch with all non-ARC members, to make arrangements to
+    get you your passes.
+  </p>
+  <p>
+    Please let me know if you have any questions or concerns.
+  </p>
+  <p>
+    Thank you,<br/>
+    {{ admin.name }}<br/>
+    {{ admin.phone }}<br/>
+    {{ admin.email }}
+</div>

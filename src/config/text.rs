@@ -8,6 +8,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize, Clone)]
 pub struct TextConfig {
     pub website: Website,
+    pub admin: Admin,
     pub database: Database,
     pub ssl: Option<Ssl>,
     pub email: Option<Email>,
@@ -24,6 +25,13 @@ pub struct Website {
 
 fn default_port() -> u16 {
     3000
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Admin {
+    pub name: String,
+    pub email: String,
+    pub phone: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

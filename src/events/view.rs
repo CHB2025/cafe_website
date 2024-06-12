@@ -11,6 +11,7 @@ use uuid::Uuid;
 use crate::{
     config,
     models::{Day, Event},
+    session::Session,
 };
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -24,9 +25,11 @@ pub struct EventViewTemplate {
     event: Event,
     days: Vec<Day>,
     selected_date: NaiveDate,
+    authenticated: bool,
 }
 
 pub async fn view(
+    session: Session,
     Path(id): Path<Uuid>,
     Query(query): Query<EventParams>,
 ) -> Result<EventViewTemplate, AppError> {
@@ -53,5 +56,6 @@ pub async fn view(
         event,
         days,
         selected_date,
+        authenticated: session.is_authenticated(),
     })
 }

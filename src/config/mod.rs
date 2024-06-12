@@ -9,7 +9,8 @@ use tokio::{fs::File, io::AsyncReadExt};
 
 pub use error::ConfigError;
 
-use self::text::{TextConfig, Website};
+use self::text::TextConfig;
+pub use self::text::{Admin, Website};
 
 mod error;
 mod text;
@@ -25,6 +26,7 @@ pub struct Config {
     tls_config: Option<RustlsConfig>,
 
     pub website: Website,
+    pub admin: Admin,
 }
 
 pub fn config() -> &'static Config {
@@ -70,6 +72,7 @@ impl Config {
             tls_config,
 
             website: text.website,
+            admin: text.admin,
         };
         _ = CONFIG.set(config);
         Ok(())
