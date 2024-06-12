@@ -26,6 +26,7 @@ mod index;
 pub mod models;
 mod navigation;
 mod otel;
+mod remind;
 mod schedule;
 mod session;
 mod shift;

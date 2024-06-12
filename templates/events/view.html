@@ -1,4 +1,18 @@
 <h2 class="mb-4 font-serif text-3xl font-bold">{{ event.name }}</h2>
+{% if authenticated %}
+<div class="empty:hidden flex justify-center items-start w-full border rounded-xl p-4">
+  {% if !event.allow_signups %}
+    <button 
+      class="button" 
+      hx-get="/event/{{ event.id }}/send_reminders" 
+      hx-target="this" # will remove self from page
+      hx-confirm="Are you sure you want to send a reminder to all workers?"
+    >
+      Send Reminders
+    </button>
+  {% endif %}
+</div>
+{% endif %}
 <div 
   class="hidden lg:flex justify-center items-end border-b w-full mb-4" 
   role="tablist" 

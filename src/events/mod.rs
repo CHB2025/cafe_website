@@ -56,6 +56,7 @@ pub async fn event_option_list(
 pub fn protected_router() -> Router {
     Router::new()
         .route("/:id", patch(patch_event).delete(delete_event))
+        .route("/:id/send_reminders", get(send_reminders))
         .route("/create", get(create_event_form).post(create_event))
         .route("/option_list", get(event_option_list))
         .route("/day/option_list", get(schedule::option_list))

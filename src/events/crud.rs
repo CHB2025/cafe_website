@@ -91,3 +91,10 @@ pub async fn delete_event(Path(id): Path<Uuid>) -> StatusCode {
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
 }
+
+pub async fn send_reminders(Path(id): Path<Uuid>) -> StatusCode {
+    match crate::remind::send_all_reminders(id).await {
+        Ok(_) => StatusCode::OK,
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}

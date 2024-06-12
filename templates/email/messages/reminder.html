@@ -1,0 +1,22 @@
+<div>
+  <p>Hello {{ worker.name_first }},</p>
+
+  <p>
+    This is a friendly reminder about your shifts at the Cornerstone Cafe! 
+    If for any reason you are unable to make any of your shifts, please let us know as soon as possible so that we can make alternate arrangements.
+  </p>
+
+  <p>Thank you again for your dedication and commitment to volunteering with us!</p>
+
+  <div>
+    <h1>Your Shifts</h1>
+    {% for shift in shifts %}
+      <h2>{{ shift.title }}</h2>
+      <p>{{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}</p>
+      {% if let Some(d) = shift.description %}<p>{{ d }}</p>{% endif %}
+      <br>
+    {% endfor %}
+  </div>
+
+  <p>Best regards,<br>The Cornerstone Cafe Team</p>
+</div>
