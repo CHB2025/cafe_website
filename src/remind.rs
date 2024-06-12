@@ -4,13 +4,14 @@ use sqlx::QueryBuilder;
 use tracing::debug;
 use uuid::Uuid;
 
-use crate::{config, models::Shift, worker::Worker};
+use crate::{config, config::Admin, models::Shift, worker::Worker};
 
 #[derive(Clone, Template)]
 #[template(path = "email/messages/reminder.html")]
 pub struct Reminder {
     worker: Worker,
     shifts: Vec<Shift>,
+    admin: &'static Admin,
 }
 
 pub async fn remind_one(event_id: Uuid, worker: Worker) -> Result<Reminder, AppError> {
@@ -23,7 +24,11 @@ pub async fn remind_one(event_id: Uuid, worker: Worker) -> Result<Reminder, AppE
     .fetch_all(config().pool())
     .await?;
 
-    Ok(Reminder { worker, shifts })
+    Ok(Reminder {
+        worker,
+        shifts,
+        admin: &config().admin,
+    })
 }
 
 pub async fn remind_all(event_id: Uuid) -> Result<Vec<Reminder>, AppError> {
@@ -49,7 +54,11 @@ pub async fn remind_all(event_id: Uuid) -> Result<Vec<Reminder>, AppError> {
         )
         .fetch_all(config().pool())
         .await?;
-        res.push(Reminder { worker, shifts })
+        res.push(Reminder {
+            worker,
+            shifts,
+            admin: &config().admin,
+        })
     }
 
     Ok(res)

@@ -1,22 +1,33 @@
+{% set plural = shifts.len() > 1 %}
 <div>
-  <p>Hello {{ worker.name_first }},</p>
+  <p>Dear {{ worker.name_first }},<br/></p>
+  <p>Thank you for for volunteering at the Cornerstone Café at the Northwest Washington Fair.</p>
+  <p>We will count on you for the following shift{% if plural %}s{%- endif %}:</p>
+
+  <ul>
+    {% for shift in shifts %}
+      <li>{{ shift.title }}
+        <ul>
+        <li>{{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}</li>
+        {% if let Some(d) = shift.description %}<li>{{ d }}</li>{% endif %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
 
   <p>
-    This is a friendly reminder about your shifts at the Cornerstone Cafe! 
-    If for any reason you are unable to make any of your shifts, please let us know as soon as possible so that we can make alternate arrangements.
+    If you are a member of the ARC, your fair entry pass{% if plural %}es{% endif %} will be put into
+    your church mailbox this coming Sunday, August 4th. If you are NOT going to
+    be at church, please make alternate arrangements with me to get your entry
+    ticket{% if plural %}s{% endif %}). I will be in touch with all non-ARC members, to make arrangements to
+    get you your passes.
   </p>
-
-  <p>Thank you again for your dedication and commitment to volunteering with us!</p>
-
-  <div>
-    <h1>Your Shifts</h1>
-    {% for shift in shifts %}
-      <h2>{{ shift.title }}</h2>
-      <p>{{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}</p>
-      {% if let Some(d) = shift.description %}<p>{{ d }}</p>{% endif %}
-      <br>
-    {% endfor %}
-  </div>
-
-  <p>Best regards,<br>The Cornerstone Cafe Team</p>
+  <p>
+    Please let me know if you have any questions or concerns.
+  </p>
+  <p>
+    Thank you,<br/>
+    {{ admin.name }}<br/>
+    {{ admin.phone }}<br/>
+    {{ admin.email }}
 </div>
