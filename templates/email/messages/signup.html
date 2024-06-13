@@ -1,22 +1,33 @@
-<!DOCTYPE html>
-<html>
- <head>
-</head>
-
-<body>
-  <h1>Thank you!</h1>
+<div>
+  <p>Dear {{ worker.name_first }},</p>
   <p>
-    Thank you for volunteering your time to work at the Cornerstone Cafe! We are looking forward to having you in the
-    booth! Below you can find the details of your shift. If your schedule changes and this no longer works for you,
-    <a href="{{domain}}/shift/cancel/{{ shift.id }}/{{ worker.id }}">click here</a> to cancel.
+    Thank you for for volunteering for a shift at the Cornerstone Café at the
+    Northwest Washington Fair.
   </p>
-  <br>
-  <div class="shift-details">
-    <h2>{{ shift.title }}</h2>
-    <p>{{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}</p>
-    {% if let Some(d) = shift.description %}<p>{{ d }}</p>{% endif %}
-  </div>
-
-</body>
-
-</html>
+  <p>We will count on you for the following shift:</p>
+  <p>
+    <b>{{ shift.title }}</b><br/>
+    {{ shift.date|date_long }} from {{ shift.start_time|time_short }} to {{ shift.end_time|time_short }}<br/>
+    {% if let Some(d) = shift.description %}{{ d }}{% endif %}
+  </p>
+  <p>
+    <a href="{{ domain }}/worker/{{ worker.id }}">Click here</a> to view and
+    manage the shifts you are signed up for.
+  </p>
+  <p>
+    If you are a member of the ARC, your fair entry pass will be put
+    into your church mailbox on Sunday, August 4th. If you are NOT going to be at
+    church that week, please make alternate arrangements with me to get your entry
+    ticket. I will be in touch with all non-ARC members, to make arrangements to
+    get you your pass.
+  </p>
+  <p>
+    Please let me know if you have any questions or concerns.
+  </p>
+  <p>
+    Thank you,<br/>
+    {{ admin.name }}<br/>
+    {{ admin.phone }}<br/>
+    {{ admin.email }}
+  </p>
+</div>

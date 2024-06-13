@@ -3,6 +3,7 @@ use axum::{routing::get, Router};
 use cafe_website::{filters, AppError};
 use uuid::Uuid;
 
+use crate::config::Admin;
 use crate::worker::Worker;
 use crate::{config, models::Shift};
 
@@ -28,22 +29,18 @@ pub struct SignupEmail {
     worker: Worker,
     shift: Shift,
     domain: String,
+    admin: &'static Admin,
 }
 
 pub async fn send_signup(worker: Worker, shift: Shift) -> Result<Uuid, AppError> {
     let (recipient, event_id, address) = (worker.id, shift.event_id, worker.email.clone());
     let subject = format!("Thanks {}!", worker.name_first); // injection?
 
-    let mut base_url = config().website.base_url.clone();
-    if config().website.port != 443 {
-        base_url += ":";
-        base_url += &config().website.port.to_string();
-    };
-
     let message = SignupEmail {
         worker,
         shift,
-        domain: base_url,
+        domain: config().url(),
+        admin: &config().admin,
     }
     .render()?;
 
