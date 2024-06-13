@@ -12,6 +12,7 @@ pub struct Reminder {
     worker: Worker,
     shifts: Vec<Shift>,
     admin: &'static Admin,
+    domain: String,
 }
 
 pub async fn remind_one(event_id: Uuid, worker: Worker) -> Result<Reminder, AppError> {
@@ -28,6 +29,7 @@ pub async fn remind_one(event_id: Uuid, worker: Worker) -> Result<Reminder, AppE
         worker,
         shifts,
         admin: &config().admin,
+        domain: config().url(),
     })
 }
 
@@ -58,6 +60,7 @@ pub async fn remind_all(event_id: Uuid) -> Result<Vec<Reminder>, AppError> {
             worker,
             shifts,
             admin: &config().admin,
+            domain: config().url(),
         })
     }
 
