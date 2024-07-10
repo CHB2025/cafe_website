@@ -3,6 +3,7 @@ use std::{path::Path, sync::OnceLock};
 use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
 use axum_server::tls_rustls::RustlsConfig;
+use chrono_tz::Tz;
 use lettre::{Address, AsyncSmtpTransport, Tokio1Executor};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tokio::{fs::File, io::AsyncReadExt};
@@ -24,6 +25,7 @@ pub struct Config {
     address: Option<Address>,
     session_key: Key,
     tls_config: Option<RustlsConfig>,
+    timezone: Tz,
 
     pub website: Website,
     pub admin: Admin,
@@ -70,6 +72,7 @@ impl Config {
             address: text.email.map(|em| em.address()),
             session_key,
             tls_config,
+            timezone: text.website.timezone.unwrap_or(Tz::Universal),
 
             website: text.website,
             admin: text.admin,
@@ -114,6 +117,10 @@ impl Config {
 
     pub fn tls_config(&self) -> Option<&RustlsConfig> {
         self.tls_config.as_ref()
+    }
+
+    pub fn timezone(&self) -> Tz {
+        self.timezone
     }
 }
 

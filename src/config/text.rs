@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use chrono_tz::Tz;
 use lettre::{
     transport::smtp::authentication::Credentials, Address, AsyncSmtpTransport, Tokio1Executor,
 };
@@ -21,6 +22,7 @@ pub struct Website {
     pub port: u16,
     pub session_key: Option<String>,
     pub otel_endpoint: Option<String>,
+    pub timezone: Option<Tz>,
 }
 
 fn default_port() -> u16 {

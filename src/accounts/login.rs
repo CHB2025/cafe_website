@@ -12,6 +12,7 @@ use scrypt::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::task::spawn_blocking;
+use tracing::info;
 
 use crate::{config, models::User, session::Session};
 
@@ -76,7 +77,11 @@ pub async fn login(
     })
     .await??;
 
+    let user_name = user.name.clone();
+
     session.set_auth_user(user).await?;
+
+    info!("{} logged in", user_name);
 
     Ok((
         [("HX-Trigger", "auth-change".to_owned())],

@@ -46,12 +46,11 @@ nf nf-fa-sort
         </div>
       </td>
       <td class="border p-4">{{ email.status }}</td>
-      <td class="border p-4">{{ email.created_at|date_short }} {{ email.created_at|time_short}} UTC</td>
+      <td class="border p-4">{{ email.created_at.with_timezone(timezone).borrow()|date_short }} {{ email.created_at.with_timezone(timezone).borrow()|time_short}} {{ timezone_name }}</td>
       {% if let Some(sent_at) = email.sent_at %}
-      {% let sent_at = email.sent_at.unwrap() -%}
-      <td class="border p-4">{{ sent_at|date_short }} {{ sent_at|time_short}} UTC</td>
+        <td class="border p-4">{{ sent_at.with_timezone(timezone).borrow()|date_short }} {{ sent_at.with_timezone(timezone).borrow()|time_short}} {{ timezone_name }}</td>
       {% else %}
-      <td class="border p-4"></td>
+        <td class="border p-4"></td>
       {% endif %}
     </tr>
     {% endfor %}

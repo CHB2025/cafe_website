@@ -4,9 +4,10 @@ use axum::{
     http::StatusCode,
     Form,
 };
-use cafe_website::AppError;
+use cafe_website::{filters, AppError};
 use regex::Regex;
 use serde::Deserialize;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::{config, worker::Worker};
@@ -166,7 +167,11 @@ pub async fn signup(
         }
     };
 
-    let (worker_name, worker_id) = (worker.name_first.clone(), worker.id);
+    let (worker_name, worker_last, worker_id) = (
+        worker.name_first.clone(),
+        worker.name_last.clone(),
+        worker.id,
+    );
 
     // Send email
     let _ = email::send_signup(worker, shift.clone()).await?;
@@ -180,6 +185,16 @@ pub async fn signup(
     .await?;
 
     tran.commit().await?;
+
+    info!(
+        "{} {} signed up: {} {}-{} on {}",
+        worker_name,
+        worker_last,
+        shift.title,
+        filters::time_short(&shift.start_time).expect("Infallible"),
+        filters::time_short(&shift.end_time).expect("Infallible"),
+        filters::date_short(&shift.date).expect("Infallible"),
+    );
 
     Ok(SignupForm::Message(
         shift,

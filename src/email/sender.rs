@@ -9,7 +9,7 @@ use lettre::{
     Address, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
 };
 use sqlx::FromRow;
-use tracing::debug;
+use tracing::info;
 use uuid::Uuid;
 
 #[derive(FromRow, Clone)]
@@ -71,7 +71,7 @@ pub async fn send_all() -> Result<(), Box<dyn Error>> {
     if emails.is_empty() {
         return Ok(());
     }
-    debug!("Sending {} Emails", emails.len());
+    info!("Sending {} Emails", emails.len());
 
     let transport = config().mailer().expect("Email system not set up");
     let address = config().mailing_address().expect("Emailing not set up");

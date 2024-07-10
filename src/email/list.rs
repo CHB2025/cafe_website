@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{borrow::Borrow, fmt};
 
 use askama::Template;
 use askama_axum::IntoResponse;
@@ -9,8 +9,11 @@ use cafe_website::{
     templates::Card,
     AppError, PaginatedQuery,
 };
+use chrono::{NaiveDate, TimeZone};
+use chrono_tz::{OffsetName, Tz};
 use serde::{Deserialize, Serialize};
 use sqlx::QueryBuilder;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::config;
@@ -26,6 +29,8 @@ pub struct EmailListTemplate {
     pagination: PaginatedQuery<EmailOrderBy, DEFAULT_TAKE, false>,
     query: EmailQuery,
     controls: PaginationControls,
+    timezone: Tz,
+    timezone_name: String,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize, Default)]
@@ -90,6 +95,10 @@ pub async fn email_list(
             .build_query_scalar()
             .fetch_one(config().pool())
     )?;
+    let offset = config()
+        .timezone()
+        .offset_from_utc_date(&NaiveDate::default());
+    info!("Got offset: {}", offset.abbreviation());
     Ok(Card {
         class: None,
         title: "Emails".to_owned(),
@@ -98,6 +107,8 @@ pub async fn email_list(
             pagination,
             query: query.clone(),
             controls: pagination.controls(count, format!("/email/list?{query}&")),
+            timezone_name: offset.abbreviation().to_owned(),
+            timezone: config().timezone(),
         },
         show_x: false,
     })
