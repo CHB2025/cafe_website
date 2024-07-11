@@ -2,6 +2,7 @@ use askama::Template;
 use axum::extract::{Path, Query};
 use cafe_website::{error, filters, AppError};
 use serde::Deserialize;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::{
@@ -69,4 +70,47 @@ pub async fn shift_list(
         events,
         shifts,
     })
+}
+
+#[derive(Deserialize)]
+pub struct CancelShiftParams {
+    shift_id: Uuid,
+}
+
+pub async fn cancel_shift(
+    session: Session,
+    Path(worker_id): Path<Uuid>,
+    Query(CancelShiftParams { shift_id }): Query<CancelShiftParams>,
+) -> Result<ShiftList, AppError> {
+    let tran = config().pool().begin().await?;
+
+    let shift = sqlx::query_as!(
+        Shift,
+        "UPDATE shift SET worker_id = NULL WHERE id = $1 AND worker_id = $2 RETURNING *",
+        shift_id,
+        worker_id
+    )
+    .fetch_one(config().pool())
+    .await?;
+
+    let list = shift_list(
+        session,
+        Path(worker_id),
+        Query(ShiftListQuery {
+            event_id: Some(shift.event_id),
+        }),
+    )
+    .await?;
+
+    tran.commit().await?;
+
+    info!(
+        "Worker {} has canceled their shift: {} {}-{} on {}",
+        worker_id,
+        shift.title,
+        filters::time_short(&shift.start_time).expect("Infallible"),
+        filters::time_short(&shift.end_time).expect("Infallible"),
+        filters::date_short(&shift.date).expect("Infallible"),
+    );
+    Ok(list)
 }

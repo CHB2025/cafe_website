@@ -14,6 +14,7 @@ pub fn public_router() -> Router {
         .route("/:id/details", get(view::details))
         .route("/:id/edit", get(view::edit))
         .route("/:id/shifts", get(shift_list::shift_list))
+        .route("/:id/cancel_shift", get(shift_list::cancel_shift))
 }
 
 pub fn protected_router() -> Router {
