@@ -9,9 +9,11 @@ pub use controls::PaginationControls;
 
 mod controls;
 
-/// A general-purpose struct to extract pagination query params.
-/// The display implementation creates a url query string with the parameters.
-/// To get the sql, use [PaginatedQuery::sql] instead.
+/// A general-purpose struct to extract pagination query params.  The display
+///implementation creates a url query string with the parameters.  To get the
+///sql, use [PaginatedQuery::sql] instead.   
+///
+///
 ///
 /// WARNING: Do not use raw user input for the OrderBy type (eg. a String)
 ///          as it may open you to sql injection attacks.
@@ -159,10 +161,16 @@ impl<O, const DS: i64, const ASC: bool> PaginatedQuery<O, DS, ASC>
 where
     O: Display,
 {
+    /// Creates a sql clause containing the `ORDER BY`, `LIMIT`, and `OFFSET` statements.
+    ///
+    /// To prevent duplicates and missing items caused by inconsistent sorting
+    /// order, this method adds `id` to the `ORDER BY` expression. This means
+    /// that the generated clause will not work if the table doesn't have an
+    /// `id` field. To work around this, you can create the clause yourself.
     pub fn sql(&self) -> String {
-        format!(
-            "ORDER BY {} {} LIMIT {} OFFSET {}",
+        dbg!(format!(
+            "ORDER BY {} {}, id LIMIT {} OFFSET {}",
             self.order_by, self.order_dir, self.take, self.skip
-        )
+        ))
     }
 }
