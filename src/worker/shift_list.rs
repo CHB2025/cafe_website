@@ -2,6 +2,7 @@ use askama::Template;
 use axum::extract::{Path, Query};
 use cafe_website::{error, filters, AppError};
 use serde::Deserialize;
+use std::borrow::Borrow;
 use tracing::info;
 use uuid::Uuid;
 
@@ -13,12 +14,15 @@ use crate::{
 
 #[derive(Template)]
 #[template(path = "worker/shift_list.html")]
-pub struct ShiftList {
-    worker_id: Uuid,
-    event_id: Uuid,
-    events: Vec<Event>,
-    shifts: Vec<Shift>,
-    may_cancel: bool,
+pub enum ShiftList {
+    Some {
+        worker_id: Uuid,
+        event_id: Uuid,
+        events: Vec<Event>,
+        shifts: Vec<Shift>,
+        may_cancel: bool,
+    },
+    None,
 }
 
 #[derive(Deserialize)]
@@ -42,7 +46,7 @@ pub async fn shift_list(
     .fetch_all(config().pool())
     .await?;
     if events.is_empty() {
-        return Err(error::NOT_FOUND);
+        return Ok(ShiftList::None);
     }
 
     let selected_event = match query.event_id {
@@ -63,7 +67,7 @@ pub async fn shift_list(
     let in_future = shifts.first().expect("Must have 1+ shift to be here").date
         > chrono::Local::now().date_naive();
 
-    Ok(ShiftList {
+    Ok(ShiftList::Some {
         worker_id,
         event_id,
         may_cancel: in_future && (session.is_authenticated() || selected_event.allow_signups),
