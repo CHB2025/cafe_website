@@ -57,7 +57,7 @@ pub async fn signup_form(
     let worker = sqlx::query_as!(
         Worker,
         "SELECT * FROM worker WHERE email = $1",
-        params.email
+        params.email.as_ref().map(|em| em.to_lowercase())
     )
     .fetch_optional(config().pool())
     .await?;
@@ -93,9 +93,13 @@ pub async fn signup(
         ));
     }
 
-    let worker = sqlx::query_as!(Worker, "SELECT * FROM worker WHERE email = $1", body.email)
-        .fetch_optional(config().pool())
-        .await?;
+    let worker = sqlx::query_as!(
+        Worker,
+        "SELECT * FROM worker WHERE email = $1",
+        body.email.to_lowercase()
+    )
+    .fetch_optional(config().pool())
+    .await?;
     let worker = match worker {
         Some(w) => {
             // Check any overlapping shifts
@@ -159,7 +163,7 @@ pub async fn signup(
             sqlx::query_as!(
                 Worker,
                 "INSERT INTO worker (email, name_first, name_last, phone) VALUES ($1, $2, $3, $4) RETURNING *",
-                body.email,
+                body.email.to_lowercase(),
                 body.first_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a first name"))?, 
                 body.last_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a last name"))?, 
                 body.phone.filter(|s| !s.is_empty())
