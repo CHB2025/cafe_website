@@ -47,6 +47,21 @@
     </form>
 
   {% when Self::Unknown{shift, email, first_name, last_name, phone, error} %}
+    <script>
+      const format_phone = (val) => {
+        const nums = val.replaceAll(/[^0-9]+/g, '');
+        let phone = nums.substring(0,3);
+        if (nums.length <= 3) {
+          return phone;
+        }
+        phone += "-" + nums.substring(3,6);
+        if (nums.length <= 6) {
+          return phone;
+        }
+        phone += "-" + nums.substring(6, 10);
+        return phone;
+      }
+    </script>
     <form 
       class="grid grid-cols-3 gap-4"
       hx-patch="/shift/{{ shift.id }}/signup"
@@ -87,7 +102,9 @@
         name="phone" 
         pattern="{{ PHONE_REGEX }}" 
         {% if let Some(phone) = phone %}value="{{ phone }}"{% endif %}
-        placeholder="999-999-9999"/>
+        placeholder="999-999-9999"
+        hx-on:input="this.value = format_phone(this.value)"
+        />
       {% if let Some(error) = error %}
         <div class="{{ div_class }}">
           <p class="text-red-400">{{error}}</p>
