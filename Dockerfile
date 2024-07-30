@@ -1,5 +1,5 @@
 
-FROM rust:bullseye as builder
+FROM rust:1.78.0-bullseye as builder
 # install tailwind cli
 RUN wget https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.3/tailwindcss-linux-x64; \
     chmod +x tailwindcss-linux-x64; \
