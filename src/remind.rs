@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{config, config::Admin, models::Shift, worker::Worker};
 
-#[derive(Clone, Template)]
+#[derive(Debug, Clone, Template)]
 #[template(path = "email/messages/reminder.html")]
 pub struct Reminder {
     worker: Worker,

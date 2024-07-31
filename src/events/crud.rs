@@ -1,11 +1,11 @@
 use askama::Template;
 use axum::{extract::Path, http::StatusCode, Form};
-use cafe_website::{AppError, Redirect};
+use cafe_website::{AppError, print::Printable, Redirect};
 use chrono::{Days, NaiveDate};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{config, models::Event};
+use crate::{config, models::Event, remind::{self, Reminder}};
 
 use super::list_row::EventListRowTemplate;
 
@@ -97,4 +97,12 @@ pub async fn send_reminders(Path(id): Path<Uuid>) -> StatusCode {
         Ok(_) => StatusCode::OK,
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
+}
+
+#[derive(Debug, Template)]
+#[template(path = "events/reminder_list.html")]
+pub struct ReminderList(Vec<Reminder>);
+
+pub async fn print_reminders(Path(id): Path<Uuid>) -> Result<Printable<ReminderList>, AppError> {
+    Ok(Printable::new(ReminderList(remind::remind_all(id).await?)))
 }
