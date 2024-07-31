@@ -10,3 +10,5 @@ pub use pagination::PaginatedQuery;
 pub mod templates;
 
 pub mod filters;
+
+pub mod print;

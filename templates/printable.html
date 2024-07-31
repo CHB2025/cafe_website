@@ -1,0 +1,12 @@
+<iframe
+  class="hidden"
+  hx-on:load="this.contentWindow.print()"
+  hx-on:afterprint="htmx.remove(this)"
+  srcdoc="
+    <html>
+      <head>
+        <link rel=&quot;stylesheet&quot; href=&quot;/style.css&quot;></script>
+      </head>
+      <body>{{ content }}</body>
+    </html>"
+/>
