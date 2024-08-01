@@ -168,9 +168,9 @@ where
     /// that the generated clause will not work if the table doesn't have an
     /// `id` field. To work around this, you can create the clause yourself.
     pub fn sql(&self) -> String {
-        dbg!(format!(
+        format!(
             "ORDER BY {} {}, id LIMIT {} OFFSET {}",
             self.order_by, self.order_dir, self.take, self.skip
-        ))
+        )
     }
 }

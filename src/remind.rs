@@ -13,9 +13,10 @@ pub struct Reminder {
     shifts: Vec<Shift>,
     admin: &'static Admin,
     domain: String,
+    locked: bool,
 }
 
-pub async fn remind_one(event_id: Uuid, worker: Worker) -> Result<Reminder, AppError> {
+pub async fn remind_one(event_id: Uuid, worker: Worker, locked: bool) -> Result<Reminder, AppError> {
     let shifts = sqlx::query_as!(
         Shift,
         "SELECT * FROM shift WHERE event_id = $1 AND worker_id = $2",
@@ -30,10 +31,11 @@ pub async fn remind_one(event_id: Uuid, worker: Worker) -> Result<Reminder, AppE
         shifts,
         admin: &config().admin,
         domain: config().url(),
+        locked,
     })
 }
 
-pub async fn remind_all(event_id: Uuid) -> Result<Vec<Reminder>, AppError> {
+pub async fn remind_all(event_id: Uuid, locked: bool) -> Result<Vec<Reminder>, AppError> {
     let workers = sqlx::query_as!(
         Worker,
         "SELECT w.* FROM worker as w 
@@ -61,6 +63,7 @@ pub async fn remind_all(event_id: Uuid) -> Result<Vec<Reminder>, AppError> {
             shifts,
             admin: &config().admin,
             domain: config().url(),
+            locked
         })
     }
 
@@ -68,7 +71,9 @@ pub async fn remind_all(event_id: Uuid) -> Result<Vec<Reminder>, AppError> {
 }
 
 pub async fn send_all_reminders(event_id: Uuid) -> Result<(), AppError> {
-    let reminders: Vec<(Reminder, String)> = remind_all(event_id)
+    // If reminders can be sent without the event being hidden to the public,
+    // this will need to change
+    let reminders: Vec<(Reminder, String)> = remind_all(event_id, true)
         .await?
         .into_iter()
         .map(|reminder| -> Result<_, AppError> { Ok((reminder.clone(), reminder.render()?)) })

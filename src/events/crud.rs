@@ -104,5 +104,7 @@ pub async fn send_reminders(Path(id): Path<Uuid>) -> StatusCode {
 pub struct ReminderList(Vec<Reminder>);
 
 pub async fn print_reminders(Path(id): Path<Uuid>) -> Result<Printable<ReminderList>, AppError> {
-    Ok(Printable::new(ReminderList(remind::remind_all(id).await?)))
+    // If reminders can be printed without the event being hidden to the public,
+    // this will need to change
+    Ok(Printable::new(ReminderList(remind::remind_all(id, true).await?)))
 }
