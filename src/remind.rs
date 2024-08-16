@@ -16,10 +16,14 @@ pub struct Reminder {
     locked: bool,
 }
 
-pub async fn remind_one(event_id: Uuid, worker: Worker, locked: bool) -> Result<Reminder, AppError> {
+pub async fn remind_one(
+    event_id: Uuid,
+    worker: Worker,
+    locked: bool,
+) -> Result<Reminder, AppError> {
     let shifts = sqlx::query_as!(
         Shift,
-        "SELECT * FROM shift WHERE event_id = $1 AND worker_id = $2",
+        "SELECT * FROM shift WHERE event_id = $1 AND worker_id = $2 ORDER BY date, start_time",
         event_id,
         worker.id
     )
@@ -52,7 +56,7 @@ pub async fn remind_all(event_id: Uuid, locked: bool) -> Result<Vec<Reminder>, A
     for worker in workers {
         let shifts = sqlx::query_as!(
             Shift,
-            "SELECT * FROM shift WHERE event_id = $1 AND worker_id = $2",
+            "SELECT * FROM shift WHERE event_id = $1 AND worker_id = $2 ORDER BY date, start_time",
             event_id,
             worker.id
         )
@@ -63,7 +67,7 @@ pub async fn remind_all(event_id: Uuid, locked: bool) -> Result<Vec<Reminder>, A
             shifts,
             admin: &config().admin,
             domain: config().url(),
-            locked
+            locked,
         })
     }
 
