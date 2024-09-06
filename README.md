@@ -78,6 +78,28 @@ password = "Y0uR_Pas%worD#" # Password for sending email address
 server = "smtp.example.com" # SMTP server to be used to send emails
 ```
 
+### Bootstrapping a user
+
+When the database is first set up, no users are created, so you'll be unable
+to do anything with the website. To create your first user, use 
+[psql](https://www.postgresql.org/docs/current/app-psql.html) to get into the
+database and create an invitation for yourself to create an account.
+
+If you're using the included docker compose file: 
+
+```
+  docker compose exec -U cafe postgres psql
+```
+
+Once in psql:
+
+```
+  INSERT INTO admin_invite (email) VALUES ({your email}) RETURNING id;
+```
+
+Copy the id you received and go to `{your domain}/account/create/{id}` to finish
+setting up your account.
+
 
 ## Considerations
 
