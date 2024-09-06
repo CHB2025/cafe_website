@@ -88,13 +88,13 @@ database and create an invitation for yourself to create an account.
 If you're using the included docker compose file: 
 
 ```
-  docker compose exec -U cafe postgres psql
+  docker compose exec cafe postgres psql -U
 ```
 
 Once in psql:
 
 ```
-  INSERT INTO admin_invite (email) VALUES ({your email}) RETURNING id;
+  INSERT INTO admin_invite (email) VALUES ('{your email}') RETURNING id;
 ```
 
 Copy the id you received and go to `{your domain}/account/create/{id}` to finish
