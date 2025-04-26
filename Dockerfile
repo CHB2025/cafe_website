@@ -1,7 +1,7 @@
 
 FROM rust:bullseye as builder
-# install tailwind cli
-RUN wget https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.3/tailwindcss-linux-x64; \
+# install tailwind cli -- only works on x64
+RUN wget https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.4/tailwindcss-linux-x64; \
     chmod +x tailwindcss-linux-x64; \
     mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss;
 

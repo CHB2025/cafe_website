@@ -23,10 +23,8 @@ services:
       DATABASE_URL: "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB"
       CARGO_MANIFEST_DIR: "/"
     volumes:
-      - ./certs:/var/cafe_website/certs
-    configs:
-      - source: web_config
-        target: /var/cafe_website/config.toml
+      - ./certs:/var/cafe_website/certs:Z
+      - ./docker.config.toml:/var/cafe_website/config.toml:Z
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -44,7 +42,7 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib
     volumes: 
-      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:Z
     restart: always
     depends_on:
       - jaeger
@@ -56,12 +54,7 @@ services:
     image: prom/prometheus:latest
     restart: always
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
-
-configs:
-  web_config:
-    file: ./docker.config.toml
-    
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml:Z"
 
 volumes: 
   cafe-db:
