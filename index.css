@@ -6,6 +6,9 @@
   th, td {
     @apply border p-2 md:p-4
   }
+  * {
+    border: 0 solid #e5e7eb
+  }
 }
 
 @utility button {
