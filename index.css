@@ -1,6 +1,8 @@
-/* This just adds the import statement to the css. not ideal */
 @import "tailwindcss";
-@import "https://www.nerdfonts.com/assets/css/webfont.css";
+
+@theme {
+  --color-primary: #420303
+}
 
 @layer base {
   th, td {
