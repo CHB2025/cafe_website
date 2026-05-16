@@ -5,7 +5,7 @@ use opentelemetry_sdk::{
     trace::{BatchConfig, RandomIdGenerator, Sampler, Tracer},
     Resource,
 };
-use tracing_opentelemetry::OpenTelemetryLayer;
+// OpenTelemetryLayer is removed from imports
 use tracing_subscriber::prelude::*;
 
 use crate::config;
@@ -19,7 +19,8 @@ fn resource() -> Resource {
 }
 
 fn init_tracer(endpoint: String) -> Tracer {
-    opentelemetry_otlp::new_pipeline()
+    use opentelemetry::trace::TracerProvider as _;
+    let provider = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_trace_config(
             opentelemetry_sdk::trace::Config::default()
@@ -34,7 +35,10 @@ fn init_tracer(endpoint: String) -> Tracer {
                 .with_endpoint(endpoint),
         )
         .install_batch(runtime::Tokio)
-        .unwrap()
+        .unwrap();
+
+    opentelemetry::global::set_tracer_provider(provider.clone());
+    provider.tracer(env!("CARGO_PKG_NAME"))
 }
 
 pub fn init_tracing_subscriber() {
@@ -48,7 +52,8 @@ pub fn init_tracing_subscriber() {
     if let Some(endpoint) = config::config().website.otel_endpoint.clone() {
         registry
             .with(
-                OpenTelemetryLayer::new(init_tracer(endpoint))
+                tracing_opentelemetry::layer()
+                    .with_tracer(init_tracer(endpoint))
                     .with_location(false)
                     .with_threads(false),
             )
