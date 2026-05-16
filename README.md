@@ -88,7 +88,7 @@ database and create an invitation for yourself to create an account.
 If you're using the included docker compose file: 
 
 ```
-  docker compose exec cafe postgres psql -U
+  docker compose exec postgres psql -U {username} -d {database}
 ```
 
 Once in psql:

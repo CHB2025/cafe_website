@@ -12,11 +12,13 @@ use crate::config;
 
 use super::{DbSession, Session};
 
+use axum::body::Body;
+
 /// Extracts the session from the request cookies (which creates one if it
 /// doesn't exist), and updates the response cookie store with it
-pub async fn session_provider<B>(
-    mut request: Request<B>,
-    next: Next<B>,
+pub async fn session_provider(
+    mut request: Request<Body>,
+    next: Next,
 ) -> Result<impl IntoResponse, AppError> {
     // Need to get cookie jar using config instead of state. A bit messy
     let mut jar = {
@@ -30,7 +32,7 @@ pub async fn session_provider<B>(
 
     let session_cookie = jar
         .get("session")
-        .unwrap_or_else(|| Cookie::named("session"));
+        .unwrap_or_else(|| Cookie::from("session"));
     let initial_id = session_cookie.value().parse::<Uuid>().ok();
 
     let db_session = if let Some(ref id) = initial_id {
@@ -64,16 +66,16 @@ pub async fn session_provider<B>(
         // No changes
         Ok(response)
     } else {
-        jar = jar.remove(Cookie::named("session"));
+        jar = jar.remove(Cookie::from("session"));
         let session_id = session.id().to_string();
-        let cookie = Cookie::build("session", session_id)
+        let cookie = Cookie::build(("session", session_id))
             .domain(config().domain())
             .path("/")
             .same_site(SameSite::Strict)
             .secure(true)
             .http_only(true)
             .permanent() // This is in place of expires bc expires uses time, I'm currently using chrono
-            .finish();
+            .build();
         Ok((jar.add(cookie), response).into_response())
     }
 }

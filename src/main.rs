@@ -1,7 +1,7 @@
 use std::{env, net::SocketAddr, time::Duration};
 
 use axum::{
-    body::{boxed, Body, BoxBody, Bytes, HttpBody},
+    body::Body,
     extract::MatchedPath,
     http::{Request, StatusCode, Uri},
     middleware::{self, Next},
@@ -9,6 +9,7 @@ use axum::{
     routing::get,
     Router,
 };
+use http_body_util::BodyExt;
 use session::Session;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
@@ -138,11 +139,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn auth_layer<B>(
+async fn auth_layer(
     session: Session,
-    request: Request<B>,
-    next: Next<B>,
-) -> Result<Response<BoxBody>, AppError> {
+    request: Request<Body>,
+    next: Next,
+) -> Result<Response<Body>, AppError> {
     if !session.is_authenticated() {
         return Err(AppError::redirect(
             StatusCode::UNAUTHORIZED,
@@ -161,13 +162,13 @@ async fn auth_layer<B>(
     Ok(res)
 }
 
-async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoResponse {
+async fn html_wrapper(request: Request<Body>, next: Next) -> impl IntoResponse {
     let from_htmx = request.headers().contains_key("HX-Request");
     let response = next.run(request).await;
 
     let Html(wrapper) = index::index().await;
 
-    let (mut parts, mut body) = response.into_parts();
+    let (mut parts, body) = response.into_parts();
     parts.headers.remove("content-length");
 
     let is_html = parts
@@ -175,27 +176,32 @@ async fn html_wrapper<B>(request: Request<B>, next: Next<B>) -> impl IntoRespons
         .get("content-type")
         .is_some_and(|ct| ct.as_bytes().starts_with(b"text/html"));
 
-    body = body
-        .map_data(move |b| {
-            if !from_htmx && is_html {
-                let (header, footer) = wrapper
-                    .split_once("Content")
-                    .expect("Index.html is missing \"Content\"");
+    if !from_htmx && is_html {
+        let (header, footer) = wrapper
+            .split_once("Content")
+            .expect("Index.html is missing \"Content\"");
 
-                let mut new_body = header.as_bytes().to_vec();
-                new_body.extend(b);
-                new_body.extend_from_slice(footer.as_bytes());
-                Bytes::copy_from_slice(&new_body)
-            } else {
-                b
+        let bytes = match body.collect().await {
+            Ok(collected) => collected.to_bytes(),
+            Err(_) => {
+                return Response::builder()
+                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                    .body(Body::empty())
+                    .unwrap()
             }
-        })
-        .boxed_unsync();
+        };
 
-    Response::from_parts(parts, body)
+        let mut new_body = header.as_bytes().to_vec();
+        new_body.extend(bytes);
+        new_body.extend_from_slice(footer.as_bytes());
+
+        Response::from_parts(parts, Body::from(new_body))
+    } else {
+        Response::from_parts(parts, body)
+    }
 }
 
-async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, AppError> {
+async fn get_static_files(uri: Uri) -> Result<Response<Body>, AppError> {
     let req = Request::builder().uri(uri).body(Body::empty()).unwrap();
 
     ServeDir::new("./public")
@@ -209,6 +215,6 @@ async fn get_static_files(uri: Uri) -> Result<Response<BoxBody>, AppError> {
                     .parse()
                     .expect("Cache header is valid"),
             );
-            res.map(boxed)
+            res.map(Body::new)
         })
 }
