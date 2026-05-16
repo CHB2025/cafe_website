@@ -32,7 +32,11 @@ pub struct SignupEmail {
     admin: &'static Admin,
 }
 
-pub async fn send_signup(worker: Worker, shift: Shift) -> Result<Uuid, AppError> {
+pub async fn send_signup<'c>(
+    worker: Worker,
+    shift: Shift,
+    executor: impl sqlx::Executor<'c, Database = sqlx::Postgres>,
+) -> Result<Uuid, AppError> {
     let (recipient, event_id, address) = (worker.id, shift.event_id, worker.email.clone());
     let subject = format!("Thanks {}!", worker.name_first); // injection?
 
@@ -53,7 +57,7 @@ pub async fn send_signup(worker: Worker, shift: Shift) -> Result<Uuid, AppError>
         message,
         event_id
     )
-    .fetch_one(config().pool())
+    .fetch_one(executor)
     .await?;
     Ok(id)
 }

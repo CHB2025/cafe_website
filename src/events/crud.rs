@@ -39,14 +39,14 @@ pub async fn create_event(Form(event_input): Form<EventInput>) -> Result<Redirec
         ));
     }
     let conn = config().pool();
-    let transaction = conn.begin().await?;
+    let mut transaction = conn.begin().await?;
     let event = sqlx::query_as!(
         Event,
         "INSERT INTO event (name, allow_signups) VALUES ($1, $2) RETURNING *",
         event_input.name,
         event_input.allow_signups.is_some_and(|s| s == "on")
     )
-    .fetch_one(conn)
+    .fetch_one(&mut *transaction)
     .await?;
 
     // Probably a better way to do this
@@ -57,7 +57,7 @@ pub async fn create_event(Form(event_input): Form<EventInput>) -> Result<Redirec
             event.id,
             date,
         )
-        .execute(conn)
+        .execute(&mut *transaction)
         .await?;
     }
     transaction.commit().await?;

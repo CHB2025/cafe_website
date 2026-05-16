@@ -86,7 +86,7 @@ pub async fn cancel_shift(
     Path(worker_id): Path<Uuid>,
     Query(CancelShiftParams { shift_id }): Query<CancelShiftParams>,
 ) -> Result<ShiftList, AppError> {
-    let tran = config().pool().begin().await?;
+    let mut tran = config().pool().begin().await?;
 
     let shift = sqlx::query_as!(
         Shift,
@@ -94,8 +94,10 @@ pub async fn cancel_shift(
         shift_id,
         worker_id
     )
-    .fetch_one(config().pool())
+    .fetch_one(&mut *tran)
     .await?;
+
+    tran.commit().await?;
 
     let list = shift_list(
         session,
@@ -105,8 +107,6 @@ pub async fn cancel_shift(
         }),
     )
     .await?;
-
-    tran.commit().await?;
 
     info!(
         "Worker {} has canceled their shift: {} {}-{} on {}",

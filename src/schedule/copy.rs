@@ -38,21 +38,21 @@ pub async fn copy(
         date: date_to,
     }): Form<CopyBody>,
 ) -> Result<Redirect, AppError> {
-    let tran = config().pool().begin().await?;
+    let mut tran = config().pool().begin().await?;
     let shifts = sqlx::query_as!(
         Shift,
         "SELECT * FROM shift WHERE event_id = $1 AND date = $2",
         event_from,
         date_from
     )
-    .fetch_all(config().pool())
+    .fetch_all(&mut *tran)
     .await?;
     sqlx::query!(
         "DELETE FROM shift WHERE event_id = $1 AND date = $2",
         event_to,
         date_to
     )
-    .execute(config().pool())
+    .execute(&mut *tran)
     .await?;
     for shift in shifts {
         sqlx::query!(
@@ -64,7 +64,7 @@ pub async fn copy(
             shift.title,
             shift.description,
             shift.public_signup,
-        ).execute(config().pool()).await?;
+        ).execute(&mut *tran).await?;
     }
     tran.commit().await?;
     Ok(Redirect::to(format!("/event/{event_to}")))

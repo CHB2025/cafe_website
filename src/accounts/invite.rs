@@ -59,10 +59,10 @@ pub async fn invite_user(
     }
 
     // Start transaction
-    let tran = config().pool().begin().await?;
+    let mut tran = config().pool().begin().await?;
 
     let existing = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", invite.email)
-        .fetch_optional(config().pool())
+        .fetch_optional(&mut *tran)
         .await?;
     if existing.is_some() {
         return Err(AppError::inline(
@@ -75,7 +75,7 @@ pub async fn invite_user(
         "INSERT INTO admin_invite (email) VALUES ($1) RETURNING id",
         invite.email
     )
-    .fetch_one(config().pool())
+    .fetch_one(&mut *tran)
     .await?;
 
     // Email
@@ -93,7 +93,7 @@ pub async fn invite_user(
         ),
         message.render()?,
     )
-    .execute(config().pool())
+    .execute(&mut *tran)
     .await?;
 
     tran.commit().await?;

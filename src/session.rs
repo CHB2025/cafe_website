@@ -73,17 +73,17 @@ impl Session {
     /// Creates a new session and invalidates the existing one
     pub async fn remove_auth_user(&self) -> Result<(), sqlx::Error> {
         let session_id = self.0.lock().unwrap().id;
-        let tran = config().pool().begin().await?;
+        let mut tran = config().pool().begin().await?;
         sqlx::query_as!(
             DbSession,
             "UPDATE session SET expires_at = now() WHERE id = $1",
             session_id
         )
-        .execute(config().pool())
+        .execute(&mut *tran)
         .await?;
         let new_session =
             sqlx::query_as!(DbSession, "INSERT INTO session DEFAULT VALUES RETURNING *")
-                .fetch_one(config().pool())
+                .fetch_one(&mut *tran)
                 .await?;
         tran.commit().await?;
         *self.0.lock().unwrap() = new_session;

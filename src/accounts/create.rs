@@ -45,14 +45,14 @@ pub async fn create_account(
     Path(invite_id): Path<Uuid>,
     Form(mut user): Form<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
-    let transaction = config().pool().begin().await?;
+    let mut transaction = config().pool().begin().await?;
 
     let invite = sqlx::query_as!(
         AdminInvite,
         "UPDATE admin_invite SET accepted_at = now() WHERE accepted_at IS NULL AND id = $1 RETURNING *",
         invite_id
     )
-    .fetch_one(config().pool())
+    .fetch_one(&mut *transaction)
     .await?;
 
     let pswd = user.password.clone();
@@ -62,7 +62,7 @@ pub async fn create_account(
     });
 
     let already_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", invite.email)
-        .fetch_optional(config().pool())
+        .fetch_optional(&mut *transaction)
         .await?;
     if already_exists.is_some() {
         pwd_fut.abort();
@@ -81,12 +81,12 @@ pub async fn create_account(
         invite.email,
         user.password
     )
-    .fetch_one(config().pool())
+    .fetch_one(&mut *transaction)
     .await?;
 
-    session.set_auth_user(new_user).await?;
-
     transaction.commit().await?;
+
+    session.set_auth_user(new_user).await?;
 
     Ok((
         // create_session(cookie_jar, new_user.id),

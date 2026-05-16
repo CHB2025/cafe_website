@@ -80,9 +80,9 @@ pub async fn signup(
     Path(id): Path<Uuid>,
     Form(body): Form<SignupBody>,
 ) -> Result<SignupForm, AppError> {
-    let tran = config().pool().begin().await?;
-    let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1", id)
-        .fetch_one(config().pool())
+    let mut tran = config().pool().begin().await?;
+    let shift = sqlx::query_as!(Shift, "SELECT * FROM shift WHERE id = $1 FOR UPDATE", id)
+        .fetch_one(&mut *tran)
         .await?;
 
     // Prevent races
@@ -98,7 +98,7 @@ pub async fn signup(
         "SELECT * FROM worker WHERE email = $1",
         body.email.to_lowercase()
     )
-    .fetch_optional(config().pool())
+    .fetch_optional(&mut *tran)
     .await?;
     let worker = match worker {
         Some(w) => {
@@ -118,7 +118,7 @@ pub async fn signup(
                 shift.end_time,
                 shift.start_time,
             )
-            .fetch_one(config().pool())
+            .fetch_one(&mut *tran)
             .await?;
             if overlaps.is_some_and(|c| c != 0) {
                 return Err(AppError::inline(
@@ -167,7 +167,7 @@ pub async fn signup(
                 body.first_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a first name"))?, 
                 body.last_name.ok_or(AppError::inline(StatusCode::BAD_REQUEST, "Enter a last name"))?, 
                 body.phone.filter(|s| !s.is_empty())
-            ).fetch_one(config().pool()).await?
+            ).fetch_one(&mut *tran).await?
         }
     };
 
@@ -178,14 +178,14 @@ pub async fn signup(
     );
 
     // Send email
-    let _ = email::send_signup(worker, shift.clone()).await?;
+    let _ = email::send_signup(worker, shift.clone(), &mut *tran).await?;
 
     sqlx::query!(
         "UPDATE shift SET worker_id = $1 WHERE id = $2",
         worker_id,
         id
     )
-    .execute(config().pool())
+    .execute(&mut *tran)
     .await?;
 
     tran.commit().await?;
