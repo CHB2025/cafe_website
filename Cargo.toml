@@ -17,7 +17,7 @@ askama = { version = "0.12.0", features = ["with-axum", "markdown"] }
 askama_axum = "0.4.0"
 axum = "0.7.0"
 axum-extra = { version = "0.9.0", features = ["cookie-private"] }
-axum-server = { version = "0.6.0", features = ["tls-rustls"] }
+axum-server = { version = "0.7.1", features = ["tls-rustls"] }
 chrono = { version = "0.4.26", features = ["serde"] }
 lettre = { version = "0.11", default-features = false, features = ["builder", "hostname", "smtp-transport", "pool", "tokio1-rustls-tls", "tracing", "serde"] }
 rand = "0.8.5"
